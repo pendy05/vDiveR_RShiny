@@ -7,5 +7,5 @@ Sequence diversity, as a result of various evolutionary forces, challenges the d
 - server.R: server side; deal with reactivity, calculations, plotting etc (backend)
 
 ### Folders
-- www/: consists of images and sample dataset used in this app
-- R/: consists of plotting scripts
+- www/: consists of images and sample dataset
+- R/: consists of individual plotting scripts
