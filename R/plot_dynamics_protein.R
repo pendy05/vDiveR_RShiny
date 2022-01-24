@@ -2,7 +2,6 @@ plot4_5<-function(data,line_dot_size,wordsize,host,proteinOrder){
   group_names<-c("Index","Major","Minor","Unique","Total variants","Nonatypes")
   #modify the data structure
   plot4_data<-data.frame()
-  #print(data)
   #single host
   if (host == 1){
     for (i in 7:12){
@@ -22,15 +21,12 @@ plot4_5<-function(data,line_dot_size,wordsize,host,proteinOrder){
   
   if (proteinOrder !=""){
     #order the proteins based on user input
-    #level<-strsplit(proteinOrder, ',')[[1]]
     level<-unlist(lapply(strsplit(proteinOrder,','),trimws))
     #set protein order as factor
-    #print(level)
     plot4_data$proteinName<-factor(plot4_data$proteinName, levels=level)
     plot4_data$size_f = factor(plot4_data$proteinName,levels = level)
   }
   plot5_data<-plot4_data
-  #print(plot4_data$proteinName)
   #plotting
   plot4<-ggplot()+geom_point(plot4_data,mapping=aes(x=Total_Variants,y=Incidence,color=Group),alpha=1/3,size=line_dot_size)+
     scale_x_continuous(limits = c(0, 100), breaks = seq(0, 100, 20))+
