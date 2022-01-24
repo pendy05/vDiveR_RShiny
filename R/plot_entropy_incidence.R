@@ -2,10 +2,8 @@ plot_entropy_incidence<-function(df,line_dot_size,wordsize,host,scales_x,protein
   #detect if low support present
   if (proteinOrder !=""){
     #order the proteins based on user input
-    #level<-strsplit(proteinOrder, ',')[[1]]
     level<-unlist(lapply(strsplit(proteinOrder,','),trimws))
     #set protein order as factor
-    #print(level)
     df$proteinName<-factor(df$proteinName, levels=level)
     df$size_f = factor(df$proteinName,levels = level)
   }
