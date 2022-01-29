@@ -8,7 +8,6 @@ plot_entropy_incidence<-function(df,line_dot_size,wordsize,host,scales_x,protein
     df$size_f = factor(df$proteinName,levels = level)
   }
   if (TRUE %in% df$lowSupport){
-    print("lowSupport TRUE")
     df$lowSupportPos <- -0.3
     df$lowSupportPos[df$lowSupport ==TRUE]<- -0.5
     plot1<-ggplot(df) + 
@@ -83,7 +82,6 @@ plot_entropy_incidence<-function(df,line_dot_size,wordsize,host,scales_x,protein
     if (host == 1){#one host
       plot1 +facet_grid_sc(col=vars(df$size_f),scales = list(x = scales_x),space = "free",switch = "x")
     }else{# multi host
-      print("multihost")
       plot1 +facet_grid_sc(rows = vars(df$host),col=vars(df$size_f),scales = list(x = scales_x),space = "free",switch = "both")
     }
   }
