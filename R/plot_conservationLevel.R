@@ -1,3 +1,6 @@
+install.packages("tools")         # Install tools package
+library("tools")  
+
 #################
 #  User Input   #  
 #################
@@ -20,7 +23,8 @@ plotting7<-function(proteindata,line_dot_size, wordsize,host,proteinOrder){
                         values = c("Completely conserved (CC)"="black","Highly conserved (HC)"="#0057d1","Mixed variable (MV)"="#02d57f","Highly diverse (HD)"="#8722ff", "Extremely diverse (ED)"="#ff617d")) +  
     guides(color = guide_legend(override.aes = list(size = 2),nrow=2))+
     theme(plot.margin = unit(c(5, 1, 1, 1), "lines"),axis.text.x = element_text(angle = 55, vjust = 0.5, hjust=0.5)) +
-    coord_cartesian(clip = "off") #allow ggtext outside of the plot
+    coord_cartesian(clip = "off") + #allow ggtext outside of the plot
+      ggtitle(toTitleCase(paste(data$host,"Host",sep=" ")))
   ggplotly(p)
 }
 
