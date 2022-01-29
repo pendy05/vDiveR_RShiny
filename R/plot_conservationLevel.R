@@ -5,8 +5,6 @@ library("tools")
 #  User Input   #  
 #################
 plotting7<-function(proteindata,line_dot_size, wordsize,host,proteinOrder){
-  print('inside plotting 7')
-  print(line_dot_size)
   p<-ggplot(proteindata,
             environment = environment()) +
     geom_boxplot(aes(x=level,y=index.incidence),outlier.shape=NA,width=0.5)+ 
@@ -60,7 +58,6 @@ plot_plot7conservation<- function(data,line_dot_size,wordsize,host,proteinOrder,
     #check the presence of conservation level: insert value 0 if it is absent
     for ( conservation in C_level){ #conservation level
       for (name in level){ #proteinName
-        #print(conservation,name)
         if (!(conservation %in% plot7_data[plot7_data$proteinName==name,]$ConservationLevel)){
           plot7_data<-rbind(plot7_data,c(name,conservation,0))
         }}}
@@ -94,8 +91,6 @@ plot_plot7conservation<- function(data,line_dot_size,wordsize,host,proteinOrder,
   plot7_data<-plot7_data[order(factor(plot7_data$proteinName,levels=level)),]
   #get number of protein for labelling
   nProtein<-nrow(Proteinlabel)
-  print(nProtein)
-  #print(Proteinlabel)
 
     #plotting
     plot7<-ggplot(data) +
@@ -158,7 +153,6 @@ plot_plot7sample<- function(data,line_dot_size,wordsize,host,proteinOrder,conser
     #check the presence of conservation level: insert value 0 if it is absent
     for ( conservation in C_level){ #conservation level
       for (name in level){ #proteinName
-        #print(conservation,name)
         if (!(conservation %in% plot7_data[plot7_data$proteinName==name,]$ConservationLevel)){
           plot7_data<-rbind(plot7_data,c(name,conservation,0))
         }}}
