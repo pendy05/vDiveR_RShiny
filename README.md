@@ -8,6 +8,7 @@ Sequence diversity, as a result of various evolutionary forces, challenges the d
 
 ## Contents
 ### Scripts
+- app.R : call ui.R and server.R
 - ui.R: user interface (frontend)
 - server.R: server side; deal with reactivity, calculations, plotting etc (backend)
 
