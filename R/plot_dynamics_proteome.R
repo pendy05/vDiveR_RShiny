@@ -126,7 +126,6 @@ plot_plot3<- function(data,line_dot_size,wordsize,host){
 
 plot_dynamics_proteome<-function(data,line_dot_size,wordsize,host){
   if (length(unique(data$proteinName)) <=1){
-    print("LESS THAN 1")
   }else{
     #single host
     if (host == 1){
