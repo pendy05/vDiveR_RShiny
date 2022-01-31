@@ -11,6 +11,14 @@ Please visit our [DiveR web server](https://protocol-viral-diversity.shinyapps.i
 ## Background
 Sequence diversity, as a result of various evolutionary forces, challenges the design of diagnostic, prophylactic and therapeutic interventions against viruses. A publicly available tool, [Diversity Motif Analyser (DiMA)](https://github.com/PU-SDS/DiMA), has been developed to facilitate the dissection of protein sequence diversity dynamics for viruses, the understanding of which is critical to develop effective intervention strategies. In order to ease those without programming knowledge to perform analytics on the DiMA JSON output, we, herein, provide DiveR, an extension to DiMA in the form of a graphical user interface (GUI)-based  web application hosted on R Shiny. 
 
+<!--
+To-do list
+1. Installation (Please refer to this: https://github.com/rhondabacher/methylscaper/)
+2. Dependencies 
+3. Q: is the server support big data -> May test with SARS-CoV-2 spike protein that you will work on for Melike's project. 
+Just a note: If not support, then you may suggest a way to user - install and run locally (Please refer to this: https://github.com/alpreyes/GENAVi)
+-->
+
 ## Contents
 ### Scripts
 - app.R : call ui.R and server.R
