@@ -19,7 +19,7 @@ These five R scripts are to plot the viral diversity and showcase the patterns o
 </p>
 
 **Description:** <br>
-Entropy (black) and incidence of total variants (pink) were measured for each aligned *k*-mer position (1-k, 2-k+1, etc.) of the proteins. The entropy values indicate the level of variability at the corresponding nonamer positions, with zero representing completely conserved positions (total variants incidence of 0%). Benchmark reference for values for entropy (black dotted line; 9.2) and total variants (pink dotted line; 98%) that from HIV-1 clade B envelope protein [(Hu *et al.*, 2013)](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0059994) are provided. For both individual protein and across proteome, the minimum entropy value is zero while the maximum entropy value at y-axis is obtained by rounding the highest entropy encountered up to integer.
+Entropy (black) and incidence of total variants (pink) were measured for each aligned *k*-mer position (1-k, 2-k+1, etc.) of the proteins. The entropy values indicate the level of variability at the corresponding nonamer positions, with zero representing completely conserved positions (total variants incidence of 0%). Benchmark reference for values for entropy (black dotted line; 9.2) and total variants (pink dotted line; 98%) that from HIV-1 clade B envelope protein [(Hu *et al.*, 2013)](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0059994) are provided. For both individual protein and across proteome, the minimum entropy value is zero while the maximum entropy value at y-axis is 100.
 
 <!--
 Interpertation of result
@@ -34,7 +34,7 @@ Interpertation of result
 </p>
 
 **Description:** <br>
-Relationship between incidence of total variants and entropy for viral proteome nonamer positions.
+Relationship between incidence of total variants and entropy for viral proteome nonamer positions.  At y-axis, the minimum entropy value is zero while the maximum entropy value is obtained by rounding the highest entropy encountered up to integer.
 
 <!--
 Interpertation of result
