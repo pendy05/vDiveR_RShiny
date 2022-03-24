@@ -8,7 +8,7 @@ These six R scripts are to plot the viral diversity and showcase the patterns of
 - [Plot 3: Dynamics of Diversity Motifs (Proteome)](#plot-3-dynamics-of-diversity-motifs-proteome)
 - [Plot 4: Dynamics of Diversity Motifs (Protein)](#plot-4-dynamics-of-diversity-motifs-protein)
 - [Plot 5: Frequency Distribution Violin Plots (Protein)](#plot-5-frequency-distribution-violin-plots-protein)
-- [Table 1: Identification of Completely (CCS) / Highly Conserved (HCS) Sequences](#table-1-identification-of-completely-\(ccs\)-\/-highly-conserved-\(hcs\)-sequences)
+- [Table 1: Identification of Completely (CCS) / Highly Conserved (HCS) Sequences](#table-1)
 <br>
 
 ## Plot 1: Entropy and Incidence of Total Variants
@@ -85,7 +85,7 @@ Interpertation of result
 -->
 
 <br><br>
-## Table 1: Identification of Completely (CCS) / Highly Conserved (HCS) Sequences
+## Table 1: Identification of Completely (CCS) / Highly Conserved (HCS) Sequences <a id="table-1"></a>
 **R script:** [Conserved-seq-concatenation.R](https://github.com/pendy05/DiveR/blob/main/R-individual-scripts/Conserved-seq-concatenation.R) 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/74284859/159927864-0b1a7c1b-16d2-4aa6-b24a-388bb23dba5a.png" width="1000" height="500">
