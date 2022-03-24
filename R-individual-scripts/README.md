@@ -8,7 +8,7 @@ These six R scripts are to plot the viral diversity and showcase the patterns of
 - [Plot 3: Dynamics of Diversity Motifs (Proteome)](#plot-3-dynamics-of-diversity-motifs-proteome)
 - [Plot 4: Dynamics of Diversity Motifs (Protein)](#plot-4-dynamics-of-diversity-motifs-protein)
 - [Plot 5: Frequency Distribution Violin Plots (Protein)](#plot-5-frequency-distribution-violin-plots-protein)
-- [Table 1: Identification of Completely (CCS) / Highly Conserved (HCS) Sequences](#table-1-identification-of-completely-(ccs)-/-highly-conserved-(hcs)-sequences)
+- [Table 1: Identification of Completely (CCS) / Highly Conserved (HCS) Sequences](#table-1-identification-of-completely-\(ccs\)-\/-highly-conserved-\(hcs\)-sequences)
 <br>
 
 ## Plot 1: Entropy and Incidence of Total Variants
