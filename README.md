@@ -27,7 +27,8 @@ Just a note: If not support, then you may suggest a way to user - install and ru
 
 ### Folders
 - www/: consists of images and sample dataset
-- R/: consists of individual plotting scripts
+- R/: consists of R functions embedded as part of DiveR 
+- R-individual-scripts/: consists of individual R scripts used for producing plots and table in DiveR (Note: similar content as R/ but if you would like to access the R functions independently without using the DiveR web server, please refer to scripts in this folder!)
 
 ## Bug or Questions
 Please leave a message on our [GitHub Issues](https://github.com/pendy05/DiveR/issues) or contact Asif M. Khan (asif@perdanauniversity.edu.my).
