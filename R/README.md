@@ -1,7 +1,7 @@
 [To the main README >](https://github.com/pendy05/DiveR/blob/main/README.md)
 
 # R code for viral diversity dynamics plots
-These five R scripts are to plot the viral diversity and showcase the patterns of the dynamics of the protein sequence change and the frequency distribution of each of the diversity motifs of viruses.<br><br>
+These five R scripts are embedded as part of DiveR to plot the viral diversity and showcase the patterns of the dynamics of the protein sequence change and the frequency distribution of each of the diversity motifs of viruses. <br><br>Individual R scripts for each plot shown here are available in [R-individual-scripts](https://github.com/pendy05/DiveR/tree/main/R-individual-scripts) folder.<br><br>
 
 ## Table of contents
 - [Plot 1: Entropy and Incidence of Total Variants](#plot-1-entropy-and-incidence-of-total-variants)
@@ -13,7 +13,7 @@ These five R scripts are to plot the viral diversity and showcase the patterns o
 <br>
 
 ## Plot 1: Entropy and Incidence of Total Variants
-**R script:** [plot_entropy_incidence.R](https://github.com/pendy05/DiveR/blob/main/R/plot_entropy_incidence.R) 
+**R script:** [Entropy-and-Incidence-of-Total-Variants.R](https://github.com/pendy05/DiveR/blob/main/R-individual-scripts/Entropy-and-Incidence-of-Total-Variants.R) 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/74284859/132232581-ed1a8d49-aefb-4a7c-89bd-09053065e198.jpg" width="1000" height="500">
 </p>
@@ -28,7 +28,7 @@ Interpertation of result
 <br><br>
 
 ## Plot 2: Correlation of Entropy
-**R script:** [plot_correlation.R](https://github.com/pendy05/DiveR/blob/main/R/plot_correlation.R)
+**R script:** [Correlation-of-Entropy.R](https://github.com/pendy05/DiveR/blob/main/R-individual-scripts/Correlation-of-Entropy.R)
 <p align="center">
 <img src="https://user-images.githubusercontent.com/74284859/132232809-2bc5a305-5570-4528-ba41-9819a6f67a09.jpg" width="500" height="500">
 </p>
@@ -43,7 +43,7 @@ Interpertation of result
 <br><br>
 
 ## Plot 3: Dynamics of Diversity Motifs (Proteome)
-**R script:** [plot_dynamics_proteome.R](https://github.com/pendy05/DiveR/blob/main/R/plot_dynamics_proteome.R)
+**R script:** [Dynamics-of-Diversity-Motifs(Proteome).R](https://github.com/pendy05/DiveR/blob/main/R-individual-scripts/Dynamics-of-Diversity-Motifs(Proteome).R)
 <p align="center">
 <img src="https://user-images.githubusercontent.com/74284859/132233240-e63f6f3f-c0cf-4e73-9879-adcf4dac4d44.jpg" width="500" height="600">
 </p>
@@ -58,7 +58,7 @@ Interpertation of result
 <br><br>
 
 ## Plot 4: Dynamics of Diversity Motifs (Protein)
-**R script:** [plot_dynamics_protein.R](https://github.com/pendy05/DiveR/blob/main/R/plot_dynamics_protein.R)
+**R script:** [Dynamics-of-Diversity-Motifs(Protein).R](https://github.com/pendy05/DiveR/blob/main/R-individual-scripts/Dynamics-of-Diversity-Motifs(Protein).R)
 <p align="center">
 <img src="https://user-images.githubusercontent.com/74284859/132233808-fa6dd8b4-12c8-4823-ad3f-01271c30550f.jpg" width="500" height="600">
 </p>
@@ -73,7 +73,7 @@ Interpertation of result
 <br><br>
 
 ## Plot 5: Frequency Distribution Violin Plots (Protein)
-**R script:** [plot_conservationLevel.R](https://github.com/pendy05/DiveR/blob/main/R/plot_conservationLevel.R)
+**R script:** [Frequency-Distribution-Violin-Plots(Protein).R](https://github.com/pendy05/DiveR/blob/main/R-individual-scripts/Frequency-Distribution-Violin-Plots(Protein).R)
 <p align="center">
 <img src="https://user-images.githubusercontent.com/74284859/132236375-0639ab97-1452-46ed-b18e-26540a96ead8.jpg" width="1000" height="600">
 </p>
