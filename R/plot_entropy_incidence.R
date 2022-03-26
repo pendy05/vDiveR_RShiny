@@ -13,6 +13,7 @@ plot_entropy_incidence<-function(df,line_dot_size,wordsize,host,scales_x,protein
     plot1<-ggplot(df) + 
       geom_area(df,mapping = aes(x = position, y = entropy,color= "Nonamer Entropy", linetype="Nonamer Entropy"), show.legend=F)+
       geom_hline(mapping = aes(yintercept=9.2, color = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)", linetype = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)"), size= (line_dot_size/10))+
+      geom_vline(mapping = aes(xintercept = position), color='#FFECAF',alpha = ifelse(df$zeroEntropy == TRUE, 1, 0.0))+
       geom_point(df,mapping = aes(x = position,y=lowSupportPos),col=ifelse(df$lowSupportPos==-0.5, 'black', ifelse(df$lowSupportPos==-0.3, 'white', 'white')), alpha=ifelse(df$lowSupportPos==-0.5, 1, ifelse(df$lowSupportPos==-0.3, 0,0)),pch=17, size=line_dot_size)+
       geom_line(df,mapping = aes(x = position, y = totalVariants.incidence *10 / 100, color = "Total Variants",linetype="Total Variants"), size= (line_dot_size/10) )+ 
       geom_hline(df,mapping = aes( yintercept=98*10/100, color = "Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)",linetype ="Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)"), size= (line_dot_size/10))+ 
@@ -53,6 +54,7 @@ plot_entropy_incidence<-function(df,line_dot_size,wordsize,host,scales_x,protein
     plot1<-ggplot(df) +
       geom_area(df,mapping = aes(x = position, y = entropy,color= "Nonamer Entropy", linetype="Nonamer Entropy"),show.legend = F)+
       geom_hline(mapping = aes(yintercept=9.2, color = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)", linetype = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)"),size= (line_dot_size/10))+
+      geom_vline(mapping = aes(xintercept = position), color='#FFECAF',alpha = ifelse(df$zeroEntropy == TRUE, 1, 0.0))+
       geom_line(df,mapping = aes(x = position, y = totalVariants.incidence *10 / 100, color = "Total Variants",linetype="Total Variants"),  size= (line_dot_size/10))+
       geom_hline(df,mapping = aes( yintercept=98*10/100, color = "Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)",linetype ="Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)"), size= (line_dot_size/10))+
       labs(y = "Nonamer entropy (bits)\n",x= "\nNonamer position (aa)",color = "#f7238a")+
