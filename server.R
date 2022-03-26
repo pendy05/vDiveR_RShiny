@@ -168,7 +168,19 @@ server <- function(input, output,session) {
       }
     }
     
-    #start from here blm check
+    #---------------zero entropy-----------------#
+    #check if the kmer positions are zero entropy
+    #Reference for getting all the positions of kmer based on kmer size and the starting position of kmer: 
+    #https://stackoverflow.com/questions/31120552/generate-a-sequence-of-numbers-with-repeated-intervals
+    #kmer size
+    kmer_size=9
+    df[df$entropy==0,]$position
+    #identify the kmer position with zero entropy
+    pos_withZeroEntropy<- unique(sequence(kmer_size) + rep(df[df$entropy==0,]$position-1, rep(kmer_size,length(df[df$entropy==0,]$position))))
+    #fill in "TRUE"
+    df$zeroEntropy <- ifelse(df$position %in% pos_withZeroEntropy, TRUE, FALSE)
+    
+    group_names<-c("Index","Major","Minor","Unique","Total variants","Nonatypes")
     
     group_names<-c("Index","Major","Minor","Unique","Total variants","Nonatypes")
     
@@ -426,6 +438,20 @@ server <- function(input, output,session) {
         
       }
     }
+    
+    #---------------zero entropy-----------------#
+    #check if the kmer positions are zero entropy
+    #Reference for getting all the positions of kmer based on kmer size and the starting position of kmer: 
+    #https://stackoverflow.com/questions/31120552/generate-a-sequence-of-numbers-with-repeated-intervals
+    #kmer size
+    kmer_size=9
+    df[df$entropy==0,]$position
+    #identify the kmer position with zero entropy
+    pos_withZeroEntropy<- unique(sequence(kmer_size) + rep(df[df$entropy==0,]$position-1, rep(kmer_size,length(df[df$entropy==0,]$position))))
+    #fill in "TRUE"
+    df$zeroEntropy <- ifelse(df$position %in% pos_withZeroEntropy, TRUE, FALSE)
+    
+    group_names<-c("Index","Major","Minor","Unique","Total variants","Nonatypes")
 
     MY_THEME<-theme(
       axis.title.x = element_text(size = input$wordsize),
