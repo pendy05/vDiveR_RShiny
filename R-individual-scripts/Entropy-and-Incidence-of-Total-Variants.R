@@ -75,6 +75,14 @@ pos_withZeroEntropy<- unique(sequence(kmer_size) + rep(df[df$entropy==0,]$positi
 #fill in "TRUE" for position with zero entropy
 df$zeroEntropy <- ifelse(df$position %in% pos_withZeroEntropy, TRUE, FALSE)
 
+#---------------set maximum y limit-----------------#
+#if the max y value in data < 10 => maxy = 10
+#if max y value in data > 10 => maxy = ceiling(max y value)
+if (max(df$entropy) <= 10){
+  maxy <-10.0
+}else if (max(df$entropy) > 10){
+  maxy <- ceiling(max(df$entropy))
+}
 
 #----------------plotting--------------------#
 #detect if low support present
@@ -86,12 +94,12 @@ if (TRUE %in% df$lowSupport){
     geom_area(df,mapping = aes(x = position, y = entropy,color= "Nonamer Entropy", linetype="Nonamer Entropy"), show.legend=F)+
     geom_hline(mapping = aes(yintercept=9.2, color = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)", linetype = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)"), size= 0.2)+
     geom_point(df,mapping = aes(x = position,y=lowSupportPos),col=ifelse(df$lowSupportPos==-0.5, 'black', ifelse(df$lowSupportPos==-0.3, 'white', 'white')), alpha=ifelse(df$lowSupportPos==-0.5, 1, ifelse(df$lowSupportPos==-0.3, 0,0)),pch=17)+
-    geom_line(df,mapping = aes(x = position, y = totalVariants.incidence *10 / 100, color = "Total Variants",linetype="Total Variants"), size= 0.3 )+ 
-    geom_hline(df,mapping = aes( yintercept=98*10/100, color = "Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)",linetype ="Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)"), size= 0.2)+ 
+    geom_line(df,mapping = aes(x = position, y = totalVariants.incidence * maxy / 100, color = "Total Variants",linetype="Total Variants"), size= 0.3 )+ 
+    geom_hline(df,mapping = aes( yintercept=98* maxy / 100, color = "Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)",linetype ="Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)"), size= 0.2)+ 
     labs(y = "Nonamer entropy (bits)\n",x= "\nNonamer position (aa)",color = "#f7238a")+
     #how to second y-axis: https://whatalnk.github.io/r-tips/ggplot2-rbind.nb.html
-    scale_y_continuous(sec.axis = sec_axis(~ . * 100 / 10 , name = "Total variants (%)\n",breaks = c(0,25,50,75,100),labels=c("0","25","50","75","100")), 
-                       breaks = c(0.0,2.5,5.0,7.5,10.0),labels=c("0.0","2.5","5.0","7.5","10.0")) + 
+    scale_y_continuous(sec.axis = sec_axis(~ . * 100 / maxy , name = "Total variants (%)\n",breaks = c(0,25,50,75,100),labels=c("0","25","50","75","100")), 
+                       breaks = seq(0.0, maxy, length.out = 5),labels= sprintf(seq(0.0, maxy, length.out = 5), fmt = "%.1f")) + 
     theme_classic() + 
     theme(
       panel.grid.major = element_blank(), 
@@ -124,12 +132,12 @@ if (TRUE %in% df$lowSupport){
     geom_vline(mapping = aes(xintercept = position), color='#FFECAF',alpha = ifelse(df$zeroEntropy == TRUE, 1, 0.0))+
     geom_area(df,mapping = aes(x = position, y = entropy,color= "Nonamer Entropy", linetype="Nonamer Entropy"),show.legend = F)+
     geom_hline(mapping = aes(yintercept=9.2, color = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)", linetype = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)"), size= 0.2)+
-    geom_line(df,mapping = aes(x = position, y = totalVariants.incidence *10 / 100, color = "Total Variants",linetype="Total Variants"), size= 0.3 )+ 
-    geom_hline(df,mapping = aes( yintercept=98*10/100, color = "Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)",linetype ="Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)"), size= 0.2)+ 
+    geom_line(df,mapping = aes(x = position, y = totalVariants.incidence * maxy / 100, color = "Total Variants",linetype="Total Variants"), size= 0.3 )+ 
+    geom_hline(df,mapping = aes( yintercept=98 * maxy /100, color = "Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)",linetype ="Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)"), size= 0.2)+ 
     labs(y = "Nonamer entropy (bits)\n",x= "\nNonamer position (aa)",color = "#f7238a")+
     #how to second y-axis: https://whatalnk.github.io/r-tips/ggplot2-rbind.nb.html
-    scale_y_continuous(sec.axis = sec_axis(~ . * 100 / 10 , name = "Total variants (%)\n",breaks = c(0,25,50,75,100),labels=c("0","25","50","75","100")),
-                       breaks = c(0.0,2.5,5.0,7.5,10.0),labels=c("0.0","2.5","5.0","7.5","10.0")) +
+    scale_y_continuous(sec.axis = sec_axis(~ . * 100 / maxy , name = "Total variants (%)\n",breaks = c(0,25,50,75,100),labels=c("0","25","50","75","100")),
+                       breaks = seq(0.0, maxy, length.out = 5),labels= sprintf(seq(0.0, maxy, length.out = 5), fmt = "%.1f")) +
     theme_classic() +
     theme(
       panel.grid.major = element_blank(),
