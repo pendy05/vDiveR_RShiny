@@ -32,3 +32,9 @@ Just a note: If not support, then you may suggest a way to user - install and ru
 
 ## Bug or Questions
 Please leave a message on our [GitHub Issues](https://github.com/pendy05/DiveR/issues) or contact Asif M. Khan (asif@perdanauniversity.edu.my).
+
+## Authors
+The following individuals have contributed code to DiveR:
+- Pendy Tok
+- Li Chuin Chong
+- Evgenia Chikina
