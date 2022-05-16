@@ -8,7 +8,7 @@ DiveR is a graphical user interface (GUI)-based web application hosted on R Shin
 
 Please visit our [DiveR web server](https://protocol-viral-diversity.shinyapps.io/DiveR/)!
 <p align="center">
-<img src="https://user-images.githubusercontent.com/74284859/168590154-9870f6d9-12d2-47d2-b7ed-8150104dce91.jpg" width=65% height=65%>
+<img src="https://user-images.githubusercontent.com/74284859/168590154-9870f6d9-12d2-47d2-b7ed-8150104dce91.jpg" width=80% height=80%>
 </p>
 Figure: Overview of the DiveR R shiny app. DiveR consists of eight tabs where each tab includes a brief description of the implemented functionalities. Users must provide either an aligned sequence file or a DiMA JSON output file in tab 2 to initiate the visualization of dynamics in sequence change in the form of plots presented in tabs 3 to 7.
 
