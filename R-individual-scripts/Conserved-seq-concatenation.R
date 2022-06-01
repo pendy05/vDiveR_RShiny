@@ -7,6 +7,8 @@ option_list = list(
               help="input csv filename", metavar="character"),
   make_option(c("-o", "--output"), type="character", default=NULL, 
               help="output filename (FASTA and CSV)", metavar="character"),
+  make_option(c("-k", "--kmer"), type="integer", default=NULL, 
+              help="kmer size", metavar="character"),
   make_option(c("-c", "--conservation"), type="character", default="CCS",  
               help="conservation level: completely conserved(CCS); both completely conserved and highly conserved(HCS) [Default: CCS]", 
               metavar="character")
@@ -49,6 +51,8 @@ if (nrow(df) == 0) {
   stop("No sequences with given conservative level were found", call.=FALSE)
 } 
 
+# kmer size
+kmer <- opt$kmer
 
 
 # ---- 1. Protein Sequences ----
@@ -98,9 +102,9 @@ csv_df <- bind_rows(
         apply(df_x, 1, function(row) {
           start_pos <- as.numeric(row["position"])
           data.frame(matrix(data = TRUE,
-                            nrow = 1, ncol = 9,
+                            nrow = 1, ncol = kmer,
                             dimnames = list(row["indexPeptide"],
-                                            seq(start_pos, start_pos + 8))))
+                                            seq(start_pos, start_pos + 8=kmer - 1))))
         })
         
       ) %>% 

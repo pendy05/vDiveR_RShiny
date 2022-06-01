@@ -1,5 +1,6 @@
 #load packages
 if (!require("pacman")) install.packages("pacman")
+if (!require("gghalves")) install.packages("gghalves")
 pacman::p_load(ggplot2, Hmisc)
 
 library(Rcpp)
@@ -7,9 +8,11 @@ library(plyr)
 library(dplyr)
 library(ggplot2)
 library(ggtext)
+library(gghalves)
 
 #read data
 data<-read.csv("HCV_proteins.csv")
+data <- read.csv("B19V_5mer.csv")
 
 data<-data%>%mutate(ConservationLevel = case_when(
   data$index.incidence == 100 ~ "Completely conserved (CC)",
@@ -23,8 +26,9 @@ data<-data%>%mutate(ConservationLevel = case_when(
 #NOTE: change this line of code below for protein order
 proteinOrder=""
 #NOTE: modify the following lines based on need
-#protein_label: "1" for full label of protein; "0" for simplified label of protein
-protein_label<-1
+#conservationLabel: "1" for full label of protein; "0" for simplified label of protein
+conservationLabel<-1
+
 
 #plotting function
 plot_plot7<- function(data){
@@ -47,7 +51,6 @@ plot_plot7<- function(data){
   data<-rbind(data1,data)
   #determine the protein order
   data$level = factor(data$proteinName, levels=level)
-  
   #calculation for total and percentage of conservation levels for each protein
   #sum up the total positions for each conservation level of proteins
   plot7_data<-ddply(data,.(proteinName,ConservationLevel),nrow)
@@ -55,7 +58,7 @@ plot_plot7<- function(data){
   
   C_level<- c("Completely conserved (CC)","Highly conserved (HC)","Mixed variable (MV)","Highly diverse (HD)","Extremely diverse (ED)")
   #check the presence of conservation level: insert value 0 if it is absent
-  if (protein_label == 1){ #full label
+  if (conservationLabel == 1){ #full label
     #check the presence of conservation level: insert value 0 if it is absent
     for ( conservation in C_level){ #conservation level
       for (name in level){ #proteinName
@@ -63,6 +66,7 @@ plot_plot7<- function(data){
           plot7_data<-rbind(plot7_data,c(name,conservation,0))
         }}}
   }
+  
   #sort the dataframe
   plot7_data[order(plot7_data$proteinName),]
   plot7_data$Total<- as.integer(plot7_data$Total)
@@ -92,23 +96,38 @@ plot_plot7<- function(data){
   nProtein<-nrow(Proteinlabel)
   
   #plotting
-  ggplot(data) +
-    geom_boxplot(aes(x=level,y=index.incidence),outlier.shape=NA,width=0.5)+ 
-    geom_jitter(aes(x=level,y=index.incidence,col=ConservationLevel),position = position_jitter(width = .15, height=-0.7),
-                size=1)+
-    ylim(0,105)+
-    labs(x=NULL,y="Index incidence (%)\n",fill="Conservation level")+
+  ggplot(data, aes(x=level,y=index.incidence)) +
+    # gghalfves
+    geom_half_boxplot(outlier.shape = NA) +
+    geom_half_point(aes(col = ConservationLevel), side = "r", 
+                    position = position_jitter(width = 0, height=-0.7)) +
+    ylim(0,105) +
+    labs(x=NULL, y="Index incidence (%)\n", fill="Conservation level")+
     theme_classic()+
     theme(
       legend.key = element_rect(fill = "transparent", colour = "transparent"),
       legend.position = 'bottom'
-    )+
-    scale_colour_manual('Conservation Level',breaks=c("Completely conserved (CC)","Highly conserved (HC)","Mixed variable (MV)","Highly diverse (HD)","Extremely diverse (ED)"),
-                        values = c("Completely conserved (CC)"="black","Highly conserved (HC)"="#0057d1","Mixed variable (MV)"="#02d57f","Highly diverse (HD)"="#8722ff", "Extremely diverse (ED)"="#ff617d"))+  
-    geom_richtext(data = Proteinlabel, aes(x=proteinName,label = Label, y=c(rep(105,nProtein)), label.size=0, label.color="transparent"),
-                  position = position_dodge(width=0.1),size=2.6,color="black", hjust=0,angle=90) + 
-    guides(color = guide_legend(override.aes = list(size = 2),nrow=2))+
-    theme(plot.margin = unit(c(5, 1, 1, 1), "lines"),axis.text.x = element_text(angle = 55, vjust = 0.5, hjust=0.5)) +
+    ) +
+    scale_colour_manual('Conservation Level',
+                        breaks = c("Completely conserved (CC)",
+                                   "Highly conserved (HC)",
+                                   "Mixed variable (MV)",
+                                   "Highly diverse (HD)",
+                                   "Extremely diverse (ED)"),
+                        values = c("Completely conserved (CC)"="black",
+                                   "Highly conserved (HC)"="#0057d1",
+                                   "Mixed variable (MV)"="#02d57f",
+                                   "Highly diverse (HD)"="#8722ff", 
+                                   "Extremely diverse (ED)"="#ff617d")) +  
+    geom_richtext(data = Proteinlabel, 
+                  aes(x=proteinName,label = Label, y=c(rep(105,nProtein)),
+                      label.size=0, label.color="transparent"),
+                  position = position_dodge(width=0.1), 
+                  size=2.6, color="black", hjust=0, angle=90) + 
+    guides(color = guide_legend(override.aes = list(size = 2), nrow=2)) +
+    theme(plot.margin = unit(c(5, 1, 1, 1), "lines"),
+          axis.ticks.x = element_blank(),
+          axis.text.x = element_text(angle = 55, vjust = 0.5, hjust=0.5)) +
     coord_cartesian(clip = "off") #allow ggtext outside of the plot
 }
 
@@ -128,10 +147,10 @@ if (host == 1){
   do.call("grid.arrange", c(grobs=lapply(plot7_multihost,"+",theme), nrow = length(unique(data$Host))))  
 }
 
-#save plot as 600dpi image
-#set the directory to save to
-setwd("C:\\Users\\Desktop")
-ggsave(filename="plot-Frequency-Distribution-Violin-Plots(Protein).jpg",width = 10, height = 7.5, unit="in",device='jpg', dpi=600)
+# #save plot as 600dpi image
+# #set the directory to save to
+# setwd("C:\\Users\\Desktop")
+# ggsave(filename="plot-Frequency-Distribution-Violin-Plots(Protein).jpg",width = 10, height = 7.5, unit="in",device='jpg', dpi=600)
 
 
 

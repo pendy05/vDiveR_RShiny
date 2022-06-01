@@ -1,4 +1,4 @@
-install.packages("tools")         # Install tools package
+if (!require("tools")) install.packages("tools")       # Install tools package
 library("tools")  
 
 #################
