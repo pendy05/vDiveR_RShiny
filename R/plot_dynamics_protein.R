@@ -1,5 +1,5 @@
 plot4_5<-function(data,line_dot_size,wordsize,host,proteinOrder){
-  group_names<-c("Index","Major","Minor","Unique","Total variants","Nonatypes")
+  group_names<-c("Index","Major","Minor","Unique","Total variants","Distinct variants")
   #modify the data structure
   plot4_data<-data.frame()
   #single host
@@ -38,7 +38,7 @@ plot4_5<-function(data,line_dot_size,wordsize,host,proteinOrder){
       panel.border = element_rect(colour = "black", fill=NA, size=1),
       legend.position = "bottom"
     )+ guides(colour = guide_legend(override.aes = list(alpha = 1,size=line_dot_size/10+1.5),keywidth = 1,keyheight = 1,nrow=1,byrow=TRUE))+
-    scale_colour_manual('',values = c("Index"="black","Total variants"="#f7238a", "Major"="#37AFAF","Minor"="#42aaff","Unique"="#af10f1","Nonatypes"="#c2c7cb" ))
+    scale_colour_manual('',values = c("Index"="black","Total variants"="#f7238a", "Major"="#37AFAF","Minor"="#42aaff","Unique"="#af10f1","Distinct variants"="#c2c7cb" ))
   plot4<-plot4+facet_grid(col=vars(plot4_data$proteinName))
   
   #host label
@@ -53,12 +53,12 @@ plot4_5<-function(data,line_dot_size,wordsize,host,proteinOrder){
     major<-plot5_data[plot5_data$Group %in% c("Major"),]
     minor<-plot5_data[plot5_data$Group %in% c("Minor"),]
     unique<-plot5_data[plot5_data$Group %in% c("Unique"),]
-    nonatypes<-plot5_data[plot5_data$Group %in% c("Nonatypes"),]
-    variants_max_yaxis<-ceiling((max(major$Incidence,minor$Incidence,unique$Incidence)/10))*10
+    nonatypes<-plot5_data[plot5_data$Group %in% c("Distinct variants"),]
+    variants_max_yaxis<-ceiling((max(as.numeric(major$Incidence),as.numeric(minor$Incidence),as.numeric(unique$Incidence))/10))*10
     
     #plot 5
     plot5_index<-ggplot(index, aes(x=proteinName, y=Incidence))+
-      geom_violin(fill="black",trim = FALSE, color="black",alpha=0.9)+ylim(0,100)+ylab("Index nonamer (%)")+xlab("") +theme_bw() + 
+      geom_violin(fill="black",trim = FALSE, color="black",alpha=0.9)+ylim(0,100)+ylab("Index k-mer (%)")+xlab("") +theme_bw() + 
       geom_boxplot(outlier.shape = NA,width=0.05, color="white",alpha=0.15,fill="white")+ 
       theme_classic(base_size = wordsize)+
       theme(plot.margin = unit(c(0,0.1,0,0.1), "cm"),
@@ -101,7 +101,7 @@ plot4_5<-function(data,line_dot_size,wordsize,host,proteinOrder){
             axis.text.y  = element_text(face="bold"))
     
     plot5_nonatypes<-ggplot(nonatypes, aes(x=proteinName, y=Incidence)) + 
-      geom_violin(fill="#c2c7cb",trim = FALSE, color="#c2c7cb")+ylim(0,100)+ylab("Nonatype (%)")+xlab("")+theme_bw()+ 
+      geom_violin(fill="#c2c7cb",trim = FALSE, color="#c2c7cb")+ylim(0,100)+ylab("Distinct variants (%)")+xlab("")+theme_bw()+ 
       geom_boxplot(outlier.shape = NA,width=0.05, color="black", alpha=0.15,fill="white") + 
       theme_classic(base_size = wordsize)+
       theme(plot.margin = unit(c(0,0.1,0,0.1), "cm"),
@@ -111,19 +111,19 @@ plot4_5<-function(data,line_dot_size,wordsize,host,proteinOrder){
     plot5<-ggarrange(plot5_index,plot5_tv,plot5_nonatypes,plot5_major,plot5_minor,plot5_unique,ncol=3,nrow=2)
     
   }else{
-    plot5_data$Group[plot5_data$Group == "Index"] <- "Index nonamer" 
+    plot5_data$Group[plot5_data$Group == "Index"] <- "Index k-mer" 
     plot5_data$Group[plot5_data$Group == "Major"] <- "Major variant" 
     plot5_data$Group[plot5_data$Group == "Minor"] <- "Minor variants" 
     plot5_data$Group[plot5_data$Group == "Unique"] <- "Unique variants" 
     
-    plot5_data$Group<-factor(plot5_data$Group, levels=c("Index nonamer","Total variants", "Nonatypes", "Major variant", "Minor variants", "Unique variants"))
+    plot5_data$Group<-factor(plot5_data$Group, levels=c("Index k-mer","Total variants", "Distinct variants", "Major variant", "Minor variants", "Unique variants"))
     variants<-subset(plot5_data, Group=="Major variant" | Group=="Minor variants" | Group=="Unique variants")
     max_ylim<-ceiling((max(variants$Incidence)/10))*10
     
     scales_y <- list(
-      "Index nonamer" = scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20)),
+      "Index k-mer" = scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20)),
       "Total variants" = scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20)),
-      "Nonatypes" = scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20)),
+      "Distinct variants" = scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20)),
       "Major variant" = scale_y_continuous(limits = c(0, max_ylim), breaks = seq(0, max_ylim, 10)),
       "Minor variants" = scale_y_continuous(limits = c(0, max_ylim), breaks = seq(0, max_ylim, 10)),
       "Unique variants" = scale_y_continuous(limits = c(0, max_ylim), breaks = seq(0, max_ylim, 10))
@@ -135,8 +135,8 @@ plot4_5<-function(data,line_dot_size,wordsize,host,proteinOrder){
       theme(panel.border = element_rect(colour = "black", fill=NA, size=1),
             legend.position="none")+
       facet_grid_sc(rows = vars(Group),switch="y",scales = list(y = scales_y))+
-      scale_colour_manual('',values = c("Index nonamer"="black","Total variants"="#f7238a", "Major variant"="#37AFAF","Minor variants"="#42aaff","Unique variants"="#af10f1","Nonatypes"="#c2c7cb" ))+
-      scale_fill_manual('',values = c("Index nonamer"="black","Total variants"="#f7238a", "Major variant"="#37AFAF","Minor variants"="#42aaff","Unique variants"="#af10f1","Nonatypes"="#c2c7cb" ))
+      scale_colour_manual('',values = c("Index k-mer"="black","Total variants"="#f7238a", "Major variant"="#37AFAF","Minor variants"="#42aaff","Unique variants"="#af10f1","Nonatypes"="#c2c7cb" ))+
+      scale_fill_manual('',values = c("Index k-mer"="black","Total variants"="#f7238a", "Major variant"="#37AFAF","Minor variants"="#42aaff","Unique variants"="#af10f1","Nonatypes"="#c2c7cb" ))
     
   }
   #plot4_5

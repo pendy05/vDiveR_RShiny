@@ -1,8 +1,9 @@
+library(ggpubr)
 plot_plot3<- function(data,line_dot_size,wordsize,host){
   
   #modify data structure
   plot3_data<-data.frame()
-  group_names<-c("Index","Major","Minor","Unique","Total variants","Nonatypes")
+  group_names<-c("Index","Major","Minor","Unique","Total variants","Distinct variants")
   
   for (i in 7:12){
     tmp<-data.frame(proteinName=data[1],position=data[2],incidence=data[i],total_variants=data[11],Group=group_names[i-6],Multiindex=data[13])
@@ -23,12 +24,12 @@ plot_plot3<- function(data,line_dot_size,wordsize,host){
     plot3_data$Group == "Major" ~ "Major",
     plot3_data$Group == "Minor"  ~ "Minor",
     plot3_data$Group == "Unique" ~ "Unique",
-    plot3_data$Group == "Nonatypes" ~ "Nonatypes"
+    plot3_data$Group == "Distinct variants" ~ "Distinct variants"
     
   ))
   
   plot3_data<- rbind(plot3_data,minor,uniq)
-  plot3_data$motif<-factor(plot3_data$motif,levels = c("Major","Minor","Unique","Nonatypes"))
+  plot3_data$motif<-factor(plot3_data$motif,levels = c("Major","Minor","Unique","Distinct variants"))
   
   if (host == 1){ #one host
     ROW=1
@@ -48,9 +49,9 @@ plot_plot3<- function(data,line_dot_size,wordsize,host){
     labs(y= "Incidence (%)", x="\nTotal variants (%)")+
     facet_wrap(~ motif,ncol = 1)+ 
     guides(colour = guide_legend(override.aes = list(alpha = 1,size=line_dot_size/10+1.5),nrow = ROW))+
-    scale_colour_manual('',breaks=c("Index","Total variants","Major","Minor","Unique","Nonatypes"),
+    scale_colour_manual('',breaks=c("Index","Total variants","Major","Minor","Unique","Distinct variants"),
                         values = c("Index"="black", "Total variants"="#f7238a","MultiIndex"="red",
-                                   "Major"="#37AFAF" , "Minor"="#42aaff","Unique"="#af10f1", "Nonatypes"="#c2c7cb"))
+                                   "Major"="#37AFAF" , "Minor"="#42aaff","Unique"="#af10f1", "Distinct variants"="#c2c7cb"))
   #host label
   if("host" %in% colnames(data)){
     plot3a<-plot3a+ggtitle(unique(data$host))+theme(plot.title = element_text(hjust = 0.5))
@@ -58,10 +59,10 @@ plot_plot3<- function(data,line_dot_size,wordsize,host){
   
   #plot3b
   index<-plot3b_data[plot3b_data$Group %in% "Index",]
-  nonatypes<-plot3b_data[plot3b_data$Group %in% "Nonatypes",]
+  nonatypes<-plot3b_data[plot3b_data$Group %in% "Distinct variants",]
   variants<-plot3b_data[plot3b_data$Group %in% c("Major","Minor","Unique"),]
   variants$x<-"x"
-  variants_max_yaxis<-ceiling((max(variants$Incidence)/10))*10
+  variants_max_yaxis<-ceiling((max(as.numeric(variants$Incidence))/10))*10
   
   plot3b_index<-ggplot(index, aes(x=Group,y=Incidence))+geom_violin(color="black",fill="black",scale="width")+geom_boxplot(width=0.08,alpha=0.20,fill="white",outlier.shape=NA,color="white")+
     ylim(c(0,100))+
@@ -88,7 +89,7 @@ plot_plot3<- function(data,line_dot_size,wordsize,host){
   
   plot3b_nonatype<-ggplot(nonatypes, aes(x=Group,y=Incidence))+geom_violin(color="#c2c7cb",fill="#c2c7cb")+geom_boxplot(width=0.08,alpha=0.20,fill="white",outlier.shape=NA)+
     ylim(c(0,100))+
-    labs(y=NULL,x="Nonatypes")+
+    labs(y=NULL,x="Distinct variants")+
     theme_classic(base_size = wordsize)+
     theme(
       panel.border = element_rect(colour = "black", fill=NA, size=1),
@@ -125,8 +126,7 @@ plot_plot3<- function(data,line_dot_size,wordsize,host){
 }
 
 plot_dynamics_proteome<-function(data,line_dot_size,wordsize,host){
-  if (length(unique(data$proteinName)) <=1){
-  }else{
+  if (length(unique(data$proteinName)) >1){
     #single host
     if (host == 1){
       plot_plot3(data,line_dot_size,wordsize,host)
