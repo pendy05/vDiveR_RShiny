@@ -1,18 +1,22 @@
 #load packages
-if (!require("pacman")) install.packages("pacman")
+if (!require("tools")) install.packages("tools")       # Install tools package
 if (!require("gghalves")) install.packages("gghalves")
-pacman::p_load(ggplot2, Hmisc)
-
+library("tools")  
+library("gghalves")
 library(Rcpp)
 library(plyr)
 library(dplyr)
 library(ggplot2)
 library(ggtext)
-library(gghalves)
+if (!require("pacman")) install.packages("pacman")
+if (!require("gghalves")) install.packages("gghalves")
+pacman::p_load(ggplot2, Hmisc)
+
+
+
 
 #read data
-data<-read.csv("HCV_proteins.csv")
-data <- read.csv("B19V_5mer.csv")
+data<-read.csv("../www/DiMA_HCV.csv")
 
 data<-data%>%mutate(ConservationLevel = case_when(
   data$index.incidence == 100 ~ "Completely conserved (CC)",
@@ -76,15 +80,15 @@ plot_plot7<- function(data){
   #gather the protein label in multicolor
   plot7_data<-plot7_data%>%mutate(Label = case_when(
     plot7_data$ConservationLevel == "Completely conserved (CC)" ~ paste0(sprintf("<span style =
-    'color:#000000;'>CC: %.0f; %.1f %% </span>",plot7_data$Total, round(plot7_data$percent,1))),
+    'color:#000000;'>CC: %.0f (%.1f %%) </span>",plot7_data$Total, round(plot7_data$percent,1))),
     plot7_data$ConservationLevel == "Highly conserved (HC)" ~ paste0(sprintf("<span style =
-    'color:#0057d1;'>HC: %.0f; %.1f %% </span>",plot7_data$Total, round(plot7_data$percent,1))),
+    'color:#0057d1;'>HC: %.0f (%.1f %%) </span>",plot7_data$Total, round(plot7_data$percent,1))),
     plot7_data$ConservationLevel == "Mixed variable (MV)" ~ paste0(sprintf("<span style =
-    'color:#02d57f;'>MV: %.0f; %.1f %% </span>",plot7_data$Total, round(plot7_data$percent,1))),
+    'color:#02d57f;'>MV: %.0f (%.1f %%) </span>",plot7_data$Total, round(plot7_data$percent,1))),
     plot7_data$ConservationLevel == "Highly diverse (HD)" ~ paste0(sprintf("<span style =
-    'color:#8722ff;'>HD: %.0f; %.1f %% </span>",plot7_data$Total, round(plot7_data$percent,1))),
+    'color:#A022FF;'>HD: %.0f (%.1f %%) </span>",plot7_data$Total, round(plot7_data$percent,1))),
     plot7_data$ConservationLevel == "Extremely diverse (ED)" ~ paste0(sprintf("<span style =
-    'color:#ff617d;'>ED: %.0f; %.1f %% </span>",plot7_data$Total, round(plot7_data$percent,1))),
+    'color:#ff617d;'>ED: %.0f (%.1f %%) </span>",plot7_data$Total, round(plot7_data$percent,1))),
   ))
   
   #set conservation level in specific order (CC,HC,MV,HD,ED)
@@ -100,13 +104,16 @@ plot_plot7<- function(data){
     # gghalfves
     geom_half_boxplot(outlier.shape = NA) +
     geom_half_point(aes(col = ConservationLevel), side = "r", 
-                    position = position_jitter(width = 0, height=-0.7)) +
+                    position = position_jitter(width = 0, height=-0.7),alpha=0.6) +
     ylim(0,105) +
     labs(x=NULL, y="Index incidence (%)\n", fill="Conservation level")+
     theme_classic()+
     theme(
       legend.key = element_rect(fill = "transparent", colour = "transparent"),
-      legend.position = 'bottom'
+      legend.position = 'bottom',
+      plot.margin = unit(c(5, 1, 1, 1), "lines"),
+      axis.ticks.x = element_blank(),
+      axis.text.x = element_text(angle = 55, vjust = 0.5, hjust=0.5)
     ) +
     scale_colour_manual('Conservation Level',
                         breaks = c("Completely conserved (CC)",
@@ -124,11 +131,10 @@ plot_plot7<- function(data){
                       label.size=0, label.color="transparent"),
                   position = position_dodge(width=0.1), 
                   size=2.6, color="black", hjust=0, angle=90) + 
-    guides(color = guide_legend(override.aes = list(size = 2), nrow=2)) +
-    theme(plot.margin = unit(c(5, 1, 1, 1), "lines"),
-          axis.ticks.x = element_blank(),
-          axis.text.x = element_text(angle = 55, vjust = 0.5, hjust=0.5)) +
-    coord_cartesian(clip = "off") #allow ggtext outside of the plot
+    guides(color = guide_legend(override.aes = list(size = 2), nrow=2))+
+    coord_cartesian(clip = "off")+ #allow ggtext outside of the plot
+    ggtitle(unique(data$host))
+
 }
 
 #NOTE: modify this line of code below to determine number of host
@@ -150,7 +156,7 @@ if (host == 1){
 # #save plot as 600dpi image
 # #set the directory to save to
 # setwd("C:\\Users\\Desktop")
-# ggsave(filename="plot-Frequency-Distribution-Violin-Plots(Protein).jpg",width = 10, height = 7.5, unit="in",device='jpg', dpi=600)
+ ggsave(filename="plot-Frequency-Distribution-Violin-Plots(Protein).jpg",width = 10, height = 7.5, unit="in",device='jpg', dpi=600)
 
 
 

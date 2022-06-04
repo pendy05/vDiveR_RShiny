@@ -5,7 +5,7 @@ library(facetscales) #https://stackoverflow.com/a/54074323/13970350
 library(dplyr)
 
 #load data from csv file
-data<-read.csv("HCV_proteins.csv")
+data<-read.csv("../www/DiMA_HCV.csv")
 df <- data.frame(data) 
 #NOTE: user is required to set the protein order here
 #leave the protein order as default; follow the order in csv file
@@ -105,14 +105,14 @@ if (TRUE %in% df$lowSupport){
     geom_rect(inherit.aes = FALSE,
               aes(xmin=position, xmax=end, ymin=-Inf, ymax=+Inf), 
               fill='#FFECAF', alpha=ifelse(df$end == -1, 0, 0.5))+
-    geom_area(mapping = aes(x = position, y = entropy,color= "Nonamer Entropy", linetype="Nonamer Entropy"), show.legend=F)+
+    geom_area(mapping = aes(x = position, y = entropy,color= "k-mer Entropy", linetype="k-mer Entropy"), show.legend=F)+
     geom_hline(mapping = aes(yintercept=9.2, color = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)", linetype = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)"), size= 0.2)+
     geom_point(mapping = aes(x = position,y=lowSupportPos),col=ifelse(df$lowSupportPos==-0.5, 'black', ifelse(df$lowSupportPos==-0.3, 'white', 'white')), alpha=ifelse(df$lowSupportPos==-0.5, 1, ifelse(df$lowSupportPos==-0.3, 0,0)),pch=17)+
     geom_line(mapping = aes(x = position, y = totalVariants.incidence * maxy / 100, color = "Total Variants",linetype="Total Variants"), size= 0.3 )+ 
     geom_hline(mapping = aes( yintercept=98* maxy / 100, color = "Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)",linetype ="Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)"), size= 0.2)+ 
-    labs(y = "Nonamer entropy (bits)\n",x= "\nNonamer position (aa)",color = "#f7238a")+
+    labs(y = "k-mer entropy (bits)\n",x= "\nk-mer position (aa)",color = "#f7238a")+
     #how to second y-axis: https://whatalnk.github.io/r-tips/ggplot2-rbind.nb.html
-    scale_y_continuous(sec.axis = sec_axis(~ . * 100 / maxy , name = "Total variants (%)\n",breaks = c(0,25,50,75,100),labels=c("0","25","50","75","100")), 
+    scale_y_continuous(sec.axis = sec_axis(~ . * 100 / maxy , name = "Total variants (%)",breaks = c(0,25,50,75,100),labels=c("0","25","50","75","100")), 
                        breaks = seq(0.0, maxy, length.out = 5),labels= sprintf(seq(0.0, maxy, length.out = 5), fmt = "%.1f")) + 
     theme_classic() + 
     theme(
@@ -126,19 +126,19 @@ if (TRUE %in% df$lowSupport){
     scale_colour_manual("",
                         values = c("Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)"="#f7238a",
                                    "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)"="black",
-                                   "Nonamer Entropy" = "black",
+                                   "k-mer Entropy" = "black",
                                    "Total Variants"="#f7238a"), 
                         guide = guide_legend(override.aes=aes(fill=NA)))+
     scale_linetype_manual("",values=c("Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)"=5,
                                       "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)"=5,
-                                      "Nonamer Entropy" = 1,
+                                      "k-mer Entropy" = 1,
                                       "Total Variants"=1))
   
   #number of host
   if (host == 1){ #one host
     plot1 +facet_grid_sc(col=vars(df$size_f),scales = list(x = scales_x),space = "free",switch = "x")
   }else{ # multi host
-    plot1 +facet_grid_sc(rows = vars(df$Host),col=vars(df$size_f),scales = list(x = scales_x),space = "free",switch = "both")
+    plot1 +facet_grid_sc(rows = vars(df$host),col=vars(df$size_f),scales = list(x = scales_x),space = "free",switch = "both")
   }
   
 }else{
@@ -146,13 +146,13 @@ if (TRUE %in% df$lowSupport){
     geom_rect(inherit.aes = FALSE,
               aes(xmin=position, xmax=end, ymin=-Inf, ymax=+Inf), 
               fill='#FFECAF', alpha=ifelse(df$end == -1, 0, 0.5))+
-  geom_area(mapping = aes(x = position, y = entropy,color= "Nonamer Entropy", linetype="Nonamer Entropy"),show.legend = F)+
+  geom_area(mapping = aes(x = position, y = entropy,color= "k-mer Entropy", linetype="k-mer Entropy"),show.legend = F)+
     geom_hline(mapping = aes(yintercept=9.2, color = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)", linetype = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)"), size= 0.2)+
     geom_line(mapping = aes(x = position, y = totalVariants.incidence * maxy / 100, color = "Total Variants",linetype="Total Variants"), size= 0.3 )+ 
     geom_hline(mapping = aes( yintercept=98 * maxy /100, color = "Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)",linetype ="Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)"), size= 0.2)+ 
-    labs(y = "Nonamer entropy (bits)\n",x= "\nNonamer position (aa)",color = "#f7238a")+
+    labs(y = "k-mer entropy (bits)\n",x= "\nk-mer position (aa)",color = "#f7238a")+
     #how to second y-axis: https://whatalnk.github.io/r-tips/ggplot2-rbind.nb.html
-    scale_y_continuous(sec.axis = sec_axis(~ . * 100 / maxy , name = "Total variants (%)\n",breaks = c(0,25,50,75,100),labels=c("0","25","50","75","100")),
+    scale_y_continuous(sec.axis = sec_axis(~ . * 100 / maxy , name = "Total variants (%)",breaks = c(0,25,50,75,100),labels=c("0","25","50","75","100")),
                        breaks = seq(0.0, maxy, length.out = 5),labels= sprintf(seq(0.0, maxy, length.out = 5), fmt = "%.1f")) +
     theme_classic() +
     theme(
@@ -161,23 +161,23 @@ if (TRUE %in% df$lowSupport){
       axis.line.y.right = element_line(color = "#f7238a"),
       axis.ticks.y.right = element_line(color = "#f7238a"),
       axis.title.y.right =  element_text(color = "#f7238a"),
-      legend.position="bottom",
+      legend.position="bottom"
     )+
     scale_colour_manual("",
                         values = c("Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)"="#f7238a",
                                    "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)"="black",
-                                   "Nonamer Entropy" = "black",
+                                   "k-mer Entropy" = "black",
                                    "Total Variants"="#f7238a"), 
                         guide = guide_legend(override.aes=aes(fill=NA)))+
     scale_linetype_manual("",values=c("Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)"=5,
                                       "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)"=5,
-                                      "Nonamer Entropy" = 1,
+                                      "k-mer Entropy" = 1,
                                       "Total Variants"=1))
   #number of host
   if (host == 1){ #one host
     plot1 +facet_grid_sc(col=vars(df$size_f),scales = list(x = scales_x),space = "free",switch = "x")
   }else{ # multi host
-    plot1 +facet_grid_sc(rows = vars(df$Host),col=vars(df$size_f),scales = list(x = scales_x),space = "free",switch = "both")
+    plot1 +facet_grid_sc(rows = vars(df$host),col=vars(df$size_f),scales = list(x = scales_x),space = "free",switch = "both")
   }
 }
 

@@ -6,14 +6,14 @@ library(grid)
 library(dplyr)
 library("gridExtra")
 #read data
-data<-read.csv("HCV_proteins.csv")
+data<-read.csv("../www/DiMA_HCV.csv")
 
 #determine the protein order; leave it as it is if you would like to follow default order in csv file
 #NOTE: change this line of code below for protein order
 proteinOrder=""
 #modify the data structure
 plot4_data<-data.frame()
-group_names<-c("Index","Major","Minor","Unique","Total variants","Nonatypes")
+group_names<-c("Index","Major","Minor","Unique","Total variants","Distinct variants")
 #NOTE: modify this line of code below to determine number of host
 host<-1
 
@@ -23,7 +23,8 @@ plot4_5<-function(data){
     tmp<-data.frame(proteinName=data[1],position=data[2],incidence=data[i],total_variants=data[11],Group=group_names[i-6],Multiindex=data[13])
     names(tmp)[3]<-"Incidence"
     names(tmp)[4]<-"Total_Variants"
-    plot4_data<-rbind(plot4_data,tmp)}
+    plot4_data<-rbind(plot4_data,tmp)
+    }
   
   if (proteinOrder !=""){
     #order the proteins based on user input
@@ -39,14 +40,14 @@ plot4_5<-function(data){
   plot4<-ggplot()+geom_point(plot4_data,mapping=aes(x=Total_Variants,y=Incidence,color=Group),alpha=1/3,size=3)+
     scale_x_continuous(limits = c(0, 100), breaks = seq(0, 100, 20))+
     scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20))+
-    labs(y = "Incidence (%)",x= "Total variants (%)")+
+    labs(y = "Incidence (%)",x= NULL)+
     theme_classic(base_size = 8)+
     theme(
       legend.background = element_rect(fill = "transparent"),
       panel.border = element_rect(colour = "black", fill=NA, size=1),
       legend.position = "bottom"
     )+ guides(colour = guide_legend(override.aes = list(alpha = 1,size=2),keywidth = 1,keyheight = 1,nrow=1,byrow=TRUE))+
-    scale_colour_manual('',values = c("Index"="black","Total variants"="#f7238a", "Major"="#37AFAF","Minor"="#42aaff","Unique"="#af10f1","Nonatypes"="#c2c7cb" ))
+    scale_colour_manual('',values = c("Index"="black","Total variants"="#f7238a", "Major"="#37AFAF","Minor"="#42aaff","Unique"="#af10f1","Distinct variants"="#c2c7cb" ))
   plot4<-plot4+facet_grid(col=vars(plot4_data$proteinName))
   
   #host label
@@ -60,12 +61,12 @@ plot4_5<-function(data){
   major<-plot5_data[plot5_data$Group %in% c("Major"),]
   minor<-plot5_data[plot5_data$Group %in% c("Minor"),]
   unique<-plot5_data[plot5_data$Group %in% c("Unique"),]
-  nonatypes<-plot5_data[plot5_data$Group %in% c("Nonatypes"),]
-  variants_max_yaxis<-ceiling((max(major$Incidence,minor$Incidence,unique$Incidence)/10))*10
+  nonatypes<-plot5_data[plot5_data$Group %in% c("Distinct variants"),]
+  variants_max_yaxis<-ceiling((max(as.numeric(major$Incidence),as.numeric(minor$Incidence),as.numeric(unique$Incidence))/10))*10
   
   #plot 5
   plot5_index<-ggplot(index, aes(x=proteinName, y=Incidence))+
-    geom_violin(fill="black",trim = FALSE, color="black",alpha=0.9)+ylim(0,100)+ylab("Index nonamer (%)")+xlab("") +theme_bw() + 
+    geom_violin(fill="black",trim = FALSE, color="black",alpha=0.9)+ylim(0,100)+ylab("Index k-mer (%)")+xlab("") +theme_bw() + 
     geom_boxplot(outlier.shape = NA,width=0.05, color="white",alpha=0.15,fill="white")+ 
     theme_classic(base_size = 8)+
     theme(plot.margin = unit(c(0,0.1,0,0.1), "cm"),
@@ -108,7 +109,7 @@ plot4_5<-function(data){
           axis.text.y  = element_text(face="bold"))
   
   plot5_nonatypes<-ggplot(nonatypes, aes(x=proteinName, y=Incidence)) + 
-    geom_violin(fill="#c2c7cb",trim = FALSE, color="#c2c7cb")+ylim(0,100)+ylab("Nonatype (%)")+xlab("")+theme_bw()+ 
+    geom_violin(fill="#c2c7cb",trim = FALSE, color="#c2c7cb")+ylim(0,100)+ylab("Distinct variants (%)")+xlab("")+theme_bw()+ 
     geom_boxplot(outlier.shape = NA,width=0.05, color="black", alpha=0.15,fill="white") + 
     theme_classic(base_size = 8)+
     theme(plot.margin = unit(c(0,0.1,0,0.1), "cm"),

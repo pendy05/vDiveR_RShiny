@@ -1,5 +1,7 @@
 if (!require("tools")) install.packages("tools")       # Install tools package
+if (!require("gghalves")) install.packages("gghalves")
 library("tools")  
+library("gghalves")
 
 #################
 #  User Input   #  
@@ -28,7 +30,7 @@ plotting7<-function(proteindata,line_dot_size, wordsize,host,proteinOrder){
 
 
 #latest version for ggplot2
-plot_plot7conservation<- function(data,line_dot_size,wordsize,host,proteinOrder,conservationLabel){
+plot_conservationLevel<- function(data,line_dot_size,wordsize,host,proteinOrder,conservationLabel){
   #add word 'protein' in front of each protein name
   data$proteinName<-paste("Protein",data$proteinName)
   #create data for proteome bar "All" from existing data
@@ -71,15 +73,15 @@ plot_plot7conservation<- function(data,line_dot_size,wordsize,host,proteinOrder,
   #gather the protein label in multicolor
   plot7_data<-plot7_data%>%mutate(Label = case_when(
     plot7_data$ConservationLevel == "Completely conserved (CC)" ~ paste0(sprintf("<span style =
-    'color:#000000;'>CC: %.0f; %.1f %% </span>",plot7_data$Total, round(plot7_data$percent,1))),
+    'color:#000000;'>CC: %.0f (%.1f %%) </span>",plot7_data$Total, round(plot7_data$percent,1))),
     plot7_data$ConservationLevel == "Highly conserved (HC)" ~ paste0(sprintf("<span style =
-    'color:#0057d1;'>HC: %.0f; %.1f %% </span>",plot7_data$Total, round(plot7_data$percent,1))),
+    'color:#0057d1;'>HC: %.0f (%.1f %%) </span>",plot7_data$Total, round(plot7_data$percent,1))),
     plot7_data$ConservationLevel == "Mixed variable (MV)" ~ paste0(sprintf("<span style =
-    'color:#02d57f;'>MV: %.0f; %.1f %% </span>",plot7_data$Total, round(plot7_data$percent,1))),
+    'color:#02d57f;'>MV: %.0f (%.1f %%) </span>",plot7_data$Total, round(plot7_data$percent,1))),
     plot7_data$ConservationLevel == "Highly diverse (HD)" ~ paste0(sprintf("<span style =
-    'color:#A022FF;'>HD: %.0f; %.1f %% </span>",plot7_data$Total, round(plot7_data$percent,1))),
+    'color:#A022FF;'>HD: %.0f (%.1f %%) </span>",plot7_data$Total, round(plot7_data$percent,1))),
     plot7_data$ConservationLevel == "Extremely diverse (ED)" ~ paste0(sprintf("<span style =
-    'color:#ff617d;'>ED: %.0f; %.1f %% </span>",plot7_data$Total, round(plot7_data$percent,1))),
+    'color:#ff617d;'>ED: %.0f (%.1f %%) </span>",plot7_data$Total, round(plot7_data$percent,1))),
     
   ))
   #set conservation level in specific order (CC,HC,MV,HD,ED)
@@ -93,24 +95,40 @@ plot_plot7conservation<- function(data,line_dot_size,wordsize,host,proteinOrder,
   nProtein<-nrow(Proteinlabel)
 
     #plotting
-    plot7<-ggplot(data) +
-      geom_boxplot(aes(x=level,y=index.incidence),outlier.shape=NA,width=0.5)+ 
-      geom_jitter(aes(x=level,y=index.incidence,col=ConservationLevel),position = position_jitter(width = .15, height=-0.7),
-                  size=line_dot_size)+
-      labs(x=NULL,y="Index Incidence (%)\n",fill="Conservation level")+ #, title = unique(data$host)
-      scale_y_continuous(breaks = c(0,25,50,75,100),labels=c("0","25","50","75","100"),limits = c(0,110))+
+    plot7<- ggplot(data, aes(x=level,y=index.incidence))+
+    # gghalves
+    geom_half_boxplot(outlier.shape = NA) +
+    geom_half_point(aes(col = ConservationLevel), side = "r", 
+                    position = position_jitter(width = 0, height=-0.7), size=line_dot_size, alpha=0.6) +
+    ylim(0,105) +
+    labs(x=NULL, y="Index incidence (%)\n", fill="Conservation level")+
       theme_classic(base_size = wordsize)+
       theme(
         legend.key = element_rect(fill = "transparent", colour = "transparent"),
-        legend.position="bottom"
-      )+
-      scale_colour_manual('Conservation Level',breaks=c("Completely conserved (CC)","Highly conserved (HC)","Mixed variable (MV)","Highly diverse (HD)","Extremely diverse (ED)"),
-                          values = c("Completely conserved (CC)"="black","Highly conserved (HC)"="#0057d1","Mixed variable (MV)"="#02d57f","Highly diverse (HD)"="#8722ff", "Extremely diverse (ED)"="#ff617d")) +  
-      geom_richtext(data = Proteinlabel, aes(x=proteinName,label = Label, y=c(rep(105,nProtein)), label.size=0, label.color="transparent"),
-                    position = position_dodge(width=0.1),size=((wordsize/2)-2),color="black", fill="white",hjust=0,angle=90) + 
-      guides(color = guide_legend(override.aes = list(size = 2),nrow=2))+
-      theme(plot.margin = unit(c(5, 1, 1, 1), "lines"),axis.text.x = element_text(angle = 55, vjust = 0.5, hjust=0.5)) +
-      coord_cartesian(clip = "off") #allow ggtext outside of the plot
+        legend.position = 'bottom',
+      plot.margin = unit(c(5, 1, 1, 1), "lines"),
+      axis.ticks.x = element_blank(),
+      axis.text.x = element_text(angle = 55, vjust = 0.5, hjust=0.5)
+    )+
+      scale_colour_manual('Conservation Level',
+                        breaks = c("Completely conserved (CC)",
+                                   "Highly conserved (HC)",
+                                   "Mixed variable (MV)",
+                                   "Highly diverse (HD)",
+                                   "Extremely diverse (ED)"),
+                        values = c("Completely conserved (CC)"="black",
+                                   "Highly conserved (HC)"="#0057d1",
+                                   "Mixed variable (MV)"="#02d57f",
+                                   "Highly diverse (HD)"="#8722ff", 
+                                   "Extremely diverse (ED)"="#ff617d")) +  
+    geom_richtext(data = Proteinlabel, 
+                  aes(x=proteinName,label = Label, y=c(rep(105,nProtein)),
+                      label.size=0, label.color="transparent"),
+                  position = position_dodge(width=0.1), 
+                  size=((wordsize/2)-2), color="black", hjust=0, angle=90) + 
+    guides(color = guide_legend(override.aes = list(size = 2), nrow=2))+
+    coord_cartesian(clip = "off")+
+    ggtitle(unique(data$host))
     plot7
 }
 
@@ -188,24 +206,28 @@ plot_plot7sample<- function(data,line_dot_size,wordsize,host,proteinOrder,conser
   nProtein<-nrow(Proteinlabel)
   
   #plotting
-  plot7<-ggplot(data) +
-    geom_boxplot(aes(x=level,y=index.incidence),outlier.shape=NA,width=0.5)+ 
-    geom_jitter(aes(x=level,y=index.incidence,col=ConservationLevel),position = position_jitter(width = .15, height=-0.7),
-                size=line_dot_size)+
-    labs(x=NULL,y="Index Incidence (%)\n",fill="Conservation level")+ #, title = unique(data$host)
-    scale_y_continuous(breaks = c(0,25,50,75,100),labels=c("0","25","50","75","100"),limits = c(0,110))+
+  plot7<- ggplot(data, aes(x=level,y=index.incidence))+
+    # gghalves
+    geom_half_boxplot(outlier.shape = NA) +
+    geom_half_point(aes(col = ConservationLevel), side = "r", 
+                    position = position_jitter(width = 0, height=-0.7), alpha=0.6) +
+    ylim(0,105) +
+    labs(x=NULL, y="Index incidence (%)\n", fill="Conservation level")+
     theme_classic(base_size = wordsize)+
     theme(
       legend.key = element_rect(fill = "transparent", colour = "transparent"),
-      legend.position="bottom"
+      legend.position = 'bottom',
+      plot.margin = unit(c(5, 1, 1, 1), "lines"),
+      axis.ticks.x = element_blank(),
+      axis.text.x = element_text(angle = 55, vjust = 0.5, hjust=0.5)
     )+
-    scale_colour_manual('Conservation Level',breaks=c("Completely conserved (CC)","Highly conserved (HC)","Mixed variable (MV)","Highly diverse (HD)","Extremely diverse (ED)"),
+    scale_colour_manual('Conservation Level',breaks = c("Completely conserved (CC)","Highly conserved (HC)","Mixed variable (MV)","Highly diverse (HD)","Extremely diverse (ED)"),
                         values = c("Completely conserved (CC)"="black","Highly conserved (HC)"="#0057d1","Mixed variable (MV)"="#02d57f","Highly diverse (HD)"="#8722ff", "Extremely diverse (ED)"="#ff617d")) +  
     geom_richtext(data = Proteinlabel, aes(x=proteinName,label = Label, y=c(rep(105,nProtein)), label.size=0, label.color="transparent"),
-                  position = position_dodge(width=0.1),size=((wordsize/2)-2),color="black", fill="white",hjust=0,angle=90) + 
+                  position = position_dodge(width=0.1),size=2.6, color="black", hjust=0, angle=90) + 
     guides(color = guide_legend(override.aes = list(size = 2),nrow=2))+
-    theme(plot.margin = unit(c(5, 1, 1, 1), "lines"),axis.text.x = element_text(angle = 55, vjust = 0.5, hjust=0.5)) +
-    coord_cartesian(clip = "off") #allow ggtext outside of the plot
+    coord_cartesian(clip = "off")+ #allow ggtext outside of the plot
+    ggtitle(unique(data$host))
   plot7
 }
 
