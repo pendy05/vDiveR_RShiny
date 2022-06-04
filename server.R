@@ -161,6 +161,7 @@ server <- function(input, output,session) {
   #----------------------------------------------------#
   observeEvent(input$submitDiMA,ignoreInit=TRUE,{
     req(input$MSAfile)
+    shinyjs::addClass(id = "submitAnimate", class = "loading dots")
     
     print("submitDiMA!")
     #proceed if the input csv file is provided
@@ -281,7 +282,7 @@ server <- function(input, output,session) {
         
         #system(paste("python_env/Scripts/dima-cli.exe -i", filepath[i], "-o",paste0(temp_directory, "/",outfile),"-s",input$supportLimit, "-p",proteinName[[i]][1], "-l",input$kmerlength))
         #system2(command="./python_env/Scripts/dima-cli.exe",args = c("-i",filepath[i],"-o",paste0(temp_directory, "/",outfile),"-s",input$supportLimit, "-p",proteinName[[i]][1], "-l",input$kmerlength))
-
+        
         #append "\n" to the end of file to solve the issue of 'incomplete final line'
         #https://stackoverflow.com/questions/5990654/incomplete-final-line-warning-when-trying-to-read-a-csv-file-into-r
         write("\r\n", file = outfile, append = TRUE, sep = "\n")
@@ -400,7 +401,7 @@ server <- function(input, output,session) {
       mylist$files <- list.files(temp_directory,"*.*")
       #print("mylist$files: ",mylist$files)
       
-
+      
       
     }else if (input$filetype == 2){ #if the data is DiMA json output
       csvfilelist<-c()
@@ -409,7 +410,7 @@ server <- function(input, output,session) {
         #print(i)
         print("input file type 2")
         print(input$MSAfile$name[i])
-
+        
         #----------------------NOTE (2/5/2022)-------------------#
         #"OUTFILE" SHOULD directly be the name of the input files user provided
         #"proteinName" are needed?
@@ -508,7 +509,7 @@ server <- function(input, output,session) {
       h5("DiMA Output is ready! Click on other tabs to visualize the diversity dynamics of viral sequences!", style = "color:green") 
     })
     shinyjs::enable(id="downloadDiMA")
-
+    
     df<-data
     
     print("determine host number")
@@ -821,7 +822,7 @@ server <- function(input, output,session) {
       content = function(file) {
         ggsave(file, plot = plot7(),  width=input$width7, height=input$height7, unit="in", device = "jpg", dpi=input$dpi7)
       })
-
+    
     
     
     output$downloadDiMA <- downloadHandler(
@@ -829,7 +830,7 @@ server <- function(input, output,session) {
         paste("DiMA_output_", Sys.Date(), ".zip", sep = "")
       },
       content = function(file){
-
+        
         zip::zip(zipfile = file, 
                  files = dir(temp_directory),
                  root = temp_directory)
@@ -837,8 +838,8 @@ server <- function(input, output,session) {
       
       contentType = "application/zip"
     )
+    shinyjs::removeClass(id = "submitAnimate", class = "loading dots")
     
-
   })
   output$plot3_hosts<-renderUI({
     if (input$host==1){
@@ -906,10 +907,10 @@ server <- function(input, output,session) {
       paste("DiMA_sample_output_", Sys.Date(), ".zip", sep = "")
     },
     content = function(file) { 
-    #   write.csv(CSV_dataset, file)
-    #   write.fasta(sequences = MSA_dataset, names = names(MSA_dataset))
-    #   write(JSON_dataset)
-    # }
+      #   write.csv(CSV_dataset, file)
+      #   write.fasta(sequences = MSA_dataset, names = names(MSA_dataset))
+      #   write(JSON_dataset)
+      # }
       print('donwloading')
       #To create temporary directory
       temp_directory_sample <- file.path(tempdir(), as.integer(Sys.time()))
@@ -938,7 +939,7 @@ server <- function(input, output,session) {
     },
     
     contentType = "application/zip"
-    )
+  )
   
   #wait for user's input
   observeEvent(input$submit,ignoreInit=TRUE,{
@@ -1251,6 +1252,7 @@ server <- function(input, output,session) {
   
   
   observeEvent(input$samplesubmit,ignoreInit=TRUE,{
+    shinyjs::addClass(id = "UpdateAnimate", class = "loading dots")
     data<-read.csv("www/DiMA_HCV.csv")
     df <- data.frame(data)
     
@@ -1350,7 +1352,7 @@ server <- function(input, output,session) {
     print(outputTable)
     #rename table df
     names(outputTable)<- c("Protein Name","Position (Minimum Entropy)","Minimum Entropy (%)","Maximum Entropy (%)","Minimum Total Variants (%)","Maximum Total Variants (%)")
-
+    
     
     output$table <- renderTable(
       outputTable,
@@ -1600,7 +1602,7 @@ server <- function(input, output,session) {
       content = function(file) {
         ggsave(file, plot = plot7(),  width=input$width7, height=input$height7, unit="in", device = "jpg", dpi=input$dpi7)
       })
-    
+    shinyjs::removeClass(id = "UpdateAnimate", class = "loading dots")
   })
   
 }

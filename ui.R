@@ -3,6 +3,7 @@ library(shinydashboard)
 library(shinydashboardPlus)
 library(DT) #https://stackoverflow.com/questions/32149487/controlling-table-width-in-shiny-datatableoutput
 library(shinyjs)
+library(shinycssloaders)
 
 #https://stackoverflow.com/questions/31703241/activate-tabpanel-from-another-tabpanel
 css <- "
@@ -161,7 +162,7 @@ sideBar<-dashboardSidebar(
     # Horizontal line ----
     tags$hr(),
     div(style="display:inline-block;",actionButton("start","Start")),
-    div(style="display:inline-block",actionButton("samplesubmit","Load Sample Dataset", onclick="www/HCV_protein.csv")),
+    div(style="display:inline-block",actionButton("samplesubmit","Load Sample Dataset",icon("samplesubmit", id="UpdateAnimate", class=""), onclick="www/HCV_protein.csv")),
     tags$br(),
     div(style="display:inline-block; margin: 6px 5px 6px 15px;color: #000000;",downloadButton("downloadData", "Download Sample",style="color: #000000")),
     div(style="display:inline-block",actionButton("reset1","Clear"))
@@ -179,6 +180,36 @@ body<-## Body content
         $("header").find("nav").append(\'<span class="myClass"> DiveR: Diversity dynamics Visualization in R </span>\');
       })
      ')),
+    tags$head(tags$style(type="text/css", '
+            .loading {
+                display: inline-block;
+                overflow: hidden;
+                height: 1.3em;
+                margin-top: -0.3em;
+                line-height: 1.5em;
+                vertical-align: text-bottom;
+                box-sizing: border-box;
+            }
+            .loading.dots::after {
+                text-rendering: geometricPrecision;
+                content: "⠋\\A⠙\\A⠹\\A⠸\\A⠼\\A⠴\\A⠦\\A⠧\\A⠇\\A⠏";
+                animation: spin10 1s steps(10) infinite;
+                animation-duration: 1s;
+                animation-timing-function: steps(10);
+                animation-delay: 0s;
+                animation-iteration-count: infinite;
+                animation-direction: normal;
+                animation-fill-mode: none;
+                animation-play-state: running;
+                animation-name: spin10;
+            }
+            .loading::after {
+                display: inline-table;
+                white-space: pre;
+                text-align: left;
+            }
+            @keyframes spin10 { to { transform: translateY(-15.0em); } }
+            ')),
     tags$script("document.getElementsByClassName('sidebar-toggle')[0].style.visibility = 'hidden';"),
     tabItems(
       
@@ -204,9 +235,9 @@ body<-## Body content
                         (ii) Major: the predominant sequence(s) amongst the variants <br>\
                         (iii) Minor: distinct sequences with frequency lesser than the major variant, but occur more than once <br>\ 
                              (iv) Unique: distinct sequences that occur only once <br>")), 
-                        #tags$li(""), 
-                        #tags$li(""),
-                        #tags$li("")
+                      #tags$li(""), 
+                      #tags$li(""),
+                      #tags$li("")
                       
                       tags$li("Total variants: sequences that are variant to the index; comprises the major variant, minor variants and unique variants"), 
                       tags$li(HTML("distinct variant incidence: incidence of the distinct <i>k</i>-mer variant"))
@@ -216,56 +247,56 @@ body<-## Body content
       tabItem(tabName = "inputdata_description",
               fluidRow(box(title = "Input Data", width =12,status = "primary", solidHeader = TRUE,
                            sidebarLayout(position = 'right',
-                           sidebarPanel(width=3 ,
-                             numericInput(inputId = "supportLimit", label = "Minimum Support Threshold", value = 30, min = 0, step =1),
-                             numericInput(inputId = "kmerlength", label = HTML("<i>k</i>-mer length"), value = 9, min = 0, step =1)
-                           ,
-                           splitLayout(
-                             radioButtons(inputId="filetype", label = HTML("Aligned Sequence / DiMA Output File Format  <span style='color:red'>*</span>"),
-                                          choices = list("FASTA (.fasta/.fas/.fa/.faa/.fnn/.fna)" = 1, "DiMA (.json)" = 2, "DiMA (.csv)"=3), 
-                                          selected = 1)
-                           )),
-                           mainPanel(width=9,
-                                     tabsetPanel(id="hostSelection_input",
-                                                 
-                                                 tabPanel("Description",tags$br(),
-                                                          HTML('DiveR requires either aligned sequence file(s) or DiMA output file(s) as input file(s), \
+                                         sidebarPanel(width=3 ,
+                                                      numericInput(inputId = "supportLimit", label = "Minimum Support Threshold", value = 30, min = 0, step =1),
+                                                      numericInput(inputId = "kmerlength", label = HTML("<i>k</i>-mer length"), value = 9, min = 0, step =1)
+                                                      ,
+                                                      splitLayout(
+                                                        radioButtons(inputId="filetype", label = HTML("Aligned Sequence / DiMA Output File Format  <span style='color:red'>*</span>"),
+                                                                     choices = list("FASTA (.fasta/.fas/.fa/.faa/.fnn/.fna)" = 1, "DiMA (.json)" = 2, "DiMA (.csv)"=3), 
+                                                                     selected = 1)
+                                                      )),
+                                         mainPanel(width=9,
+                                                   tabsetPanel(id="hostSelection_input",
+                                                               
+                                                               tabPanel("Description",tags$br(),
+                                                                        HTML('DiveR requires either aligned sequence file(s) or DiMA output file(s) as input file(s), \
                                                                where DiveR will convert and concatenate them (the inputs) into a single CSV file. This CSV file will act as the source for subsequent data visualisation. \
                                                                Each file is treated as one viral protein. Currently, DiveR accepts FASTA or JSON/CSV \
                                                                files generated using multiple sequence alignment (MSA) tools and DiMA, respectively. <br><br>\
                                                                Parameters such as host number selection (one or two hosts), <i>k</i>-mer size, support threshold, host name, and protein name are defined by the user. So, <b>please assign files of same host under one tab</b>. Users can also manipulate additional plotting parameters: \
                                                                order of protein name, font, line, and dot size.'),
-                                                          tags$br(),tags$br(),
-                                                          radioButtons(inputId="host", label = HTML("Number of host"),
-                                                                       choices = list("One Host" = 1, "Two Host" = 2),# "Triple host"=3), 
-                                                                       selected = 1)
-                                                          ),
-                                                 tabPanel("First Host",tags$br(),fileInput(inputId = "MSAfile",label = HTML("Aligned Sequences / DiMA Output File(s)"), accept = c(".fa",".faa",".fasta",".fas",".json",".JSON",".csv"), placeholder = "alignedNS1.fa,alignedCore.fa", multiple = TRUE),
-                                          uiOutput("infilename"),tags$br(),
-                                          splitLayout(
-                                            #Protein Names in Order
-                                            textInput(inputId = "proteinNames", label=HTML("Protein Name(s) in Ascending Order <span style='color:red'>*</span>"), placeholder="Core, NS3"),
-                                            textInput(inputId = "hostname", label=HTML("Host Name <span style='color:red'>*</span>"), placeholder="Human")
-                                          ),),
-                                          tabPanel("Second Host",tags$br(),fileInput(inputId = "MSAfile_secondHost",label = HTML("Aligned Sequences / DiMA Output File(s)"), accept = c(".fa",".faa",".fasta",".fas",".json",".csv"), placeholder = "alignedNS1.fa,alignedCore.fa", multiple = TRUE),
-                                                   uiOutput("infilename_secondHost"),tags$br(),
-                                      splitLayout(
-                                        #Protein Names in Order
-                                        textInput(inputId = "proteinNames_secondHost", label=HTML("Protein Name(s) in Ascending Order <span style='color:red'>*</span>"), placeholder="Core, NS3"),
-                                        textInput(inputId = "hostname_secondHost", label=HTML("Host Name <span style='color:red'>*</span>"), placeholder="Bat")
-                                      ))
-                           ))
+                                                                        tags$br(),tags$br(),
+                                                                        radioButtons(inputId="host", label = HTML("Number of host"),
+                                                                                     choices = list("One Host" = 1, "Two Host" = 2),# "Triple host"=3), 
+                                                                                     selected = 1)
+                                                               ),
+                                                               tabPanel("First Host",tags$br(),fileInput(inputId = "MSAfile",label = HTML("Aligned Sequences / DiMA Output File(s)"), accept = c(".fa",".faa",".fasta",".fas",".json",".JSON",".csv"), placeholder = "alignedNS1.fa,alignedCore.fa", multiple = TRUE),
+                                                                        uiOutput("infilename"),tags$br(),
+                                                                        splitLayout(
+                                                                          #Protein Names in Order
+                                                                          textInput(inputId = "proteinNames", label=HTML("Protein Name(s) in Ascending Order <span style='color:red'>*</span>"), placeholder="Core, NS3"),
+                                                                          textInput(inputId = "hostname", label=HTML("Host Name <span style='color:red'>*</span>"), placeholder="Human")
+                                                                        ),),
+                                                               tabPanel("Second Host",tags$br(),fileInput(inputId = "MSAfile_secondHost",label = HTML("Aligned Sequences / DiMA Output File(s)"), accept = c(".fa",".faa",".fasta",".fas",".json",".csv"), placeholder = "alignedNS1.fa,alignedCore.fa", multiple = TRUE),
+                                                                        uiOutput("infilename_secondHost"),tags$br(),
+                                                                        splitLayout(
+                                                                          #Protein Names in Order
+                                                                          textInput(inputId = "proteinNames_secondHost", label=HTML("Protein Name(s) in Ascending Order <span style='color:red'>*</span>"), placeholder="Core, NS3"),
+                                                                          textInput(inputId = "hostname_secondHost", label=HTML("Host Name <span style='color:red'>*</span>"), placeholder="Bat")
+                                                                        ))
+                                                   ))
                            ),
-
-                          # Horizontal line ----
-                          tags$br(),
+                           
+                           # Horizontal line ----
+                           tags$br(),
                            tags$hr(style="border-width: 1px;border-color:#265071;margin: 0em 0.1em 1.5em 0.1em;"),
                            #Alert results are ready
                            uiOutput("alert"),
-                           div(style="display:inline-block",actionButton("submitDiMA","Submit")),
+                           div(style="display:inline-block",actionButton("submitDiMA","Submit",icon("submitDiMA", id="submitAnimate", class=""))),
                            div(style="display:inline-block",downloadButton("downloadDiMA","Download")),
-                          div(style="display:inline-block",actionButton("reset","Clear")),
-                          tags$br()
+                           div(style="display:inline-block",actionButton("reset","Clear")),
+                           tags$br()
               )),
               fluidRow(box(title = "DiMA JSON-Converted CSV Output Format", width =12,status = "primary", solidHeader = TRUE,
                            div(img(src='inputFileformat.JPG' ,width="100%", height='auto'), style="text-align: center;"),
@@ -312,7 +343,7 @@ body<-## Body content
               #             column(12, align="center", dataTableOutput("table", width="100%"))
               #)
               
-            #  )
+              #  )
       ),
       
       # Second tab content
@@ -422,7 +453,7 @@ body<-## Body content
 ui <- dashboardPage(
   dashboardHeader(title = NULL, tags$li(class="dropdown",tags$a(href='https://github.com/pendy05/DiveR',
                                                                 tags$img(src='GitHub-lightLogo.png',height = "18px")
-                                                                ))),
+  ))),
   sideBar,
   body,
   footer = dashboardFooter(
