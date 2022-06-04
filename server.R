@@ -22,6 +22,7 @@ library(glue)
 #Sys.setenv(RETICULATE_PYTHON = "python_env/Scripts/python.exe")
 #reticulate::use_virtualenv("./python_env", required = TRUE)
 
+#uncomment codes from line 26 to 28 if you would like to run DiveR locally (prerequiste: a Python virtual environment is needed; refer README for more instructions)
 virtualenv_create(envname = "python_env", python= "python3")
 virtualenv_install("python_env", packages = c('pandas','numpy','dima-cli==3.2.1'))
 reticulate::use_virtualenv("python_env", required = TRUE)
