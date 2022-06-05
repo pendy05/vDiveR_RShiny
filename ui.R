@@ -165,7 +165,9 @@ sideBar<-dashboardSidebar(
     div(style="display:inline-block",actionButton("samplesubmit","Load Sample Dataset",icon("samplesubmit", id="UpdateAnimate", class=""), onclick="www/HCV_protein.csv")),
     tags$br(),
     div(style="display:inline-block; margin: 6px 5px 6px 15px;color: #000000;",downloadButton("downloadData", "Download Sample",style="color: #000000")),
-    div(style="display:inline-block",actionButton("reset1","Clear"))
+    div(style="display:inline-block",actionButton("reset1","Clear")),
+    #Alert results are ready
+    div(style="margin: 6px 5px 6px 15px;",uiOutput("alertSample"))
   )
 )
 
@@ -175,6 +177,7 @@ body<-## Body content
     shinyjs::useShinyjs(),
     shinyjs::extendShinyjs(text = jscode, functions = c("disableTab","enableTab")),
     shinyjs::inlineCSS(css),
+    tags$title("DiveR"),
     tags$script(HTML('
       $(document).ready(function() {
         $("header").find("nav").append(\'<span class="myClass"> DiveR: Diversity dynamics Visualization in R </span>\');
@@ -450,7 +453,7 @@ body<-## Body content
 
 
 #client side
-ui <- dashboardPage(
+ui <- dashboardPage(title = "DiveR",
   dashboardHeader(title = NULL, tags$li(class="dropdown",tags$a(href='https://github.com/pendy05/DiveR',
                                                                 tags$img(src='GitHub-lightLogo.png',height = "18px")
   ))),
