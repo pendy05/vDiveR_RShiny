@@ -61,6 +61,7 @@ server <- function(input, output,session) {
     
     #clear output
     output$alert <- renderUI({})
+    output$alertSample <- renderUI({})
     output$plot1<- renderPlot({})
     output$plot2<- renderPlot({})
     output$plot3<- renderPlot({})
@@ -92,6 +93,7 @@ server <- function(input, output,session) {
     
     #clear output
     output$alert <- renderUI({})
+    output$alertSample <- renderUI({})
     output$plot1<- renderPlot({})
     output$plot2<- renderPlot({})
     output$plot3<- renderPlot({})
@@ -1602,6 +1604,10 @@ server <- function(input, output,session) {
         ggsave(file, plot = plot7(),  width=input$width7, height=input$height7, unit="in", device = "jpg", dpi=input$dpi7)
       })
     shinyjs::removeClass(id = "UpdateAnimate", class = "loading dots")
+    #Alert results are ready
+    output$alertSample <- renderUI({
+      h5("Click on other tabs for sample run visualization!", style = "color:white")
+    })
   })
   
 }
