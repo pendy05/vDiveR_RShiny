@@ -104,7 +104,7 @@ csv_df <- bind_rows(
           data.frame(matrix(data = TRUE,
                             nrow = 1, ncol = kmer,
                             dimnames = list(row["indexPeptide"],
-                                            seq(start_pos, start_pos + 8=kmer - 1))))
+                                            seq(start_pos, start_pos + kmer - 1))))
         })
         
       ) %>% 
