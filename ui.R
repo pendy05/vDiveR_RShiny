@@ -4,6 +4,7 @@ library(shinydashboardPlus)
 library(DT) #https://stackoverflow.com/questions/32149487/controlling-table-width-in-shiny-datatableoutput
 library(shinyjs)
 library(shinycssloaders)
+shinyThings::radioSwitchButtons_default_style(selected_background = "#265071")  #00589a
 
 #https://stackoverflow.com/questions/31703241/activate-tabpanel-from-another-tabpanel
 css <- "
@@ -424,7 +425,16 @@ body<-## Body content
                     conserved (black) (index incidence = 100%), highly conserved (blue) \
                     (90% <= index incidence < 100%), mixed variable (green) (20% <= index incidence < 90%),\
                     highly diverse (purple) (10% <= index incidence < 20%) and extremely diverse (pink) \
-                    (index incidence < 10%).")))
+                    (index incidence < 10%)."))),
+              
+              fluidRow(box(width=10, height=15, style = "overflow-y: scroll;",
+                           title="HCS/CCS Sequencies", status = "primary", solidHeader = TRUE, collapsible = TRUE,
+                           column(6, div(shinyThings::radioSwitchButtons("conserv_lvl", choices = c("CCS", "HCS"), selected = "HCS"),
+                                         style="float:left;margin-bottom: 10px; margin-top: 7px;")),
+                           column(6, div(shinyThings::radioSwitchButtons("table_type", choices = c("csv", "fasta"), selected = "csv"),
+                                         style="float:right;margin-bottom: 10px; margin-top: 7px;")),
+                           DT::dataTableOutput("plot7_seqs"),
+                           downloadButton('conservSeq_download')))
       ),
       tabItem(tabName = "helppage",
               h2("Help Page"),
