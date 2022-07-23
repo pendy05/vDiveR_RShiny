@@ -1,4 +1,3 @@
-library(ggpubr)
 plot_plot3<- function(data,line_dot_size,wordsize,host){
   
   #modify data structure

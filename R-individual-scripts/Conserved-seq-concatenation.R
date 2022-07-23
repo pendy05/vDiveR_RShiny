@@ -34,7 +34,7 @@ for (lib in libs) {
 
 
 # read csv file
-hcv_proteins <- read.csv(opt$input)
+proteins <- read.csv(opt$input)
 
 # HCS or CCS conservation level
 conservation <- opt$conservation
@@ -43,7 +43,7 @@ threshold <- ifelse(conservation == "CCS", 100, 90)
 
 
 # filter whole dataset by index.incidence (HCS/CCS)
-df <- hcv_proteins %>% 
+df <- proteins %>% 
   filter(index.incidence >= threshold)
 
 # stop if no peptides were found
@@ -58,17 +58,17 @@ kmer <- opt$kmer
 # ---- 1. Protein Sequences ----
 
 # remember whole sequence of the protein
-proteins_seq <- hcv_proteins %>% 
+proteins_seq <- proteins %>% 
   select(proteinName, indexSequence) %>% 
   group_by(proteinName) %>% 
   summarise(seq = paste0(str_sub(indexSequence, 1, 1), collapse = "")) %>% 
   spread(key = proteinName, value = seq)
 
 # add missing last amino acids
-for (protein in unique(hcv_proteins$proteinName)) {
+for (protein in unique(proteins$proteinName)) {
   proteins_seq[[protein]] <- 
     paste0(proteins_seq[[protein]], 
-           hcv_proteins %>% 
+           proteins %>% 
            filter(proteinName == protein) %>% 
              select(indexSequence) %>% 
              slice(n()) %>% 

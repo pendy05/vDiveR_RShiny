@@ -1,44 +1,19 @@
 ###################################
-# Date: 29/05/2022                
+# Last Update: 23/07/2022                
 # Convert DiMA JSON to CSV file   
 # for input option 2 where user directly provide a JSON file      
 # a separate json2csv() function is needed as the original json2csv() function directly rename the output csv file based on the json filepath       
-# and this is not applicable in this case as the filepath provided via server will be in hex code (? not sure what is this called but not human readable)
+# and this is not applicable in this case as the filepath provided via server will be in hex code (? not human readable)
 # so we include another argument here which is the file name
 ###################################
 
-#to extract:
-#results - low_support, entropy, distinct_variants_incidence
-#variants - position, count
-
-# require data transformation
-# indexPeptide - extract peptide with Index label
-# multiIndex -  TRUE / FALSE
-# host - user defined
-
-#install library
-#install.packages("RJSONIO")
-library(RJSONIO)
-library(dplyr)
-library(tidyr)
-library(plyr)
-library(mlr3misc)
-library(stringr)
-#user-defined value: host
-#host<-"human"
-
-#infile<-"C:\\Users\\pendy\\Downloads\\DiMA_output_2022-05-20 (1)\\ns1_n_1.json"
-#infile<-"C:\\desktop\\Research_BVU\\protocol\\Rshiny\\DiveR_myVersion_workingOnDIMA\\www\\NS3_9mer.json"
-#host<-'human'
-#json2csvinR(infile, "human")
-#write("\r\n", file = infile, append = TRUE, sep = "\n")
 direct_json2csvinR <-function(infile, host, proteinName, outfilename){
   #read JSON file
   con <- file(infile)
   jsonfile <- readLines(con)
   close(con)
   json_data <- jsonlite::fromJSON(paste(jsonfile, collapse = "\n"))
-  #print(json_data)
+
   data_flatten <- as.data.frame(json_data) %>% 
     tidyr::unnest()
   # data transformation  
@@ -71,18 +46,16 @@ direct_json2csvinR <-function(infile, host, proteinName, outfilename){
   index_data$results.low_support[is.na(index_data$results.low_support)] <- FALSE 
   
   #combine both the index and variant motif information to motifs
-  motifs<-right_join(motifs_incidence,index_data[c("sample_name","results.support","results.low_support","results.entropy","results.distinct_variants_incidence","results.position","results.total_variance","sequence")],by='results.position')%>%
-    distinct()
+  motifs<-right_join(motifs_incidence,index_data[c('query_name',"results.support","results.low_support","results.entropy","results.distinct_variants_incidence","results.position","results.total_variants_incidence","sequence",'highest_entropy.position','highest_entropy.entropy','average_entropy')],by='results.position')%>%
+      distinct()
   
   #assign host
   motifs['host'] <- host
   
   #rename columns
-  colnames(motifs)<-c('position','index.incidence','major.incidence','minor.incidence','unique.incidence','multiIndex','proteinName','count','lowSupport','entropy','distinctVariant.incidence','totalVariants.incidence','indexSequence','host')
+  colnames(motifs)<-c('position','index.incidence','major.incidence','minor.incidence','unique.incidence','multiIndex','proteinName','count','lowSupport','entropy','distinctVariant.incidence','totalVariants.incidence','indexSequence','highestEntropy.position','highestEntropy','averageEntropy','host')
   #reorder the columns
-  motifs<-motifs[,c(7,1,8,9,10,13,2,3,4,5,12,11,6,14)]
-  #assign protein name
-  motifs['proteinName']<-proteinName
+  motifs<-motifs[,c(7,1,8,9,10,13,2,3,4,5,12,11,6,17,14,15,16)]
   
   #write to csv file
   write.table(motifs, sep=",", row.names = FALSE , file = outfilename)
