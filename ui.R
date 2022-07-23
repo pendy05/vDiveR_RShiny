@@ -351,9 +351,8 @@ body<-## Body content
                                 the minimum entropy value is zero while the maximum entropy value at y-axis is 100."))),
               fluidRow(box(width=10,title="Entropy Table", status = "primary", solidHeader = TRUE,
               p(style="text-align: right;","*values rounded to 2 decimal places"),
-              column(12, align="center", dataTableOutput("table", width="100%"))
+              column(12, align="center", dataTableOutput("entropyTable", width="100%"))
               )
-              
               )
       ),
       

@@ -25,14 +25,8 @@ library(jsonlite)
 library(reticulate)
 library(glue)
 library(shinyThings) # devtools::install_github("gadenbuie/shinyThings")
-#py_run_string("from dima import Dima")
-#Sys.setenv(RETICULATE_PYTHON = "python_env/Scripts/python.exe")
-#reticulate::use_virtualenv("./python_env", required = TRUE)
 
-# #uncomment codes from line 26 to 28 if you would like to run DiveR locally (prerequiste: a Python virtual environment is needed; refer README for more instructions)
-# virtualenv_create(envname = "python_env", python= "python3")
-# virtualenv_install("python_env", packages = c('pandas','numpy','dima-cli==4.1.1'))
-#reticulate::use_virtualenv("python_env", required = TRUE)
+reticulate::use_virtualenv("python_env", required = TRUE)
 
 #server side
 server <- function(input, output,session) {
@@ -331,10 +325,8 @@ server <- function(input, output,session) {
         
         #reading each file within the range and append them to create one file
         for (f in csvfilelist_secondHost[-1]){
-          #print("f: ",f)
           df <- read.csv(f)      # read the file
           #Saving the following DiMA csv output file in the filepath array in the temp zipped folder
-          #write.csv(data, file = paste0(session$token, "/", f, sep=""))
           data_secondHost <- rbind(data_secondHost, df)    # append the current file
         }
         
@@ -342,28 +334,20 @@ server <- function(input, output,session) {
       }
       
       #write to a final csv file "DiMAoutput.csv", consists of all the submitted proteins in the temp zipped folder
-      #write.table(data, sep=",", row.names = FALSE , file = paste0(session$token,"/DiMA.csv"))
       write.table(data, sep=",", row.names = FALSE , file = paste0(temp_directory,"/DiMA.csv"))
       
       #Store all the path of the files in the directory in the reactive value
       mylist$files <- list.files(temp_directory,"*.*")
-      #print("mylist$files: ",mylist$files)
-      
-      
       
     }else if (input$filetype == 2){ #if the data is DiMA json output
       csvfilelist<-c()
       #convert DiMA output from JSON to CSV
       for (i in 1:length(filepath)){
-        #print(i)
         print("input file type 2")
-        print(input$MSAfile$name[i])
         
         #----------------------NOTE (2/5/2022)-------------------#
         #"OUTFILE" SHOULD directly be the name of the input files user provided
         #"proteinName" are needed?
-        
-        #outfile<- paste0(proteinName[[i]][1],"_",i,".json",sep="") 
         csvfile<-paste0(strsplit(input$MSAfile$name[i], ".json")[[1]][1],".csv",sep="")
         print("csv file")
         print(csvfile)
@@ -373,8 +357,6 @@ server <- function(input, output,session) {
         #store the DiMA csv output names into a list (for further concatenation into one file)
         
         csvfilelist <- append(csvfilelist, paste0(temp_directory,"/",csvfile))
-        #outfile<- paste0(proteinName[[i]][1],"_",i,".json",sep="")
-        #system2(command="cat", args=c(paste0(proteinName[[i]][1],"_",i,".csv",sep=""),">>", "dima.csv"))
       }
       data <-  read.csv(csvfilelist[1])
       
@@ -555,15 +537,16 @@ server <- function(input, output,session) {
         minTotalVariants = format(round(min(totalVariants.incidence),digits=2),nsmall=2),
         maxTotalVariants = format(round(max(totalVariants.incidence), digits = 2),nsmall=2)
       )
-    
+    print('output table')
     print(outputTable)
     #rename table df
     names(outputTable)<- c("Protein Name","Position (Minimum Entropy)","Minimum Entropy","Maximum Entropy","Minimum Total Variants (%)","Maximum Total Variants (%)")
     
     
-    output$table <- renderDataTable(
-      outputTable#,
-      #width = "100%"
+    output$entropyTable <- renderDataTable(
+      outputTable,
+      width = "100%",
+      options = list(scrollX=TRUE, scrollCollapse=TRUE)
     )
     
     #----------------------Plotting-----------------------#
@@ -979,9 +962,10 @@ server <- function(input, output,session) {
     names(outputTable)<- c("Protein Name","Position (Minimum Entropy)","Minimum Entropy (%)","Maximum Entropy (%)","Minimum Total Variants (%)","Maximum Total Variants (%)")
     
     
-    output$table <- renderTable(
+    output$entropyTable <- renderDataTable(
       outputTable,
-      width = "100%"
+      width = "100%",
+      options = list(scrollX=TRUE, scrollCollapse=TRUE)
     )
     
     #----------------------Plotting-----------------------#
@@ -1247,15 +1231,14 @@ server <- function(input, output,session) {
         minTotalVariants = format(round(min(totalVariants.incidence),digits=2),nsmall=2),
         maxTotalVariants = format(round(max(totalVariants.incidence), digits = 2),nsmall=2)
       )
-    
-    print(outputTable)
     #rename table df
     names(outputTable)<- c("Protein Name","Position (Minimum Entropy)","Minimum Entropy (%)","Maximum Entropy (%)","Minimum Total Variants (%)","Maximum Total Variants (%)")
     
     
-    output$table <- renderTable(
+    output$entropyTable <- renderDataTable(
       outputTable,
-      width = "100%"
+      width = "100%",
+      options = list(scrollX=TRUE, scrollCollapse=TRUE)
     )
     
     #----------------------Plotting-----------------------#
