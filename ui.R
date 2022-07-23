@@ -239,10 +239,6 @@ body<-## Body content
                         (ii) Major: the predominant sequence(s) amongst the variants <br>\
                         (iii) Minor: distinct sequences with frequency lesser than the major variant, but occur more than once <br>\ 
                              (iv) Unique: distinct sequences that occur only once <br>")), 
-                      #tags$li(""), 
-                      #tags$li(""),
-                      #tags$li("")
-                      
                       tags$li("Total variants: sequences that are variant to the index; comprises the major variant, minor variants and unique variants"), 
                       tags$li(HTML("distinct variant incidence: incidence of the distinct <i>k</i>-mer variant"))
                     ))
@@ -253,8 +249,7 @@ body<-## Body content
                            sidebarLayout(position = 'right',
                                          sidebarPanel(width=3 ,
                                                       numericInput(inputId = "supportLimit", label = "Minimum Support Threshold", value = 30, min = 0, step =1),
-                                                      numericInput(inputId = "kmerlength", label = HTML("<i>k</i>-mer length"), value = 9, min = 0, step =1)
-                                                      ,
+                                                      numericInput(inputId = "kmerlength", label = HTML("<i>k</i>-mer length"), value = 9, min = 0, step =1),
                                                       splitLayout(
                                                         radioButtons(inputId="filetype", label = HTML("Aligned Sequence / DiMA Output File Format  <span style='color:red'>*</span>"),
                                                                      choices = list("FASTA (.fasta/.fas/.fa/.faa/.fnn/.fna)" = 1, "DiMA (.json)" = 2, "DiMA (.csv)"=3), 
@@ -271,9 +266,21 @@ body<-## Body content
                                                                Parameters such as host number selection (one or two hosts), <i>k</i>-mer size, support threshold, host name, and protein name are defined by the user. So, <b>please assign files of same host under one tab</b>. Users can also manipulate additional plotting parameters: \
                                                                order of protein name, font, line, and dot size.'),
                                                                         tags$br(),tags$br(),
-                                                                        radioButtons(inputId="host", label = HTML("Number of host"),
-                                                                                     choices = list("One Host" = 1, "Two Host" = 2),# "Triple host"=3), 
+                                                                        div(
+                                                                            style = "display: flex;",
+                                                                            div(
+                                                                                style = "flex: 1;",
+                                                                                radioButtons(inputId="host", label = HTML("Number of host"),
+                                                                                     choices = list("One Host" = 1, "Two Host" = 2),
                                                                                      selected = 1)
+                                                                                           ),
+                                                                            div(
+                                                                                style = "flex: 1;",
+                                                                                radioButtons(inputId="inputtype", label = HTML("Input File Type"),
+                                                                                             choices = list("Protein" = 1, "Nucleotide" = 2),
+                                                                                             selected = 1)
+                                                                            )
+                                                                        )
                                                                ),
                                                                tabPanel("First Host",tags$br(),fileInput(inputId = "MSAfile",label = HTML("Aligned Sequences / DiMA Output File(s)"), accept = c(".fa",".faa",".fasta",".fas",".json",".JSON",".csv"), placeholder = "alignedNS1.fa,alignedCore.fa", multiple = TRUE),
                                                                         uiOutput("infilename"),tags$br(),
@@ -342,12 +349,12 @@ body<-## Body content
                     <i>k</i>-mer positions, with zero representing completely conserved positions (total variants incidence of 0%). Benchmark reference for \
                     values for entropy (black dotted line) and total variants (pink dotted line) are provided. For both individual protein and across proteome, \
                                 the minimum entropy value is zero while the maximum entropy value at y-axis is 100."))),
-              #fluidRow(box(width=10,title="Entropy Table", status = "primary", solidHeader = TRUE,
-              #             p(style="text-align: right;","*values rounded to 2 decimal places"),
-              #             column(12, align="center", dataTableOutput("table", width="100%"))
-              #)
+              fluidRow(box(width=10,title="Entropy Table", status = "primary", solidHeader = TRUE,
+              p(style="text-align: right;","*values rounded to 2 decimal places"),
+              column(12, align="center", dataTableOutput("table", width="100%"))
+              )
               
-              #  )
+              )
       ),
       
       # Second tab content
@@ -428,7 +435,7 @@ body<-## Body content
                     (index incidence < 10%)."))),
               
               fluidRow(box(width=10, height=15, style = "overflow-y: scroll;",
-                           title="HCS/CCS Sequencies", status = "primary", solidHeader = TRUE, collapsible = TRUE,
+                           title="HCS/CCS Sequences", status = "primary", solidHeader = TRUE, collapsible = TRUE,
                            column(6, div(shinyThings::radioSwitchButtons("conserv_lvl", choices = c("CCS", "HCS"), selected = "HCS"),
                                          style="float:left;margin-bottom: 10px; margin-top: 7px;")),
                            column(6, div(shinyThings::radioSwitchButtons("table_type", choices = c("csv", "fasta"), selected = "csv"),

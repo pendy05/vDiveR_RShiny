@@ -6,11 +6,17 @@ library(gridExtra) #tutorial: https://ggplot2.tidyverse.org/reference/facet_grid
 library(facetscales) #https://stackoverflow.com/a/54074323/13970350
 library(plyr)
 library(dplyr)
+library(tidyr)
 library(ggtext)
 library(ggpubr)
 library(grid)
 library(cowplot)
+library(RJSONIO)
+library(stringr)
 library(seqinr)
+library(purrr)
+library("tools")  
+library("gghalves")
 library(rjson)
 library(readr)
 library(zip)
@@ -25,8 +31,8 @@ library(shinyThings) # devtools::install_github("gadenbuie/shinyThings")
 
 # #uncomment codes from line 26 to 28 if you would like to run DiveR locally (prerequiste: a Python virtual environment is needed; refer README for more instructions)
 # virtualenv_create(envname = "python_env", python= "python3")
-# virtualenv_install("python_env", packages = c('pandas','numpy','dima-cli==3.2.1'))
-# reticulate::use_virtualenv("python_env", required = TRUE)
+# virtualenv_install("python_env", packages = c('pandas','numpy','dima-cli==4.1.1'))
+#reticulate::use_virtualenv("python_env", required = TRUE)
 
 #server side
 server <- function(input, output,session) {
@@ -131,9 +137,6 @@ server <- function(input, output,session) {
     if (is.null(input$MSAfile)){
       return(NULL)
     }else{
-      print("rendertext ui")
-      print(input$MSAfile$name)
-      #filename<-paste(input$MSAfile$name, sep=",", collapse=NULL)
       paste("File(s):",toString(input$MSAfile$name),sep=" ")
     }
   })
@@ -142,9 +145,6 @@ server <- function(input, output,session) {
     if (is.null(input$MSAfile_secondHost)){
       return(NULL)
     }else{
-      print("rendertext ui")
-      print(input$MSAfile_secondHost$name)
-      #filename<-paste(input$MSAfile$name, sep=",", collapse=NULL)
       paste("File(s):",toString(input$MSAfile_secondHost$name),sep=" ")
     }
   })
@@ -152,8 +152,6 @@ server <- function(input, output,session) {
   #To create directory
   temp_directory <- file.path(tempdir(), as.integer(Sys.time()))
   dir.create(temp_directory)
-  #dir.create(session$token)
-  
   #Reactive value to store the path of all the files in the directory
   mylist <- reactiveValues()
   mylist$files <- NULL
@@ -166,10 +164,8 @@ server <- function(input, output,session) {
     req(input$MSAfile)
     shinyjs::addClass(id = "submitAnimate", class = "loading dots")
     
-    print("submitDiMA!")
     #proceed if the input csv file is provided
     if (is.null(input$MSAfile)){
-      print('null')
       return(NULL)
     }
     #default host name: unknown
@@ -186,9 +182,6 @@ server <- function(input, output,session) {
       hostname_secondHost<-input$hostname_secondHost
     }
     
-    print(input$proteinNames)
-    print(length(input$MSAfile$datapath))
-    
     #-------------------------------------------------------------------#
     #          Assign protein name to each input file (using lapply)    #
     #   -Depends on the order of protein names provided by users        #
@@ -196,22 +189,19 @@ server <- function(input, output,session) {
     
     #get filepath(s)
     filepath <- input$MSAfile$datapath
-    print("filepath first Host")
-    print(filepath)
     #get protein name(s)
     if (input$proteinNames == ""){
       proteinName <- list(rep("Unknown",each = length(filepath)))
-      
     }else{
       proteinName <- unlist(lapply(strsplit(input$proteinNames,','),trimws))
-      
-      
+         
       if (length(proteinName) < length(filepath)){ #if number of protein names != number of files, then assign NA to that protein
         print("different len")
         proteinName <- append(proteinName,rep("Unknown",each = length(filepath)-length(proteinName)))
-      }else if (length(proteinName) > length(filepath)){
-        #do something
       }
+      # }else if (length(proteinName) > length(filepath)){
+      #   #do something
+      # }
     }
     
     #---------------------#
@@ -219,28 +209,19 @@ server <- function(input, output,session) {
     #---------------------#
     
     filepath_secondHost <- input$MSAfile_secondHost$datapath
-    print("filepath secondHost")
-    #print(filepath_secondHost)
-    #get protein name(s)
-    if (input$proteinNames_secondHost == ""){
-      
-    }else{
+
+    if (input$proteinNames_secondHost != ""){
       proteinName_secondHost <- unlist(lapply(strsplit(input$proteinNames_secondHost,','),trimws))
       
       if (length(proteinName_secondHost) < length(filepath_secondHost)){ #if number of protein names != number of files, then assign NA to that protein
         print("different len")
         proteinName_secondHost <- append(proteinName_secondHost,rep("Unknown",each = length(filepath_secondHost)-length(proteinName_secondHost)))
-      }else if (length(proteinName_secondHost) > length(filepath_secondHost)){
-        #do something
-      }
+      }# }else if (length(proteinName_secondHost) > length(filepath_secondHost)){
+      #   #do something
+      # }
     }
     
-    #print(proteinName)
-    #print(proteinName_secondHost)
-    #print(length(filepath))
-    #print(filepath)
-    print("yuhoo")
-    #system("arch")
+
     #--------------------------------------------------------------#
     #                Check the Input Type of Files                 #
     #    1. MSA Files - Run DiMA                                   #
@@ -253,54 +234,27 @@ server <- function(input, output,session) {
     if(input$filetype == 1){ #if input is MSA
       outfile<-""
       csvfilelist<-c()
+      if (input$inputtype == 1){
+          print("input$inputtype == 1")
+          inputtype <- "protein"
+      }else{
+          inputtype <- "nucleotide"
+      }
       #run DiMA
-      #showModal(modalDialog("Running DiMA...", footer=NULL))
       for (i in 1:length(filepath)){
-        #print(i)
-        #print(filepath[i])
-        #print("proteinName: ",proteinName)
         print(proteinName[[i]][1])
         
         outfile<- paste0(proteinName[[i]][1],"_",hostname,"_",i,".json",sep="")
-        print(outfile)
-        #system("chmod +x ./python_env/Scripts/dima-cli.exe")
-        #system("chmod +x ./dima-cli.exe")
-        
-        #system("ls -lh")
-        #
-        py_run_string("from dima import Dima")
-        dima_input<- paste0("sequences=r'",filepath[i],"',kmer_length=",input$kmerlength,",support_threshold=",input$supportLimit)
-        #dima_input<- gsub("/", "\\", dima_input)
-        print(dima_input)
-        print("results")
-        py_run_string(glue("results = Dima({dima_input}).run()"))
-        #py_run_string(glue("results = Dima(sequences=\"{filepath[i]}\", kmer_length={input$kmerlength},support_threshold={input$supportLimit}, query_name=\"{proteinName[[i]][1]}\").run()"))
-        print("jsonfile")
-        py_run_string(glue("jsonFile = open(r'{temp_directory}/{outfile}', 'w')"))
-        print("jsonfile writing...")
-        py_run_string(glue("jsonFile.write(str(results))"))
-        print("jsonfile closing...")
-        py_run_string("jsonFile.close()")
-        #system(paste("./dima-cli.exe -i ",filepath[i]," -o ",paste0(temp_directory, "/",outfile)," -s ",input$supportLimit, " -p ",proteinName[[i]][1], " -l ",input$kmerlength))
-        
-        #system(paste("python_env/Scripts/dima-cli.exe -i", filepath[i], "-o",paste0(temp_directory, "/",outfile),"-s",input$supportLimit, "-p",proteinName[[i]][1], "-l",input$kmerlength))
-        #system2(command="./python_env/Scripts/dima-cli.exe",args = c("-i",filepath[i],"-o",paste0(temp_directory, "/",outfile),"-s",input$supportLimit, "-p",proteinName[[i]][1], "-l",input$kmerlength))
-        
-        #append "\n" to the end of file to solve the issue of 'incomplete final line'
+
+        system(paste("python_env/Scripts/dima-cli.exe -i", filepath[i], "-o",paste0(temp_directory, "/",outfile),"-s",input$supportLimit, "-q",proteinName[[i]][1], "-l",input$kmerlength, "-a",inputtype))
+
         #https://stackoverflow.com/questions/5990654/incomplete-final-line-warning-when-trying-to-read-a-csv-file-into-r
-        write("\r\n", file = outfile, append = TRUE, sep = "\n")
-        print("json2csv...")
+        write("\r\n", file = paste0("./",outfile), append = TRUE, sep = "\n")
         json2csvinR_unnest(paste0(temp_directory, "/",outfile),hostname, proteinName[[i]][1])
-        #json2csvinR(paste0(temp_directory, "/",outfile),hostname)
-        #json2csvinR(outfile,hostname)
-        print("json2csv ends...")
+
         #store the DiMA csv output names into a list (for further concatenation into one file)
         csvfile<-paste0(temp_directory, "/",proteinName[[i]][1],"_",hostname,"_",i,".csv",sep="")
-        #csvfile<-paste0(proteinName[[i]][1],"_",i,".csv",sep="")
-        print('after csvfile')
         csvfilelist <- append(csvfilelist, csvfile)
-        #outfile<- paste0(proteinName[[i]][1],"_",i,".json",sep="")
-        #system2(command="cat", args=c(paste0(proteinName[[i]][1],"_",i,".csv",sep=""),">>", "dima.csv"))
       }
       
       #------------------------------------------------------------------------------------------------------#
@@ -311,14 +265,11 @@ server <- function(input, output,session) {
       
       data <-  read.csv(csvfilelist[1])
       #Saving the first DiMA csv output file in the filepath array in the temp zipped folder
-      #write.csv(data, file = paste0(session$token, "/", proteinName[[1]][1],"_",i,".csv",sep=""))
       
       #reading each file within the range and append them to create one file
       for (f in csvfilelist[-1]){
-        #print("f: ",f)
         df <- read.csv(f)      # read the file
         #Saving the following DiMA csv output file in the filepath array in the temp zipped folder
-        #write.csv(data, file = paste0(session$token, "/", f, sep=""))
         data <- rbind(data, df)    # append the current file
       }
       
@@ -331,13 +282,7 @@ server <- function(input, output,session) {
         outfile_secondHost<-""
         csvfilelist_secondHost<-c()
         #run DiMA
-        #showModal(modalDialog("Running DiMA...", footer=NULL))
         for (i in 1:length(filepath_secondHost)){
-          #print(i)
-          #print(filepath[i])
-          #print("proteinName: ",proteinName)
-          print(proteinName_secondHost[[i]][1])
-          
           outfile<- paste0(proteinName_secondHost[[i]][1],"_",hostname_secondHost,"_",i,".json",sep="")
           print(outfile)
           py_run_string("from dima import Dima")
@@ -503,10 +448,6 @@ server <- function(input, output,session) {
       
     }
     
-    
-    #concatenate
-    print("outfile")
-    
     #Alert results are ready
     output$alert <- renderUI({
       h5("DiMA Output is ready! Click on other tabs to visualize the diversity dynamics of viral sequences!", style = "color:green") 
@@ -515,8 +456,6 @@ server <- function(input, output,session) {
     
     df<-data
     
-    print("determine host number")
-    print(unique(df$host))
     #determine number of host
     if (input$host == 1){
       #single host
@@ -594,13 +533,11 @@ server <- function(input, output,session) {
         
       }
     }
-    print("zero entropy highlight session")
+
     #---------------zero entropy-----------------#
     #check if the kmer positions are zero entropy
     #Reference for getting all the positions of kmer based on kmer size and the starting position of kmer: 
     #https://stackoverflow.com/questions/31120552/generate-a-sequence-of-numbers-with-repeated-intervals
-    #(info <- data.frame(start=c(1, 144, 288), len=c(6, 6, 6)))
-    #sequence(info$len) + rep(info$start-1, info$len)
     kmer_size=9
     df[df$entropy==0,]$position
     #identify the kmer position with zero entropy
@@ -644,15 +581,10 @@ server <- function(input, output,session) {
     output$text <- renderText({
       print(input$proteinOrder)
     })
-    print(input$proteinOrder)
-    print(input$line_dot_size)
-    print(input$host)
-    print(input$wordsize)
-    print(input$line_dot_size)
-    #print(scaled)
+
     plot1<-reactive({
       req(df)
-      plot_entropy_incidence(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder)
+      plot_entropy_incidence(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder, input$kmerlength)
     })
     
     output$plot1 <- renderPlot({
@@ -790,7 +722,6 @@ server <- function(input, output,session) {
       ))
       if (input$host == 1){
         #single host
-        print("plot 7 - 1 host")
         plot_conservationLevel(data,input$line_dot_size, input$wordsize, input$host, input$proteinOrder,input$conservationLabel)
       }else{#multihost
         data$host = factor(data$host)
@@ -967,7 +898,7 @@ server <- function(input, output,session) {
         proteinName<-as.vector(names(a))
         position<-as.vector(a)
         #store protein as factor
-        df$size_f = factor(df$proteinName,levels = proteinName) #ALERT! df$level -> df$size_f
+        df$size_f = factor(df$proteinName,levels = proteinName) 
         #scale the nonamer positions
         scales_x<-mapply(function(x,y){
           x = scale_x_continuous(limits = c(0,y),breaks = seq(0,y,50))
@@ -978,14 +909,13 @@ server <- function(input, output,session) {
           print("Host column is not detected!")
         }
         #order the proteins based on user input
-        #level<-strsplit(input$proteinOrder, ',')[[1]]
         level<-unlist(lapply(strsplit(input$proteinOrder,','),trimws))
         position<-c()
         for (i in level){
           position<-append(position,table(df$proteinName)[names(table(df$proteinName)) == i])
         }
         #store protein as factor
-        df$size_f = factor(df$proteinName,levels = level) #ALERT! df$level -> df$size_f
+        df$size_f = factor(df$proteinName,levels = level)
         #scale the nonamer positions
         scales_x<-mapply(function(x,y){
           x = scale_x_continuous(limits = c(0,y),breaks = seq(0,y,50))
@@ -1084,7 +1014,7 @@ server <- function(input, output,session) {
     
     plot1<-reactive({
       req(df)
-      plot_entropy_incidence(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder)
+      plot_entropy_incidence(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder, input$kmerlength)
     })
     
     output$plot1 <- renderPlot({
@@ -1374,7 +1304,7 @@ server <- function(input, output,session) {
     })
     
     plot1<-reactive({
-      plot_entropy_incidence(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder)
+      plot_entropy_incidence(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder,input$kmerlength)
     })
     
     
