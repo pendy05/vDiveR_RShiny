@@ -59,9 +59,9 @@ kmer <- opt$kmer
 
 # remember whole sequence of the protein
 proteins_seq <- hcv_proteins %>% 
-  select(proteinName, indexPeptide) %>% 
+  select(proteinName, indexSequence) %>% 
   group_by(proteinName) %>% 
-  summarise(seq = paste0(str_sub(indexPeptide, 1, 1), collapse = "")) %>% 
+  summarise(seq = paste0(str_sub(indexSequence, 1, 1), collapse = "")) %>% 
   spread(key = proteinName, value = seq)
 
 # add missing last amino acids
@@ -70,7 +70,7 @@ for (protein in unique(hcv_proteins$proteinName)) {
     paste0(proteins_seq[[protein]], 
            hcv_proteins %>% 
            filter(proteinName == protein) %>% 
-             select(indexPeptide) %>% 
+             select(indexSequence) %>% 
              slice(n()) %>% 
              as.character() %>% str_sub(2))
 }
@@ -103,7 +103,7 @@ csv_df <- bind_rows(
           start_pos <- as.numeric(row["position"])
           data.frame(matrix(data = TRUE,
                             nrow = 1, ncol = kmer,
-                            dimnames = list(row["indexPeptide"],
+                            dimnames = list(row["indexSequence"],
                                             seq(start_pos, start_pos + kmer - 1))))
         })
         

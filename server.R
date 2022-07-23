@@ -18,14 +18,15 @@ library(shinyjs)
 library(jsonlite)
 library(reticulate)
 library(glue)
+library(shinyThings) # devtools::install_github("gadenbuie/shinyThings")
 #py_run_string("from dima import Dima")
 #Sys.setenv(RETICULATE_PYTHON = "python_env/Scripts/python.exe")
 #reticulate::use_virtualenv("./python_env", required = TRUE)
 
-#uncomment codes from line 26 to 28 if you would like to run DiveR locally (prerequiste: a Python virtual environment is needed; refer README for more instructions)
-virtualenv_create(envname = "python_env", python= "python3")
-virtualenv_install("python_env", packages = c('pandas','numpy','dima-cli==3.2.1'))
-reticulate::use_virtualenv("python_env", required = TRUE)
+# #uncomment codes from line 26 to 28 if you would like to run DiveR locally (prerequiste: a Python virtual environment is needed; refer README for more instructions)
+# virtualenv_create(envname = "python_env", python= "python3")
+# virtualenv_install("python_env", packages = c('pandas','numpy','dima-cli==3.2.1'))
+# reticulate::use_virtualenv("python_env", required = TRUE)
 
 #server side
 server <- function(input, output,session) {
@@ -1599,11 +1600,26 @@ server <- function(input, output,session) {
       plot7()
     })
     
+    # for now not splitted by hosts
+    output$plot7_seqs <- renderDataTable({
+      seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, conservation=input$conserv_lvl)[[input$table_type]]
+    })
+    
     output$plot7_download <- downloadHandler(
       filename = function() { paste("plot7", '.jpg', sep='') },
       content = function(file) {
         ggsave(file, plot = plot7(),  width=input$width7, height=input$height7, unit="in", device = "jpg", dpi=input$dpi7)
       })
+    
+    output$conservSeq_download <- downloadHandler(
+      filename =  function() {paste0(input$conserv_lvl, ".", input$table_type)},
+      content = function(fname) {
+        df <- seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, conservation=input$conserv_lvl)[[input$table_type]]
+        write.table(df, file = fname, col.names = ifelse(input$table_type == "csv", TRUE, FALSE),
+                    sep = ",", row.names = FALSE, quote = FALSE)
+      }
+    )
+    
     shinyjs::removeClass(id = "UpdateAnimate", class = "loading dots")
     #Alert results are ready
     output$alertSample <- renderUI({
