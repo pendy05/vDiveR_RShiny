@@ -1,34 +1,21 @@
 ###################################
-# Date: 30/05/2022                #
+# Date: 23/07/2022                #
 # Convert DiMA JSON to CSV file   #
-# DiMA version: 3.2.1             #
-# 1.run DiMA from cmd             #
-# 2.read DiMA JSON using R        #
-# 3.transform JSON to CSV         #
+# DiMA version: 4.1.1             #
 ###################################
-#unnest did the job to unnest the nested json which is in the form of data frame
 
-#to extract:
-#results - low_support, entropy, distinct_variants_incidence
-#variants - position, count
-
-# require data transformation
-# indexPeptide - extract peptide with Index label
-# multiIndex -  TRUE / FALSE
-# host - user defined
 library(RJSONIO)
 library(dplyr)
 library(tidyr)
 library(plyr)
-library(mlr3misc)
 library(stringr)
 library(purrr)
 
 #Users are required to modify the input file and host name
-infile<-"core_9mer.json"
+infile<-"C:\\projects\\DiveR_public\\DiveR\\R-individual-scripts\\core_human_1.json"
 host<-'human'
 
-
+write("\r\n", file = infile, append = TRUE, sep = "\n")
   #read JSON file
   print("new json2csv")
   con <- file(infile)
@@ -37,7 +24,6 @@ host<-'human'
   json_data <- jsonlite::fromJSON(paste(jsonfile, collapse = "\n"))
   data_flatten <- as.data.frame(json_data) %>%
     tidyr::unnest()
-  
   # data transformation  
   motifs_incidence <- aggregate(data_flatten$incidence, list(data_flatten$results.position,data_flatten$motif_short), FUN=sum) %>%
     spread(Group.2,x) %>%                           # transpose the rows (motif-long & incidence) to columns (index, major, minor, unique)
@@ -68,18 +54,16 @@ host<-'human'
   index_data$results.low_support[is.na(index_data$results.low_support)] <- FALSE 
   
   #combine both the index and variant motif information to motifs
-  motifs<-right_join(motifs_incidence,index_data[c("sample_name","results.support","results.low_support","results.entropy","results.distinct_variants_incidence","results.position","results.total_variance","sequence")],by='results.position')%>%
-    distinct()
+  motifs<-right_join(motifs_incidence,index_data[c('query_name',"results.support","results.low_support","results.entropy","results.distinct_variants_incidence","results.position","results.total_variants_incidence","sequence",'highest_entropy.position','highest_entropy.entropy','average_entropy')],by='results.position')%>%
+      distinct()
   
   #assign host
   motifs['host'] <- host
   
   #rename columns
-  colnames(motifs)<-c('position','index.incidence','major.incidence','minor.incidence','unique.incidence','multiIndex','proteinName','count','lowSupport','entropy','distinctVariant.incidence','totalVariants.incidence','indexSequence','host')
+  colnames(motifs)<-c('position','index.incidence','major.incidence','minor.incidence','unique.incidence','multiIndex','proteinName','count','lowSupport','entropy','distinctVariant.incidence','totalVariants.incidence','indexSequence','highestEntropy.position','highestEntropy','averageEntropy','host')
   #reorder the columns
-  motifs<-motifs[,c(7,1,8,9,10,13,2,3,4,5,12,11,6,14)]
-  #assign protein name
-  motifs['proteinName']<-proteinName
+  motifs<-motifs[,c(7,1,8,9,10,13,2,3,4,5,12,11,6,17,14,15,16)]
   
   write.table(motifs, sep=",", row.names = FALSE , file = paste0(sub(".json","",infile),".csv"))
   
