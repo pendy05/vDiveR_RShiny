@@ -51,7 +51,7 @@ $ source python_env/Scripts/activate
  ```
 5. Install the numpy & dima-cli python package (NOTE: numpy is a must download package as it is required for reticulate to move data between R and Python) 
 ```
-$ pip install numpy dima-cli==3.2.1 pandas
+$ pip install numpy dima-cli==4.1.1 pandas
 ```
 
 
