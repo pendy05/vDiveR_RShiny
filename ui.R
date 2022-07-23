@@ -119,7 +119,7 @@ shinyjs.enableTab = function(name) {
 "
 
 sideBar<-dashboardSidebar(
-  width = 350,
+  width = 320,
   sidebarMenu(
     id="tabs",
     menuItem("Project Description", tabName = "description", icon = icon("r-project")),
@@ -214,9 +214,8 @@ body<-## Body content
             }
             @keyframes spin10 { to { transform: translateY(-15.0em); } }
             ')),
-    tags$script("document.getElementsByClassName('sidebar-toggle')[0].style.visibility = 'hidden';"),
-    tabItems(
-      
+    tags$script("document.getElementsByClassName('sidebar-toggle')[0].style.visibility = 'hidden';"), #hide sidebar toggle
+    tabItems( 
       tabItem(tabName = "description",
               h2("Dissecting the dynamics of viral protein sequence diversity"),
               fluidRow(
@@ -224,8 +223,7 @@ body<-## Body content
                     HTML('Sequence diversity, as a result of various evolutionary forces, \
                 challenges the design of diagnostic, prophylactic and therapeutic interventions against viruses. \
                  The publicly available tool, Diversity Motif Analyser\
-                (DiMA;'), tags$a(href='https://github.com/PU-SDS/DiMA', 'https://github.com/PU-SDS/DiMA'),HTML('\
-                ) was developed to facilitate the dissection of sequence diversity dynamics for viruses. \
+                (DiMA; <a href=\'https://github.com/PU-SDS/DiMA\'>https://github.com/PU-SDS/DiMA</a>) was developed to facilitate the dissection of sequence diversity dynamics for viruses. \
                 Herein, we present DiveR, a DiMA wrapper implemented as a web-based application \
                                   to ease the visualization of outputs from DiMA. DiveR allows visualization of the diversity motifs\
                          (index and its variants – major, minor and unique) for elucidation of the underlying inherent dynamics.\
@@ -445,14 +443,13 @@ body<-## Body content
       tabItem(tabName = "helppage",
               h2("Help Page"),
               fluidRow(box(width=12,title="Contact",solidHeader = TRUE, status="primary",
-                           p('For technical assistance or bug report, please reach us out via GitHub (', tags$a(href='https://github.com/pendy05/DiveR', 'https://github.com/pendy05/DiveR'),').\
-              For the general correspondence, please email Dr. Asif M. Khan (', tags$a(href='asif@perdanauniversity.edu.my', 'asif@perdanauniversity.edu.my'),', ', tags$a(href='makhan@bezmialem.edu.tr', 'makhan@bezmialem.edu.tr') ,').')                           
+                           HTML('For technical assistance or bug report, please reach us out via GitHub (<a href=\'https://github.com/pendy05/DiveR\'>https://github.com/pendy05/DiveR</a>). For the general correspondence, please email Dr. Asif M. Khan (<a href=\'asif@perdanauniversity.edu.my\'>asif@perdanauniversity.edu.my</a>, <a href=\'makhan@bezmialem.edu.tr\'>makhan@bezmialem.edu.tr</a>).')                           
               )),
               fluidRow(box(width=12,title="Frequently Asked Questions (FAQs)",solidHeader = TRUE,status="primary",
                            HTML("1. What can I do if the elements in the plot appear to be overlapping each other due to the displayed plot size? <br>\
                        You may want to increase the height and/or width of the plot offered in the download option, based on your need and download the plot.<br><br>\
                        2. Where can I get the source code of these R plots if I would like to modify the code based on my need? <br>\
-                       You may visit this GitHub repository ( <a href = 'https://github.com/pendy05/DiveR'>https://github.com/pendy05/DiveR</a>",") to get the corresponding source codes.<br><br>
+                       You may visit this GitHub repository (<a href = 'https://github.com/pendy05/DiveR'>https://github.com/pendy05/DiveR</a>) to get the corresponding source codes.<br><br>
                        3. What is the maximum image size (in inches) that can be downloaded?<br>Maximum 50 (H) x50 (W) inches to prevent the common error of specifying dimensions in pixels encountered in R ggsave() function. <br><br>\
                        4. I encountered 'Error in x$clone: attempt to apply non-function' in plot 'entropy and incidence of total variants' when I submit files for two hosts. Other plots work fine. Why does this happen?<br>\
                        DiveR expects the proteins with same protein name have same length (number of positions) across both the hosts to carry out the comparison plot.")

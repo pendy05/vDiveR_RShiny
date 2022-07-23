@@ -1142,6 +1142,26 @@ server <- function(input, output,session) {
         ggsave(file, plot = plot7(),  width=input$width7, height=input$height7, unit="in", device = "jpg", dpi=input$dpi7)
       })
     
+    # for now not splitted by hosts
+    output$plot7_seqs <- renderDataTable({
+      seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, conservation=input$conserv_lvl)[[input$table_type]]
+    })
+    
+    output$plot7_download <- downloadHandler(
+      filename = function() { paste("plot7", '.jpg', sep='') },
+      content = function(file) {
+        ggsave(file, plot = plot7(),  width=input$width7, height=input$height7, unit="in", device = "jpg", dpi=input$dpi7)
+      })
+    
+    output$conservSeq_download <- downloadHandler(
+      filename =  function() {paste0(input$conserv_lvl, ".", input$table_type)},
+      content = function(fname) {
+        df <- seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, conservation=input$conserv_lvl)[[input$table_type]]
+        write.table(df, file = fname, col.names = ifelse(input$table_type == "csv", TRUE, FALSE),
+                    sep = ",", row.names = FALSE, quote = FALSE)
+      }
+    )
+    
     
   })
   
@@ -1438,24 +1458,6 @@ server <- function(input, output,session) {
           coord_cartesian(clip = "off")+
           ggtitle(unique(data$host))
         
-        # plot7<-ggplot(data) +
-        #   geom_boxplot(aes(x=level,y=index.incidence),outlier.shape=NA,width=0.5)+ 
-        #   geom_jitter(aes(x=level,y=index.incidence,col=ConservationLevel),position = position_jitter(width = .15, height=-0.7),
-        #               size=input$line_dot_size)+
-        #   labs(x=NULL,y="Index Incidence (%)\n",fill="Conservation level")+ #, title = unique(data$host)
-        #   scale_y_continuous(breaks = c(0,25,50,75,100),labels=c("0","25","50","75","100"),limits = c(0,110))+
-        #   theme_classic(base_size = input$wordsize)+
-        #   theme(
-        #     legend.key = element_rect(fill = "transparent", colour = "transparent"),
-        #     legend.position="bottom"
-        #   )+
-        #   scale_colour_manual('Conservation Level',breaks=c("Completely conserved (CC)","Highly conserved (HC)","Mixed variable (MV)","Highly diverse (HD)","Extremely diverse (ED)"),
-        #                       values = c("Completely conserved (CC)"="black","Highly conserved (HC)"="#0057d1","Mixed variable (MV)"="#02d57f","Highly diverse (HD)"="#8722ff", "Extremely diverse (ED)"="#ff617d")) +  
-        #   geom_richtext(data = Proteinlabel, aes(x=proteinName,label = Label, y=c(rep(105,nProtein)), label.size=0, label.color="transparent"),
-        #                 position = position_dodge(width=0.1),size=((input$wordsize/2)-2),color="black", fill="white",hjust=0,angle=90) + 
-        #   guides(color = guide_legend(override.aes = list(size = 2),nrow=2))+
-        #   theme(plot.margin = unit(c(5, 1, 1, 1), "lines"),axis.text.x = element_text(angle = 55, vjust = 0.5, hjust=0.5)) +
-        #   coord_cartesian(clip = "off") #allow ggtext outside of the plot
         plot7
       }
       
