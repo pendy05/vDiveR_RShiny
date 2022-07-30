@@ -22,11 +22,10 @@ library(readr)
 library(zip)
 library(shinyjs)
 library(jsonlite)
-library(reticulate)
 library(glue)
 library(shinyThings) # devtools::install_github("gadenbuie/shinyThings")
 
-reticulate::use_virtualenv("python_env", required = TRUE)
+#reticulate::use_virtualenv("python_env", required = TRUE)
 
 #server side
 server <- function(input, output,session) {

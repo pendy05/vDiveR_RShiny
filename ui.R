@@ -308,21 +308,27 @@ body<-## Body content
                            tags$br()
               )),
               fluidRow(box(title = "DiMA JSON-Converted CSV Output Format", width =12,status = "primary", solidHeader = TRUE,
-                           div(img(src='inputFileformat.JPG' ,width="100%", height='auto'), style="text-align: center;"),
+                           div(img(src='inputFileformat.JPG' ,width="95%", height='auto'), style="text-align: center;"),
                            HTML("<br><br>\
-                           1. proteinName: name of the protein<br>\
-                             2. position: starting position of the aligned, overlapping <i>k</i>-mer window<br>\
-                             3. count: number of <i>k</i>-mer sequences at the given position<br>\
-                             4. lowSupport: <i>k</i>-mer position with sequences lesser than the minimum support threshold (TRUE) are considered of low support, in terms of sample size <br>\
-                             5. indexSequence: the predominant sequence (index motif) at the given <i>k</i>-mer position<br>\
-                             6. index.incidence: the fraction (in percentage) of the index sequences at the <i>k</i>-mer position <br>\
-                             7. major.incidence: the fraction (in percentage) of the major sequence (the predominant variant to the index) at the <i>k</i>-mer position <br>\
-                             8. minor.incidence: the fraction (in percentage) of minor sequences (of frequency lesser than the major variant, but not singletons) at the <i>k</i>-mer position<br>\
-                             9. unique.incidence: the fraction (in percentage) of unique sequences (singletons, observed only once) at the <i>k</i>-mer position<br>\
-                             10. totalVariants.incidence: the fraction (in percentage) of sequences at the  <i>k</i>-mer position that are variants to the index (includes: major, minor and unique variants)<br>\
-                             11. distinctVariant.incidence: incidence of the distinct <i>k</i>-mer peptides at the <i>k</i>-mer position <br>\
-                             12. multiIndex: presence of more than one index sequence of equal incidence <br>\
-                             13. host: species name of the organism host to the virus<br>\
+                           <ol>
+                           <li>proteinName: name of the protein</li>\
+                             <li>position: starting position of the aligned, overlapping <i>k</i>-mer window</li>\
+                             <li>count: number of <i>k</i>-mer sequences at the given position</li>\
+                             <li>lowSupport: <i>k</i>-mer position with sequences lesser than the minimum support threshold (TRUE) are considered of low support, in terms of sample size </li>\
+                             <li>entropy: level of variability at the <i>k</i>-mer position, with zero representing completely conserved</li>\
+                             <li>indexSequence: the predominant sequence (index motif) at the given <i>k</i>-mer position</li>\
+                             <li>index.incidence: the fraction (in percentage) of the index sequences at the <i>k</i>-mer position </li>\
+                             <li>major.incidence: the fraction (in percentage) of the major sequence (the predominant variant to the index) at the <i>k</i>-mer position </li>\
+                            <li> minor.incidence: the fraction (in percentage) of minor sequences (of frequency lesser than the major variant, but not singletons) at the <i>k</i>-mer position</li>
+                             <li>unique.incidence: the fraction (in percentage) of unique sequences (singletons, observed only once) at the <i>k</i>-mer position</li>\
+                             <li> totalVariants.incidence: the fraction (in percentage) of sequences at the  <i>k</i>-mer position that are variants to the index (includes: major, minor and unique variants)</li>\
+                             <li> distinctVariant.incidence: incidence of the distinct <i>k</i>-mer peptides at the <i>k</i>-mer position </li>\
+                             <li> multiIndex: presence of more than one index sequence of equal incidence </li>\
+                             <li> host: species name of the organism host to the virus</li>\
+                             <li>highestEntropy.position: <i>k</i>-mer position that has the highest entropy value</li>\
+                             <li>highestEntropy: highest entropy values observed in the studied protein</li>\
+                             <li>averageEntropy: average entropy values across all the <i>k</i>-mer positions</li>\
+                             </ol>
                                 ")))
       ),
       tabItem(tabName = "plot1",
