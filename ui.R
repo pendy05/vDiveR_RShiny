@@ -165,7 +165,7 @@ sideBar<-dashboardSidebar(
     div(style="display:inline-block;",actionButton("start","Start")),
     div(style="display:inline-block",actionButton("samplesubmit","Load Sample Dataset",icon("samplesubmit", id="UpdateAnimate", class=""), onclick="www/HCV_protein.csv")),
     tags$br(),
-    div(style="display:inline-block; margin: 6px 5px 6px 15px;color: #000000;",downloadButton("downloadData", "Download Sample",style="color: #000000")),
+    div(style="display:inline-block; margin: 6px 5px 6px 15px;color: #000000;",downloadButton("downloadSampleData", "Download Sample",style="color: #000000")),
     div(style="display:inline-block",actionButton("reset1","Clear")),
     #Alert results are ready
     div(style="margin: 6px 5px 6px 15px;",uiOutput("alertSample"))
@@ -179,6 +179,7 @@ body<-## Body content
     shinyjs::extendShinyjs(text = jscode, functions = c("disableTab","enableTab")),
     shinyjs::inlineCSS(css),
     tags$title("DiveR"),
+    tags$link(rel = "icon", type = "image/png", sizes = "32x32", href = "DiveR_logo.png"),
     tags$script(HTML('
       $(document).ready(function() {
         $("header").find("nav").append(\'<span class="myClass"> DiveR: Diversity dynamics Visualization in R </span>\');
@@ -362,7 +363,7 @@ body<-## Body content
       
       # Second tab content
       tabItem(tabName = "plot2",
-              HTML("<h2>Relationship between entropy and total variants for <i>k</i>-mer positions of the viral protein(s).</h2>"),
+              HTML("<h2>Relationship between entropy and total variants for <i>k</i>-mer positions of the viral protein(s)</h2>"),
               fluidRow(
                 box(
                   width=10,

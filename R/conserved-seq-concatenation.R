@@ -15,7 +15,6 @@ seqConcatenation <- function(input_file, kmer, conservation) {
     dplyr::filter(index.incidence >= threshold)
   
   # ---- 1. Protein Sequences ----
-  
   # remember whole sequence of the protein
   proteins_seq <- input_file %>%
     dplyr::select(proteinName, indexSequence) %>%
@@ -31,7 +30,8 @@ seqConcatenation <- function(input_file, kmer, conservation) {
                dplyr::filter(proteinName == protein) %>%
                dplyr::select(indexSequence) %>%
                slice(n()) %>%
-               as.character() %>% str_sub(2))
+               as.character() %>%
+               str_sub(2))
   }
 
   
@@ -41,7 +41,7 @@ seqConcatenation <- function(input_file, kmer, conservation) {
   # first split by protein name
   # then separately proceed with each table (each protein independently)
   # then rbind
-  
+  print('csv_df')
   csv_df <- bind_rows(
   
     lapply(split(df, df$proteinName), function(df_x) {
@@ -97,7 +97,9 @@ seqConcatenation <- function(input_file, kmer, conservation) {
     })
   
   )
-  
+  print(csv_df)
+  print('fasta_df')
+  print(csv_df)
   # create df to store info for fasta file
   fasta_df <- do.call(rbind, lapply(seq(nrow(csv_df)), function(i) {
     csv_df[i, ] %>%
@@ -105,9 +107,7 @@ seqConcatenation <- function(input_file, kmer, conservation) {
       mutate(!!conservation := paste0(">", get(conservation))) %>%
       t()
     }))
-  
+  print('end of conserved function')
   return(list(csv=csv_df, fasta=fasta_df))
 
 }
-  
-
