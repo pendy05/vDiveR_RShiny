@@ -163,8 +163,6 @@ generate_plot7<-function(input, output, plot7){
 
 
 generate_entropyTable<-function(data, output, proteinName){
-  print(data.frame(data))
-  print(df)
   #get position of min entropy, min, max of entropy and total variant
   entropyTable <- data %>% 
     dplyr::group_by(proteinName) %>%
