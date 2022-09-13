@@ -98,8 +98,17 @@ seqConcatenation <- function(input_file, kmer, conservation) {
   
   )
   print(csv_df)
+  
+  if (nrow(csv_df) == 0) {
+    cons_lvl <- ifelse(conservation == "HCS", 
+                       "higly conserved",
+                       "completely conserved")
+    message_df <- data.frame(
+      Warning_message = c(sprintf("No %s sequences were found!", cons_lvl)))
+    return(list(csv=message_df,
+                fasta=message_df))
+  }
   print('fasta_df')
-  print(csv_df)
   # create df to store info for fasta file
   fasta_df <- do.call(rbind, lapply(seq(nrow(csv_df)), function(i) {
     csv_df[i, ] %>%
@@ -108,6 +117,6 @@ seqConcatenation <- function(input_file, kmer, conservation) {
       t()
     }))
   print('end of conserved function')
-  return(list(csv=csv_df, fasta=fasta_df))
+ return(list(csv=csv_df, fasta=fasta_df))
 
 }
