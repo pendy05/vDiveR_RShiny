@@ -22,10 +22,16 @@ library(readr)
 library(zip)
 library(shinyjs)
 library(jsonlite)
+library(reticulate)
 library(glue)
 library(shinyThings) # devtools::install_github("gadenbuie/shinyThings")
+#py_run_string("from dima import Dima")
+#Sys.setenv(RETICULATE_PYTHON = "python_env/Scripts/python.exe")
+#reticulate::use_virtualenv("./python_env", required = TRUE)
 
-#reticulate::use_virtualenv("python_env", required = TRUE)
+virtualenv_create(envname = "python_env", python= "python3")
+virtualenv_install("python_env", packages = c('pandas','numpy','dima-cli==4.1.1'))
+reticulate::use_virtualenv("python_env", required = TRUE)
 
 #individual functions
 #reset input and output settings
@@ -161,7 +167,6 @@ generate_plot7<-function(input, output, plot7){
   })
 }
 
-
 generate_entropyTable<-function(data, output, proteinName){
   #get position of min entropy, min, max of entropy and total variant
   entropyTable <- data %>% 
@@ -198,7 +203,7 @@ generate_CCS_HCS_table<-function(input, output, data){
   )
 }
 
-#server main function
+#server side
 server <- function(input, output,session) {
   # initial state of downloadDiMA button is disabled
   shinyjs::disable(id="downloadDiMA")
@@ -215,7 +220,7 @@ server <- function(input, output,session) {
   
   #reset every input and output to initial state
   observeEvent(input$reset, {
-    resetInput_to_initialState(output)
+     resetInput_to_initialState(output)
   })
   
   #reset every input and output to initial state
@@ -227,13 +232,13 @@ server <- function(input, output,session) {
   #https://stackoverflow.com/questions/32971921/navigate-to-particular-sidebar-menu-item-in-shinydashboard
   observeEvent(input$start, {
     newtab <- switch(input$tabs,
-                "description" = "inputdata_description",
-                "plot1" = "inputdata_description",
-                "plot2" = "inputdata_description",
-                "plot3" = "inputdata_description",
-                "plot4" = "inputdata_description",
-                "plot7" = "inputdata_description",
-                "helppage" = "inputdata_description"
+                     "description" = "inputdata_description",
+                     "plot1" = "inputdata_description",
+                     "plot2" = "inputdata_description",
+                     "plot3" = "inputdata_description",
+                     "plot4" = "inputdata_description",
+                     "plot7" = "inputdata_description",
+                     "helppage" = "inputdata_description"           
     )
     updateTabItems(session, "tabs", newtab)
   })
@@ -272,11 +277,7 @@ server <- function(input, output,session) {
   observeEvent(input$submitDiMA,ignoreInit=TRUE,{
     req(input$MSAfile)
     shinyjs::addClass(id = "submitAnimate", class = "loading dots")
-    MY_THEME<-theme(
-      axis.title.x = element_text(size = input$wordsize),
-      axis.text.x = element_text(size = input$wordsize),
-      axis.title.y = element_text(size = input$wordsize)
-    )
+    
     #proceed if the input csv file is provided
     if (is.null(input$MSAfile)){
       return(NULL)
@@ -307,13 +308,10 @@ server <- function(input, output,session) {
       proteinName <- list(rep("Unknown",each = length(filepath)))
     }else{
       proteinName <- unlist(lapply(strsplit(input$proteinNames,','),trimws))
-         
+      
       if (length(proteinName) < length(filepath)){ #if number of protein names != number of files, then assign NA to that protein
         proteinName <- append(proteinName,rep("Unknown",each = length(filepath)-length(proteinName)))
       }
-      # }else if (length(proteinName) > length(filepath)){
-      #   #do something
-      # }
     }
     
     #---------------------#
@@ -333,7 +331,7 @@ server <- function(input, output,session) {
       # }
     }
     
-
+    
     #--------------------------------------------------------------#
     #                Check the Input Type of Files                 #
     #    1. MSA Files - Run DiMA                                   #
@@ -352,18 +350,41 @@ server <- function(input, output,session) {
           inputtype <- "nucleotide"
       }
       #run DiMA
-      for (i in 1:length(filepath)){        
+      for (i in 1:length(filepath)){
         outfile<- paste0(proteinName[[i]][1],"_",hostname,"_",i,".json",sep="")
 
-        system(paste("python_env/Scripts/dima-cli.exe -i", filepath[i], "-o",paste0(temp_directory, "/",outfile),"-s",input$supportLimit, "-q",proteinName[[i]][1], "-l",input$kmerlength, "-a",inputtype))
+        py_run_string("from dima import Dima")
+        dima_input<- paste0("sequences=r'",filepath[i],"',kmer_length=",input$kmerlength,",support_threshold=",input$supportLimit,",query_name=r'",proteinName[[i]][1],"',alphabet=r'",inputtype,"'")
+        #dima_input<- gsub("/", "\\", dima_input)
+        print(dima_input)
+        print("results")
+        py_run_string(glue("results = Dima({dima_input}).run()"))
+        #py_run_string(glue("results = Dima(sequences=\"{filepath[i]}\", kmer_length={input$kmerlength},support_threshold={input$supportLimit}, query_name=\"{proteinName[[i]][1]}\").run()"))
+        print("jsonfile")
+        py_run_string(glue("jsonFile = open(r'{temp_directory}/{outfile}', 'w')"))
+        print("jsonfile writing...")
+        py_run_string(glue("jsonFile.write(str(results))"))
+        print("jsonfile closing...")
+        py_run_string("jsonFile.close()")
+        #system(paste("./dima-cli.exe -i ",filepath[i]," -o ",paste0(temp_directory, "/",outfile)," -s ",input$supportLimit, " -p ",proteinName[[i]][1], " -l ",input$kmerlength))
+        
+        #system(paste("python_env/Scripts/dima-cli.exe -i", filepath[i], "-o",paste0(temp_directory, "/",outfile),"-s",input$supportLimit, "-p",proteinName[[i]][1], "-l",input$kmerlength))
+        #system2(command="./python_env/Scripts/dima-cli.exe",args = c("-i",filepath[i],"-o",paste0(temp_directory, "/",outfile),"-s",input$supportLimit, "-p",proteinName[[i]][1], "-l",input$kmerlength))
 
+        #append "\n" to the end of file to solve the issue of 'incomplete final line'
         #https://stackoverflow.com/questions/5990654/incomplete-final-line-warning-when-trying-to-read-a-csv-file-into-r
-        write("\r\n", file = paste0("./",outfile), append = TRUE, sep = "\n")
+        write("\r\n", file = outfile, append = TRUE, sep = "\n")
         json2csvinR_unnest(paste0(temp_directory, "/",outfile),hostname, proteinName[[i]][1])
-
+        #json2csvinR(paste0(temp_directory, "/",outfile),hostname)
+        #json2csvinR(outfile,hostname)
+        print("json2csv ends...")
         #store the DiMA csv output names into a list (for further concatenation into one file)
         csvfile<-paste0(temp_directory, "/",proteinName[[i]][1],"_",hostname,"_",i,".csv",sep="")
+        #csvfile<-paste0(proteinName[[i]][1],"_",i,".csv",sep="")
+        print('after csvfile')
         csvfilelist <- append(csvfilelist, csvfile)
+        #outfile<- paste0(proteinName[[i]][1],"_",i,".json",sep="")
+        #system2(command="cat", args=c(paste0(proteinName[[i]][1],"_",i,".csv",sep=""),">>", "dima.csv"))
       }
       
       #------------------------------------------------------------------------------------------------------#
@@ -374,11 +395,13 @@ server <- function(input, output,session) {
       
       data <-  read.csv(csvfilelist[1])
       #Saving the first DiMA csv output file in the filepath array in the temp zipped folder
+      #write.csv(data, file = paste0(session$token, "/", proteinName[[1]][1],"_",i,".csv",sep=""))
       
       #reading each file within the range and append them to create one file
       for (f in csvfilelist[-1]){
         df <- read.csv(f)      # read the file
         #Saving the following DiMA csv output file in the filepath array in the temp zipped folder
+        #write.csv(data, file = paste0(session$token, "/", f, sep=""))
         data <- rbind(data, df)    # append the current file
       }
       
@@ -387,20 +410,30 @@ server <- function(input, output,session) {
       #     Second Host     #
       #---------------------#
       if(input$host == 2){
+        print("secondHost")
         outfile_secondHost<-""
         csvfilelist_secondHost<-c()
         #run DiMA
         for (i in 1:length(filepath_secondHost)){
           outfile<- paste0(proteinName_secondHost[[i]][1],"_",hostname_secondHost,"_",i,".json",sep="")
-          system(paste("python_env/Scripts/dima-cli.exe -i", filepath_secondHost[i], "-o",paste0(temp_directory, "/",outfile),"-s",input$supportLimit, "-q",proteinName_secondHost[[i]][1], "-l",input$kmerlength, "-a",inputtype))
-          #py_run_string("from dima import Dima")
-          #dima_input<- paste0("sequences=r'",filepath_secondHost[i],"',kmer_length=",input$kmerlength,",support_threshold=",input$supportLimit,",query_name=r'",proteinName_secondHost[[i]][1],"',alphabet=r'",inputtype,"'")
+          print(outfile)
+          py_run_string("from dima import Dima")
+          dima_input<- paste0("sequences=r'",filepath_secondHost[i],"',kmer_length=",input$kmerlength,",support_threshold=",input$supportLimit,",query_name=r'",proteinName_secondHost[[i]][1],"',alphabet=r'",inputtype,"'")
           #dima_input<- gsub("/", "\\", dima_input)
-          #py_run_string(glue("results = Dima({dima_input}).run()"))
+          print(dima_input)
+          print("results")
+          py_run_string(glue("results = Dima({dima_input}).run()"))
           #py_run_string(glue("results = Dima(sequences=\"{filepath[i]}\", kmer_length={input$kmerlength},support_threshold={input$supportLimit}, query_name=\"{proteinName[[i]][1]}\").run()"))
-          #py_run_string(glue("jsonFile = open(r'{temp_directory}/{outfile}', 'w')"))
-          #py_run_string(glue("jsonFile.write(str(results))"))
-          #py_run_string("jsonFile.close()")
+          print("jsonfile")
+          py_run_string(glue("jsonFile = open(r'{temp_directory}/{outfile}', 'w')"))
+          print("jsonfile writing...")
+          py_run_string(glue("jsonFile.write(str(results))"))
+          print("jsonfile closing...")
+          py_run_string("jsonFile.close()")
+          #system("chmod +x python_env/Scripts/dima-cli.exe dima-cli.exe")
+          #system("ls -lh python_env/Scripts/dima-cli.exe")
+          #system("ls -lh")
+          #system("file ./vim")
           #system(paste("dima-cli.exe -i ",filepath_secondHost[i]," -o ",paste0(temp_directory, "/",outfile)," -s ",input$supportLimit, " -p ",proteinName_secondHost[[i]][1], " -l ",input$kmerlength))
           
           #system(paste("./python_env/Scripts/dima-cli.exe -i",filepath_secondHost[i],"-o",paste0(temp_directory, "/",outfile),"-s",input$supportLimit, "-p",proteinName_secondHost[[i]][1], "-l",input$kmerlength))
@@ -410,22 +443,29 @@ server <- function(input, output,session) {
           #append "\n" to the end of file to solve the issue of 'incomplete final line'
           #https://stackoverflow.com/questions/5990654/incomplete-final-line-warning-when-trying-to-read-a-csv-file-into-r
           write("\r\n", file = outfile, append = TRUE, sep = "\n")
+          print("json2csv...")
           json2csvinR_unnest(paste0(temp_directory, "/",outfile),hostname_secondHost,proteinName_secondHost[[i]][1])
           #json2csvinR(paste0(temp_directory, "/",outfile),hostname)
           #json2csvinR(outfile,hostname)
+          print("json2csv ends...")
           #store the DiMA csv output names into a list (for further concatenation into one file)
           csvfile<-paste0(temp_directory, "/",proteinName_secondHost[[i]][1],"_",hostname_secondHost,"_",i,".csv",sep="")
           #csvfile<-paste0(proteinName[[i]][1],"_",i,".csv",sep="")
           
           csvfilelist_secondHost <- append(csvfilelist_secondHost, csvfile)
           #outfile<- paste0(proteinName[[i]][1],"_",i,".json",sep="")
+          #system2(command="cat", args=c(paste0(proteinName[[i]][1],"_",i,".csv",sep=""),">>", "dima.csv"))
         }
         
         data_secondHost <-  read.csv(csvfilelist_secondHost[1])
+        #Saving the first DiMA csv output file in the filepath array in the temp zipped folder
+        #write.csv(data, file = paste0(session$token, "/", proteinName[[1]][1],"_",i,".csv",sep=""))
+        
         #reading each file within the range and append them to create one file
         for (f in csvfilelist_secondHost[-1]){
           df <- read.csv(f)      # read the file
           #Saving the following DiMA csv output file in the filepath array in the temp zipped folder
+          #write.csv(data, file = paste0(session$token, "/", f, sep=""))
           data_secondHost <- rbind(data_secondHost, df)    # append the current file
         }
         
@@ -433,7 +473,9 @@ server <- function(input, output,session) {
       }
       
       #write to a final csv file "DiMAoutput.csv", consists of all the submitted proteins in the temp zipped folder
+      #write.table(data, sep=",", row.names = FALSE , file = paste0(session$token,"/DiMA.csv"))
       write.table(data, sep=",", row.names = FALSE , file = paste0(temp_directory,"/DiMA.csv"))
+      
       #Store all the path of the files in the directory in the reactive value
       mylist$files <- list.files(temp_directory,"*.*")
       
@@ -444,11 +486,19 @@ server <- function(input, output,session) {
         #----------------------NOTE (2/5/2022)-------------------#
         #"OUTFILE" SHOULD directly be the name of the input files user provided
         #"proteinName" are needed?
+        
+        #outfile<- paste0(proteinName[[i]][1],"_",i,".json",sep="") 
         csvfile<-paste0(strsplit(input$MSAfile$name[i], ".json")[[1]][1],".csv",sep="")
+        print("csv file")
+        print(csvfile)
+        print("json2csv...input type 2")
         direct_json2csvinR(filepath[i],hostname,proteinName[[i]][1], paste0(temp_directory,"/",csvfile))
-
+        print("json2csv ends...")
         #store the DiMA csv output names into a list (for further concatenation into one file)
+        
         csvfilelist <- append(csvfilelist, paste0(temp_directory,"/",csvfile))
+        #outfile<- paste0(proteinName[[i]][1],"_",i,".json",sep="")
+        #system2(command="cat", args=c(paste0(proteinName[[i]][1],"_",i,".csv",sep=""),">>", "dima.csv"))
       }
       data <-  read.csv(csvfilelist[1])
       
@@ -468,20 +518,32 @@ server <- function(input, output,session) {
       #     Second Host     #
       #---------------------#
       if(input$host == 2){
+        print("option 2 secondHost")
         csvfilelist_secondHost<-c()
         #run DiMA
+        #showModal(modalDialog("Running DiMA...", footer=NULL))
         for (i in 1:length(filepath_secondHost)){
+          print(proteinName_secondHost[[i]][1])
           csvfile<-paste0(strsplit(input$MSAfile_secondHost$name[i], ".json")[[1]][1],".csv",sep="")
+          print("csv file")
+          print(csvfile)
+          print("json2csv...input type 2")
           direct_json2csvinR(filepath[i],hostname_secondHost,proteinName_secondHost[[i]][1], paste0(temp_directory,"/",csvfile))
+          print("json2csv ends...")
           #store the DiMA csv output names into a list (for further concatenation into one file)
           csvfilelist_secondHost <- append(csvfilelist_secondHost, paste0(temp_directory,"/",csvfile))
         }
         
         data_secondHost <-  read.csv(csvfilelist_secondHost[1])
+        #Saving the first DiMA csv output file in the filepath array in the temp zipped folder
+        #write.csv(data, file = paste0(session$token, "/", proteinName[[1]][1],"_",i,".csv",sep=""))
         
         #reading each file within the range and append them to create one file
         for (f in csvfilelist_secondHost[-1]){
+          #print("f: ",f)
           df <- read.csv(f)      # read the file
+          #Saving the following DiMA csv output file in the filepath array in the temp zipped folder
+          #write.csv(data, file = paste0(session$token, "/", f, sep=""))
           data_secondHost <- rbind(data_secondHost, df)    # append the current file
         }
         
@@ -491,6 +553,10 @@ server <- function(input, output,session) {
       #write to a final csv file "DiMAoutput.csv", consists of all the submitted proteins in the temp zipped folder
       write.table(data, sep=",", row.names = FALSE , file = paste0(temp_directory,"/DiMA.csv"))
       
+      #Store all the path of the files in the directory in the reactive value
+      #mylist$files <- list.files(session$token,"*.*")
+      #print(mylist$files)
+      
     }else if (input$filetype == 3){ #if the data is DiMA csv output
       #read the input file
       if(input$host == 1){ #1 host
@@ -499,14 +565,11 @@ server <- function(input, output,session) {
           bind_rows
       }else{ #2 hosts
         filepath<-append(filepath,filepath_secondHost)
-        print('filepath')
-        print(filepath)
         data <- filepath %>%
           lapply(read_csv) %>%
           bind_rows
       }
-      print('csv data')
-      print(data)
+      
     }
     
     #Alert results are ready
@@ -514,7 +577,7 @@ server <- function(input, output,session) {
       h5("DiMA Output is ready! Click on other tabs to visualize the diversity dynamics of viral sequences!", style = "color:green") 
     })
     shinyjs::enable(id="downloadDiMA")
-    
+
     df<-data
     
     #determine number of host
@@ -561,8 +624,6 @@ server <- function(input, output,session) {
       }
       #categorise data based on host
       df$host<- factor(df$host)
-      print('host')
-      print(unique(df$host))
       #count the aa length for each proteins (each host is expected to have same number of proteins with same length)
       df_sub<-df[df$host==unique(df$host[1]),]
       
@@ -597,14 +658,20 @@ server <- function(input, output,session) {
       }
     }
 
-    group_names<-c("Index","Major","Minor","Unique","Total variants","Nonatypes")    
+    
+    group_names<-c("Index","Major","Minor","Unique","Total variants","Nonatypes")
+    
+    
+    MY_THEME<-theme(
+      axis.title.x = element_text(size = input$wordsize),
+      axis.text.x = element_text(size = input$wordsize),
+      axis.title.y = element_text(size = input$wordsize))
+    
     
     #--------------------Table Output----------------------#
     generate_entropyTable(data, output, proteinName)
     
     #----------------------Plotting-----------------------#
-    
-    #Tab 1: entropy incidence plot
     plot1<-reactive({
     plot_entropy_incidence(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder, input$kmerlength)
     })
