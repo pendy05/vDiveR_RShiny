@@ -162,7 +162,7 @@ generate_plot7<-function(input, output, plot7){
 }
 
 
-generate_entropyTable<-function(output, proteinName){
+generate_entropyTable<-function(data, output, proteinName){
   #get position of min entropy, min, max of entropy and total variant
   entropyTable <- data %>% 
     dplyr::group_by(proteinName) %>%
@@ -600,7 +600,7 @@ server <- function(input, output,session) {
     group_names<-c("Index","Major","Minor","Unique","Total variants","Nonatypes")    
     
     #--------------------Table Output----------------------#
-    generate_entropyTable(output, proteinName)
+    generate_entropyTable(data, output, proteinName)
     
     #----------------------Plotting-----------------------#
     
@@ -790,6 +790,7 @@ server <- function(input, output,session) {
 )  
   
   observeEvent(input$samplesubmit,ignoreInit=TRUE,{
+    
     shinyjs::addClass(id = "UpdateAnimate", class = "loading dots")
     data<-read.csv("www/DiMA_HCV.csv")
     df <- data.frame(data)
@@ -837,7 +838,7 @@ server <- function(input, output,session) {
     })
 
     generate_plot1(input,output,plot1)
-    generate_entropyTable(output, proteinName)
+    generate_entropyTable(data, output, proteinName)
 
     #Tab 2: Relationship between entropy and total variants for <i>k</i>-mer positions of the viral protein(s)
     plot2<-reactive({
@@ -848,7 +849,7 @@ server <- function(input, output,session) {
     
     #Tab 3: Dynamics of diversity motifs of viral proteome
     plot3<-reactive({
-      plot_dynamics_proteome(data,input$line_dot_size,input$wordsize,host)
+      plot_dynamics_proteome(data,input$line_dot_size,input$wordsize,input$host)
     })
     
     generate_plot3(input, output, plot3)
