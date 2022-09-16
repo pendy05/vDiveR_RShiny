@@ -353,7 +353,8 @@ body<-## Body content
                     position (1-<i>k</i>, 2-(<i>k</i>+1), etc.) of the proteins. The entropy values indicate the level of variability at the corresponding \
                     <i>k</i>-mer positions, with zero representing completely conserved positions (total variants incidence of 0%). Benchmark reference for \
                     values for entropy (black dotted line) and total variants (pink dotted line) are provided. For both individual protein and across proteome, \
-                                the minimum entropy value is zero while the maximum entropy value at y-axis is 100."))),
+                    the minimum entropy value is zero while the maximum entropy value at y-axis is 100. \
+                    <i>k</i>-mers with zero entropy are highlighted in light yellow."))),
               fluidRow(box(width=10,title="Entropy Table", status = "primary", solidHeader = TRUE,
               p(style="text-align: right;","*values rounded to 2 decimal places"),
               column(12, align="center", dataTableOutput("entropyTable", width="100%"))
