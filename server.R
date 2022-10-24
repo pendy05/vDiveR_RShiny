@@ -155,7 +155,7 @@ generate_plot7<-function(input, output, plot7){
   })
   
   output$plot7_download <- downloadHandler(
-    filename = function() { paste("plot_conservation levels_protein", '.jpg', sep='') },
+    filename = function() { paste("plot_conservationLevels_protein", '.jpg', sep='') },
     content = function(file) {
       ggsave(file, plot = plot7(),  width=input$width7, height=input$height7, unit="in", device = "jpg", dpi=input$dpi7)
   })
@@ -281,16 +281,16 @@ server <- function(input, output,session) {
     if (is.null(input$MSAfile)){
       return(NULL)
     }
-    #default host name: unknown
+    #default host name: Unknown Host 1
     if (input$hostname == ""){
-      hostname <-"Unknown"
+      hostname <-"Unknown Host 1"
     }else{
       hostname<-input$hostname
     }
     
-    #default host name: unknown
+    #default host name: Unknown Host 2
     if (input$hostname_secondHost == ""){
-      hostname_secondHost <-"Unknown"
+      hostname_secondHost <-"Unknown Host 2"
     }else{
       hostname_secondHost<-input$hostname_secondHost
     }
@@ -628,7 +628,7 @@ server <- function(input, output,session) {
     })
     
     output$plot3_download <- downloadHandler(
-      filename = function() { paste("plot3", '.jpg', sep='') },
+      filename = function() { paste("plot_dynamics_proteome", '.jpg', sep='') },
       content = function(file) {
         ggsave(file, plot = plot3(), width=input$width3, height=input$height3,unit="in", device = "jpg", dpi=input$dpi3)
       }
@@ -644,7 +644,7 @@ server <- function(input, output,session) {
     })
     
     output$plot4_download <- downloadHandler(
-      filename = function() { paste("plot4", '.jpg', sep='') },
+      filename = function() { paste("plot_dynamics_proteins", '.jpg', sep='') },
       content = function(file) {
         ggsave(file, plot = plot4(), width=input$width4, height=input$height4,unit="in", device = "jpg", dpi=input$dpi4)
       }
