@@ -29,7 +29,7 @@ plot3<-function(data){
   uniq<-rbind(plot3_data[plot3_data$Group == "Index",],plot3_data[plot3_data$Group == "Total variants",])
   minor$motif<- "Minor"
   uniq$motif<-"Unique"
-  
+
   plot3_data<-plot3_data%>%mutate(motif = case_when(
     plot3_data$Group == "Index" ~ "Major",
     plot3_data$Group == "Total variants" ~ "Major",
@@ -51,7 +51,7 @@ plot3<-function(data){
       strip.text.x = element_blank(),
       legend.position="bottom")+
     labs(y= "Incidence (%)", x="\nTotal variants (%)")+
-    facet_wrap(~ motif,ncol = 1)+ 
+    facet_wrap(~ motif,ncol = 1)+
     guides(colour = guide_legend(override.aes = list(alpha = 1,size=2),keywidth = 1,keyheight = 1,nrow = 1))+
     scale_colour_manual('',breaks=c("Index","Total variants","Major","Minor","Unique","Distinct variants"),
                         values = c("Index"="black", "Total variants"="#f7238a","MultiIndex"="red",
@@ -67,7 +67,7 @@ plot3<-function(data){
   variants<-plot3b_data[plot3b_data$Group %in% c("Major","Minor","Unique"),]
   variants$x<-"x"
   variants_max_yaxis<-ceiling((max(as.numeric(variants$Incidence))/10))*10
-  
+
   #plot 3b
   plot3b_index<-ggplot(index, aes(x=Group,y=Incidence))+geom_violin(color="black",fill="black",scale="width")+geom_boxplot(width=0.08,alpha=0.20,fill="white",outlier.shape=NA,color="white")+
     ylim(c(0,100))+
@@ -78,7 +78,7 @@ plot3<-function(data){
       axis.text.x  = element_blank(),
       axis.ticks.x = element_blank())+
       scale_color_grey()
-  
+
   plot3b_tv<-ggplot(index, aes(x=Group,y=Total_Variants))+geom_violin(color="#f7238a",fill="#f7238a")+geom_boxplot(width=0.08,alpha=0.20,color="black",fill="white",outlier.shape=NA)+
     ylim(c(0,100))+
     labs(y=NULL,x="Total Variants")+
@@ -91,7 +91,7 @@ plot3<-function(data){
       axis.text=element_text(colour="white"),
       axis.text.x  = element_blank(),
       axis.ticks = element_blank())
-  
+
   plot3b_nonatype<-ggplot(nonatypes, aes(x=Group,y=Incidence))+geom_violin(color="#c2c7cb",fill="#c2c7cb")+geom_boxplot(width=0.08,alpha=0.20,fill="white",outlier.shape=NA)+
     ylim(c(0,100))+
     labs(y=NULL,x="Distinct variants")+
@@ -107,10 +107,10 @@ plot3<-function(data){
     scale_y_continuous(position = "right",limits = c(0,variants_max_yaxis))+
     theme_classic(base_size = base_size-2)+
     labs(y=NULL,x=NULL)+
-    facet_wrap(Group ~ .,ncol=1,strip.position ="right")+ 
+    facet_wrap(Group ~ .,ncol=1,strip.position ="right")+
     theme(strip.placement = "outside",
           panel.border = element_rect(colour = "black", fill=NA, size=1),
-          axis.text.x=element_blank (), 
+          axis.text.x=element_blank (),
           axis.ticks.x=element_blank (),
           panel.spacing = unit(0, "lines"),
           strip.background=element_blank (),
@@ -119,8 +119,8 @@ plot3<-function(data){
     )+
     scale_colour_manual('',values = c( "Major"="#37AFAF","Minor"="#42aaff","Unique"="#af10f1" ))+
     scale_fill_manual('',values = c( "Major"="#37AFAF","Minor"="#42aaff","Unique"="#af10f1" ))+
-    guides(fill="none",color='none') 
-  
+    guides(fill="none",color='none')
+
   #annotate the violin plot
   plot3b_variants<-annotate_figure(plot3b_variants,bottom = text_grob("a\n",size=ceiling(base_size/2) ,color = "white"))
   plot3b<-ggarrange(plot3b_index, plot3b_tv,plot3b_variants, plot3b_nonatype, ncol=4,widths = c(1,0.9,0.95,1))
@@ -136,16 +136,16 @@ host<-1
 if (host == 1){
   plot3(data)
 }else{ #multihost
-  
+
   #split the data into multiple subsets (if multiple hosts detected)
   plot3_list<-split(data,data$host)
   plot3_multihost<-lapply(plot3_list,plot3)
-  
+
   #create spacing between multihost plots
   theme = theme(plot.margin = unit(c(0.5,1.0,0.1,0.5), "cm"))
   do.call("grid.arrange", c(grobs=lapply(plot3_multihost,"+",theme), ncol = length(unique(data$host))))
 }
 
 #save plot as 600dpi image
-ggsave(filename="plot-Dynamics-of-Diversity-Motifs(Proteome).jpg", width = 9.5, height = 12.5, unit="in",device='jpg', dpi=600)
+ggsave(filename="plot-Dynamics-of-Diversity-Motifs(Proteome).jpg", width = 9.5, height = 12.5, unit="in",device='jpg', dpi=600, bg='white')
 
