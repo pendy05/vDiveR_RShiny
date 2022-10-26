@@ -131,7 +131,7 @@ generate_plot3<-function(input, output, plot3){
   output$plot3_download <- downloadHandler(
     filename = function() { paste("plot_dynamics_diversity_motifs_proteome", '.jpg', sep='') },
     content = function(file) {
-      ggsave(file, plot = plot3(), width=input$width3, height=input$height3,unit="in", device = "jpg", dpi=input$dpi3)
+      ggsave(file, plot = plot3(), width=input$width3, height=input$height3,unit="in", device = "jpg", dpi=input$dpi3,bg='white')
     }
   )
 }
@@ -144,7 +144,7 @@ generate_plot4<-function(input, output, plot4){
   output$plot4_download <- downloadHandler(
     filename = function() { paste("plot_dynamics_diversity_motifs_proteins", '.jpg', sep='') },
     content = function(file) {
-      ggsave(file, plot = plot4(), width=input$width4, height=input$height4,unit="in", device = "jpg", dpi=input$dpi4)
+      ggsave(file, plot = plot4(), width=input$width4, height=input$height4,unit="in", device = "jpg", dpi=input$dpi4, bg='white')
     }
   )
 }
