@@ -6,13 +6,14 @@ library(dplyr)
 
 #load data from csv file
 data<-read.csv("../www/DiMA_HCV.csv")
+data<-read.csv("C:\\projects\\DiveR_public\\DiveR\\protein_2hosts.csv")
 df <- data.frame(data) 
 #NOTE: user is required to set the protein order here
 #leave the protein order as default; follow the order in csv file
 proteinOrder=""
 
 #NOTE: user is required to input the number of host here
-host <-1
+host <-2
 #determine number of host
 #scale the amino acid position for each protein
 if (host ==1){ #single host
@@ -38,9 +39,9 @@ if (host ==1){ #single host
   } 
 }else{ # multihost
   #categorise data based on host
-  df$Host<- factor(df$Host)
+  df$host<- factor(df$host)
   #count the aa length for each proteins (each host is expected to have same number of proteins with same length)
-  df_sub<-df[df$Host==unique(df$Host[1]),]
+  df_sub<-df[df$host==unique(df$host[1]),]
   if (proteinOrder ==""){
     a<-table(df_sub$proteinName)
     proteinName<-as.vector(names(a))
