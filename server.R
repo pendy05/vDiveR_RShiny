@@ -49,6 +49,7 @@ resetInput_to_initialState <-function(output){
   output$alert <- renderUI({})
   output$alertSample <- renderUI({})
   output$plot1<- renderPlot({})
+  output$plotEntropy<- renderPlot({})
   output$plot2<- renderPlot({})
   output$plot3<- renderPlot({})
   output$plot4<- renderPlot({})
@@ -101,6 +102,20 @@ generate_plot1<-function(input, output, plot1){
     filename = function() { paste("plot_entropy_incidence", '.jpg', sep='') },
     content = function(file) {
       ggsave(file, plot = plot1(), width=input$width, height=input$height,unit="in", device = "jpg", dpi=input$dpi)
+    }
+  )
+  
+}
+
+generate_plotEntropy<-function(input, output, plotEntropy){
+  output$plotEntropy <- renderPlot({
+    plotEntropy()  
+  })
+  
+  output$plotEntropy_download <- downloadHandler(
+    filename = function() { paste("plot_entropy", '.jpg', sep='') },
+    content = function(file) {
+      ggsave(file, plot = plotEntropy(), width=input$width, height=input$height,unit="in", device = "jpg", dpi=input$dpi)
     }
   )
   
@@ -229,6 +244,7 @@ server <- function(input, output,session) {
     newtab <- switch(input$tabs,
                 "description" = "inputdata_description",
                 "plot1" = "inputdata_description",
+                "plotEntropy" = "inputdata_description",
                 "plot2" = "inputdata_description",
                 "plot3" = "inputdata_description",
                 "plot4" = "inputdata_description",
@@ -258,6 +274,7 @@ server <- function(input, output,session) {
     }
   })
   
+  print('create dir')
   #To create directory
   temp_directory <- file.path(tempdir(), as.integer(Sys.time()))
   dir.create(temp_directory)
@@ -355,11 +372,15 @@ server <- function(input, output,session) {
       for (i in 1:length(filepath)){        
         outfile<- paste0(proteinName[[i]][1],"_",hostname,"_",i,".json",sep="")
 
+        #print('before dima-cli', paste0(temp_directory, "/",outfile))
         system(paste("python_env/Scripts/dima-cli.exe -i", filepath[i], "-o",paste0(temp_directory, "/",outfile),"-s",input$supportLimit, "-q",proteinName[[i]][1], "-l",input$kmerlength, "-a",inputtype))
 
+        print('after dima-cli')
         #https://stackoverflow.com/questions/5990654/incomplete-final-line-warning-when-trying-to-read-a-csv-file-into-r
-        write("\r\n", file = paste0("./",outfile), append = TRUE, sep = "\n")
+        #write("\r\n", file = paste0("./",outfile), append = TRUE, sep = "\n")
+        print('before unnest')
         json2csvinR_unnest(paste0(temp_directory, "/",outfile),hostname, proteinName[[i]][1])
+        print('after unnest')
 
         #store the DiMA csv output names into a list (for further concatenation into one file)
         csvfile<-paste0(temp_directory, "/",proteinName[[i]][1],"_",hostname,"_",i,".csv",sep="")
@@ -606,11 +627,18 @@ server <- function(input, output,session) {
     
     #Tab 1: entropy incidence plot
     plot1<-reactive({
-    plot_entropy_incidence(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder, input$kmerlength)
+      plot_entropy_incidence(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder, input$kmerlength)
     })
 
     generate_plot1(input,output,plot1)
 
+
+    #Additional plot: Entropy plot
+    plotEntropy<-reactive({
+      plot_entropy(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder, input$kmerlength)
+    })
+
+    generate_plotEntropy(input, output, plotEntropy)
 
     #Tab 2: correlation plot
     plot2<-reactive({
@@ -839,6 +867,14 @@ server <- function(input, output,session) {
 
     generate_plot1(input,output,plot1)
     generate_entropyTable(data, output, proteinName)
+
+    #Additional plot: Entropy plot
+    plotEntropy<-reactive({
+      plot_entropy(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder, input$kmerlength)
+    })
+
+    generate_plotEntropy(input, output, plotEntropy)
+    
 
     #Tab 2: Relationship between entropy and total variants for <i>k</i>-mer positions of the viral protein(s)
     plot2<-reactive({

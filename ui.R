@@ -64,10 +64,51 @@ border-color: #dddddd !important;
         line-height: 50px;
         text-align: center;
         font-family: Arial;
-        padding: 0 95px;
+        padding: 0 6%;
         overflow: hidden;
         color: white;
       }
+
+      @media screen and (max-width: 1090px) {
+        .myClass { 
+          font-size: 20px;
+          line-height: 50px;
+          text-align: center;
+          font-family: Arial;
+          padding: 0 8%;
+          overflow: hidden;
+          color: white;
+        }
+
+      }
+
+      @media screen and (max-width: 975px) {
+        .myClass { 
+          font-size: 18px;
+          line-height: 50px;
+          text-align: center;
+          font-family: Arial;
+          padding: 0 8%;
+          overflow: hidden;
+          color: white;
+        }
+
+      }
+
+      @media screen and (max-width: 910px) {
+        .myClass { 
+          font-size: 16px;
+          line-height: 50px;
+          text-align: center;
+          font-family: Arial;
+          padding: 0 8%;
+          overflow: hidden;
+          color: white;
+        }
+
+      }
+
+      
       
       /*
           modification on elements in all pages
@@ -124,11 +165,12 @@ sideBar<-dashboardSidebar(
     id="tabs",
     menuItem("Project Description", tabName = "description", icon = icon("r-project")),
     menuItem("Input Data Description", tabName = "inputdata_description", icon = icon("info-circle")),
-    menuItem("Entropy and incidence of total variants", tabName = "plot1", icon = icon("area-chart")),
-    menuItem("Correlation of entropy", tabName = "plot2", icon = icon("chart-line")),
-    menuItem("Dynamics of diversity motifs (Proteome)", tabName = "plot3", icon = icon("area-chart", lib = "font-awesome")),
-    menuItem("Dynamics of diversity motifs (Protein)", tabName = "plot4", icon = icon("area-chart")),
-    menuItem("Distribution of conservation levels", tabName = "plot7", icon = icon("bar-chart")),
+    menuItem("Entropy And Incidence Of Total Variants", tabName = "plot1", icon = icon("area-chart")),
+    menuItem("Entropy", tabName = "plotEntropy", icon = icon("area-chart")),
+    menuItem("Correlation Of Entropy", tabName = "plot2", icon = icon("chart-line")),
+    menuItem("Dynamics Of Diversity Motifs (Proteome)", tabName = "plot3", icon = icon("area-chart", lib = "font-awesome")),
+    menuItem("Dynamics Of Diversity Motifs (Protein)", tabName = "plot4", icon = icon("area-chart")),
+    menuItem("Distribution Of Conservation Levels", tabName = "plot7", icon = icon("bar-chart")),
     menuItem("Help Page", tabName = "helppage", icon = icon("question")),
     br(),
     
@@ -178,14 +220,15 @@ body<-## Body content
     shinyjs::useShinyjs(),
     shinyjs::extendShinyjs(text = jscode, functions = c("disableTab","enableTab")),
     shinyjs::inlineCSS(css),
-    tags$title("DiveR"),
-    tags$link(rel = "icon", type = "image/png", sizes = "32x32", href = "DiveR_logo.png"),
+    tags$title("vDiveR"),
     tags$script(HTML('
       $(document).ready(function() {
-        $("header").find("nav").append(\'<span class="myClass"> DiveR: Diversity dynamics Visualization in R </span>\');
+        $("header").find("nav").append(\'<span class="myClass"> vDiveR: Viral Protein Diversity Dynamics Visualization in R </span>\');
       })
      ')),
-    tags$head(tags$style(type="text/css", '
+    tags$head(
+      tags$link(rel = "icon", type = "image/png", sizes = "32x32", href = "vDiveR_logo.png"),
+      tags$style(type="text/css", '
             .loading {
                 display: inline-block;
                 overflow: hidden;
@@ -361,8 +404,32 @@ body<-## Body content
               )
               )
       ),
+       tabItem(tabName = "plotEntropy",
+              HTML("<h2>Entropy for each aligned <i>k</i>-mer positions of a viral protein(s)</h2>"),
+              fluidRow(
+                box(
+                  width=10,
+                  plotOutput("plotEntropy", height = 650)),
+                box(
+                  width=2,title="Download Option", status = "primary", solidHeader = TRUE,
+                  numericInput(inputId="height", label="Height (inch):", value = 7.0),
+                  numericInput(inputId="width", label="Width (inch):", value = 25.5),
+                  numericInput(inputId="dpi", label="DPI:", value = 500),
+                  downloadButton('plotEntropy_download')
+                )
+                
+              ),
+              fluidRow(box(width = 10,title="Description", status = "primary", solidHeader = TRUE,
+                           collapsible = TRUE,
+                           HTML("Entropy (black) was measured for each aligned <i>k</i>-mer (<i>k</i> number of amino acids) \
+                    position (1-<i>k</i>, 2-(<i>k</i>+1), etc.) of the proteins. The entropy values indicate the level of variability at the corresponding \
+                    <i>k</i>-mer positions, with zero representing completely conserved positions. Benchmark reference for \
+                    values for entropy (black dotted line) is provided. For both individual protein and across proteome, \
+                    the minimum entropy value is zero while the maximum entropy value at y-axis is 100. \
+                    <i>k</i>-mers with zero entropy are highlighted in light yellow.")))
+      ),
       
-      # Second tab content
+      # Second plot content
       tabItem(tabName = "plot2",
               HTML("<h2>Relationship between entropy and total variants for <i>k</i>-mer positions of the viral protein(s)</h2>"),
               fluidRow(
