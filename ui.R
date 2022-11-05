@@ -268,8 +268,8 @@ body<-## Body content
                 challenges the design of diagnostic, prophylactic and therapeutic interventions against viruses. \
                  The publicly available tool, Diversity Motif Analyser\
                 (DiMA; <a href=\'https://github.com/PU-SDS/DiMA\'>https://github.com/PU-SDS/DiMA</a>) was developed to facilitate the dissection of sequence diversity dynamics for viruses. \
-                Herein, we present DiveR, a DiMA wrapper implemented as a web-based application \
-                                  to ease the visualization of outputs from DiMA. DiveR allows visualization of the diversity motifs\
+                Herein, we present vDiveR, a DiMA wrapper implemented as a web-based application \
+                                  to ease the visualization of outputs from DiMA. vDiveR allows visualization of the diversity motifs\
                          (index and its variants – major, minor and unique) for elucidation of the underlying inherent dynamics.\
                          '),
                     div(img(src='glossary_bold.jpg' ,height='auto',width="60%", align = "center"), style="text-align: center;"),
@@ -301,9 +301,9 @@ body<-## Body content
                                                    tabsetPanel(id="hostSelection_input",
                                                                
                                                                tabPanel("Description",tags$br(),
-                                                                        HTML('DiveR requires either aligned sequence file(s) or DiMA output file(s) as input file(s), \
-                                                               where DiveR will convert and concatenate them (the inputs) into a single CSV file. This CSV file will act as the source for subsequent data visualisation. \
-                                                               Each file is treated as one viral protein. Currently, DiveR accepts FASTA or JSON/CSV \
+                                                                        HTML('vDiveR requires either aligned sequence file(s) or DiMA output file(s) as input file(s), \
+                                                               where vDiveR will convert and concatenate them (the inputs) into a single CSV file. This CSV file will act as the source for subsequent data visualisation. \
+                                                               Each file is treated as one viral protein. Currently, vDiveR accepts FASTA or JSON/CSV \
                                                                files generated using multiple sequence alignment (MSA) tools and DiMA, respectively. <br><br>\
                                                                Parameters such as host number selection (one or two hosts), <i>k</i>-mer size, support threshold, host name, and protein name are defined by the user. So, <b>please assign files of same host under one tab</b>. Users can also manipulate additional plotting parameters: \
                                                                order of protein name, font, line, and dot size.'),
@@ -518,16 +518,16 @@ body<-## Body content
       tabItem(tabName = "helppage",
               h2("Help Page"),
               fluidRow(box(width=12,title="Contact",solidHeader = TRUE, status="primary",
-                           HTML('For technical assistance or bug report, please reach us out via GitHub (<a href=\'https://github.com/pendy05/DiveR\'>https://github.com/pendy05/DiveR</a>). For the general correspondence, please email Dr. Asif M. Khan (<a href=\'asif@perdanauniversity.edu.my\'>asif@perdanauniversity.edu.my</a>, <a href=\'makhan@bezmialem.edu.tr\'>makhan@bezmialem.edu.tr</a>).')                           
+                           HTML('For technical assistance or bug report, please reach us out via GitHub (<a href=\'https://github.com/pendy05/vDiveR\'>https://github.com/pendy05/DiveR</a>). For the general correspondence, please email Dr. Asif M. Khan (<a href=\'asif@perdanauniversity.edu.my\'>asif@perdanauniversity.edu.my</a>, <a href=\'makhan@bezmialem.edu.tr\'>makhan@bezmialem.edu.tr</a>).')                           
               )),
               fluidRow(box(width=12,title="Frequently Asked Questions (FAQs)",solidHeader = TRUE,status="primary",
                            HTML("1. What can I do if the elements in the plot appear to be overlapping each other due to the displayed plot size? <br>\
                        You may want to increase the height and/or width of the plot offered in the download option, based on your need and download the plot.<br><br>\
                        2. Where can I get the source code of these R plots if I would like to modify the code based on my need? <br>\
-                       You may visit this GitHub repository (<a href = 'https://github.com/pendy05/DiveR'>https://github.com/pendy05/DiveR</a>) to get the corresponding source codes.<br><br>
+                       You may visit this GitHub repository (<a href = 'https://github.com/pendy05/vDiveR'>https://github.com/pendy05/vDiveR</a>) to get the corresponding source codes.<br><br>
                        3. What is the maximum image size (in inches) that can be downloaded?<br>Maximum 50 (H) x50 (W) inches to prevent the common error of specifying dimensions in pixels encountered in R ggsave() function. <br><br>\
                        4. I encountered 'Error in x$clone: attempt to apply non-function' in plot 'entropy and incidence of total variants' when I submit files for two hosts. Other plots work fine. Why does this happen?<br>\
-                       DiveR expects the proteins with same protein name have same length (number of positions) across both the hosts to carry out the comparison plot.")
+                       vDiveR expects the proteins with same protein name have same length (number of positions) across both the hosts to carry out the comparison plot.")
               )
               )
               
@@ -541,8 +541,8 @@ body<-## Body content
 
 
 #client side
-ui <- dashboardPage(title = "DiveR",
-  dashboardHeader(title = NULL, tags$li(class="dropdown",tags$a(href='https://github.com/pendy05/DiveR',
+ui <- dashboardPage(title = "vDiveR",
+  dashboardHeader(title = NULL, tags$li(class="dropdown",tags$a(href='https://github.com/pendy05/vDiveR',
                                                                 tags$img(src='GitHub-lightLogo.png',height = "18px")
   ))),
   sideBar,
