@@ -1,12 +1,12 @@
 # vDiveR (viral protein Diversity dynamics visualization in R)
 
-vDiveR is a graphical user interface (GUI)-based web application hosted on R Shiny for the visualization of various diversity dynamics. The application allow users to visualize the diversity motifs (index and its variants – major, minor and unique) for elucidation of the underlying inherent dynamics. vDiveR presents a total of eight tabs: 1) homepage, 2) data description, with tabs 3) to 7) presenting five plots depicting sequence variability dynamics and lastly 8) help page tab. vDiveR generates five plots for k-mer positions of a viral protein/proteome:
+vDiveR is a graphical user interface (GUI)-based web application hosted on R Shiny for the visualization of various diversity dynamics. The application allow users to visualize the diversity motifs (index and its variants – major, minor and unique) for elucidation of the underlying inherent dynamics. vDiveR presents a total of eight tabs: 1) homepage, 2) data description, with tabs 3) to 7) presenting five plots depicting sequence variability dynamics and lastly 8) help page tab. vDiveR generates five plots for <i>k</i>-mer positions of a viral protein/proteome:
 
 1. entropy and incidence of total variants,
 2. relationship between entropy and total variants for <i>k</i>-mer positions of a viral protein,
 3. dynamics of diversity motifs for viral proteome,
 4. dynamics of diversity motifs for individual protein and
-5. distribution of conservation levels (completely conserved, highly con-served, mixed variable, highly diverse, and extremely diverse) of <i>k</i>-mer positions for viral proteome and protein(s).
+5. distribution of conservation levels (completely conserved, highly conserved, mixed variable, highly diverse, and extremely diverse) of <i>k</i>-mer positions for viral proteome and protein(s).
 
 Please visit our [vDiveR web server](https://protocol-viral-diversity.shinyapps.io/vDiveR/)!
 
