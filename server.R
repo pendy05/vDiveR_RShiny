@@ -201,13 +201,17 @@ generate_entropyTable<-function(data, output, proteinName){
 generate_CCS_HCS_table<-function(input, output, data){
   # for now not splitted by hosts
   output$plot7_seqs <- renderDataTable({
-    seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, conservation=input$conserv_lvl)[[input$table_type]]
+    seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, 
+                     threshold_pct = as.numeric(input$conserv_percent),
+                     conservation=input$conserv_lvl)[[input$table_type]]
   })
   
   output$conservSeq_download <- downloadHandler(
     filename =  function() {paste0(input$conserv_lvl, ".", input$table_type)},
     content = function(fname) {
-      df <- seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, conservation=input$conserv_lvl)[[input$table_type]]
+      df <- seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, 
+                             threshold_pct = as.numeric(input$conserv_percent),
+                             conservation=input$conserv_lvl)[[input$table_type]]
       write.table(df, file = fname, col.names = ifelse(input$table_type == "csv", TRUE, FALSE), sep = ",", row.names = FALSE, quote = FALSE)
     }
   )
@@ -705,9 +709,15 @@ server <- function(input, output,session) {
       }
       
     })
-
+    
     generate_plot7(input, output, plot7)
+    output$conserv_threshold_box <- renderUI({
+      textInput(inputId="conserv_percent", label=NULL, 
+                value = ifelse(input$conserv_lvl == "CCS", 100, 90))
+    })
     generate_CCS_HCS_table(input, output, data)
+    
+
     
     output$downloadDiMA <- downloadHandler(
       filename = function(){
@@ -911,9 +921,16 @@ server <- function(input, output,session) {
 
        plot_conservationLevel(data,input$line_dot_size, input$wordsize, input$host, input$proteinOrder,input$conservationLabel)  
     })
+  
     
     generate_plot7(input, output, plot7)
+    output$conserv_threshold_box <- renderUI({
+      textInput(inputId="conserv_percent", label=NULL, 
+                value = ifelse(input$conserv_lvl == "CCS", 100, 90))
+    })
     generate_CCS_HCS_table(input, output, data)
+    
+
     
     shinyjs::removeClass(id = "UpdateAnimate", class = "loading dots")
     #Alert results are ready

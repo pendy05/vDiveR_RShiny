@@ -1,5 +1,5 @@
 # function to create csv or fasta files with conservative sequences
-seqConcatenation <- function(input_file, kmer, conservation) {
+seqConcatenation <- function(input_file, kmer, conservation, threshold_pct = NULL) {
   
   # ---- load libs ----
   libs <- c("dplyr", "tidyr", "stringr")
@@ -8,11 +8,18 @@ seqConcatenation <- function(input_file, kmer, conservation) {
                              warn.conflicts = FALSE, quietly = TRUE))
   }
   
-  threshold <- ifelse(conservation == "CCS", 100, 90)
-  
+  if (is.null(threshold_pct)) {
+    threshold <- ifelse(conservation == "CCS", 100, 90)
+  } else {
+    threshold <- threshold_pct
+  }
+
+  print(threshold)
+
   # filter whole dataset by index.incidence (HCS/CCS)
   df <- input_file %>%
     dplyr::filter(index.incidence >= threshold)
+  print(nrow(df))
   
   # ---- 1. Protein Sequences ----
   # remember whole sequence of the protein

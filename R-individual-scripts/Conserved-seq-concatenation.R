@@ -7,11 +7,13 @@ option_list = list(
               help="input csv filename", metavar="character"),
   make_option(c("-o", "--output"), type="character", default=NULL, 
               help="output filename (FASTA and CSV)", metavar="character"),
-  make_option(c("-k", "--kmer"), type="integer", default=NULL, 
+  make_option(c("-k", "--kmer"), type="integer", default=9L, 
               help="kmer size", metavar="character"),
   make_option(c("-c", "--conservation"), type="character", default="CCS",  
               help="conservation level: completely conserved(CCS); both completely conserved and highly conserved(HCS) [Default: CCS]", 
-              metavar="character")
+              metavar="character"),
+  make_option(c("-p", "--pct"), type="integer", default=NULL, 
+              help="threshold for conseration level to use instead of standard HCS (90%) and CCS (100%) thresholds", metavar="character"),
 )
 
 opt_parser = OptionParser(option_list=option_list);
@@ -39,7 +41,11 @@ proteins <- read.csv(opt$input)
 # HCS or CCS conservation level
 conservation <- opt$conservation
 # threshold HCS / CCS
-threshold <- ifelse(conservation == "CCS", 100, 90)
+if (is.null(opt$pct)) {
+  threshold <- ifelse(conservation == "CCS", 100, 90)
+} else {
+  threshold <- opt$pct
+}
 
 
 # filter whole dataset by index.incidence (HCS/CCS)
