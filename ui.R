@@ -14,7 +14,6 @@ color: #474747 !important;
 cursor: not-allowed !important;
 border-color: #dddddd !important;
 }
-
 /*
           box status
       */
@@ -68,7 +67,6 @@ border-color: #dddddd !important;
         overflow: hidden;
         color: white;
       }
-
       @media screen and (max-width: 1090px) {
         .myClass { 
           font-size: 20px;
@@ -79,9 +77,7 @@ border-color: #dddddd !important;
           overflow: hidden;
           color: white;
         }
-
       }
-
       @media screen and (max-width: 975px) {
         .myClass { 
           font-size: 18px;
@@ -92,9 +88,7 @@ border-color: #dddddd !important;
           overflow: hidden;
           color: white;
         }
-
       }
-
       @media screen and (max-width: 910px) {
         .myClass { 
           font-size: 16px;
@@ -105,9 +99,7 @@ border-color: #dddddd !important;
           overflow: hidden;
           color: white;
         }
-
       }
-
       
       
       /*
@@ -151,7 +143,6 @@ shinyjs.disableTab = function(name) {
   });
   tab.addClass('disabled');
 }
-
 shinyjs.enableTab = function(name) {
   var tab = $('.nav li a[data-value=' + name + ']');
   tab.unbind('click.tab');
@@ -165,6 +156,7 @@ sideBar<-dashboardSidebar(
     id="tabs",
     menuItem("Project Description", tabName = "description", icon = icon("r-project")),
     menuItem("Input Data Description", tabName = "inputdata_description", icon = icon("info-circle")),
+    menuItem("Metadata", tabName = "MetaData", icon = icon("th")),
     menuItem("Entropy And Incidence Of Total Variants", tabName = "plot1", icon = icon("area-chart")),
     menuItem("Entropy", tabName = "plotEntropy", icon = icon("area-chart")),
     menuItem("Correlation Of Entropy", tabName = "plot2", icon = icon("chart-line")),
@@ -375,6 +367,56 @@ body<-## Body content
                              </ol>
                                 ")))
       ),
+      tabItem(tabName = "MetaData",
+              h2("Sequence Metadata"),
+              fluidRow(
+                box(title = "Metadata Input Format", width =12,status = "primary", solidHeader = TRUE,
+                    div(img(src='metadat_input_format.jpg' ,width="30%", height='30%'), style="text-align: left;"),
+                    HTML("<ol>
+                          <li>Name : name of the protein or component</li>\
+                          <li>Accession : ID of the protein sequences</li>\
+                          <li>Country : country of isolation for the respective sequence based on sequence database source (<i>e.g.</i> GISAID)</li>\
+                          <li>Year : date of the sequence was discovered, format: YYYY/MM/DD </li>\
+                          </ol> "))
+                ),
+              fluidRow(box(width=9, title = "Data input", status = "primary" ,solidHeader = T,
+                           fileInput(inputId = "Metafile",label = HTML("Input your metadata with csv format :"), accept = c(".csv"), placeholder = "metadata.csv", multiple = T),
+                           textOutput("inmetafilename"),
+                           uiOutput('protein_selection'))),
+              fluidRow(
+                box(
+                  width=10, title = "Country", status = "primary" ,solidHeader = T,
+                  h4("Geographical Location"),
+                  plotOutput("plot_worldmap", height = 500),
+                  h4("Geographical Location (Table)"),
+                  DT::dataTableOutput("countrytable")),
+                box(
+                  width=2,title="Download Option", status = "primary", solidHeader = TRUE,
+                  numericInput(inputId="height_wm", label="Height (inch):", value = 4.0),
+                  numericInput(inputId="width_wm", label="Width (inch):", value = 8.0),
+                  numericInput(inputId="dpi_wm", label="DPI:", value = 500),
+                  downloadButton('plot_worldmap_download', label = 'Download figure'),
+                  HTML("<br><br>"),
+                  downloadButton('table_worldmap_download', label = 'Download table')
+                   )),
+              fluidRow(
+                box(
+                  width=10, title = "Time", status = "primary" ,solidHeader = T,
+                  shinyThings::radioSwitchButtons(inputId = 'time_scale',label = "Diplay y-scale", choices = c("count", "log"), selected = "count"),
+                  h4("Date"),
+                  plotOutput("plot_time", height = 500),
+                  h4("Date (Table)"),
+                  DT::dataTableOutput("timetable")),
+                box(
+                  width=2,title="Download Option", status = "primary", solidHeader = TRUE,
+                  numericInput(inputId="height_tm", label="Height (inch):", value = 4.0),
+                  numericInput(inputId="width_tm", label="Width (inch):", value = 8.0),
+                  numericInput(inputId="dpi_tm", label="DPI:", value = 500),
+                  downloadButton('plot_time_download', label = 'Download figure'),
+                  HTML("<br><br>"),
+                  downloadButton('table_time_download', label = 'Download table')
+                ))
+      ),
       tabItem(tabName = "plot1",
               HTML("<h2>Entropy and incidence of total variants for each aligned <i>k</i>-mer positions of a viral protein(s)</h2>"),
               fluidRow(
@@ -541,7 +583,6 @@ body<-## Body content
       
     )
   )
-
 
 
 
