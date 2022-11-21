@@ -74,34 +74,35 @@ resetInput_to_initialState <-function(output){
 
 #download sample data
 downloadSampleData<-function(output){
+  print('hola')
   output$downloadSampleData <- downloadHandler(
   filename = function() {
-    paste("DiMA_sample_output_", Sys.Date(), ".zip", sep = "")
+    paste("vDiveR_sample_input_", Sys.Date(), ".zip", sep = "")
   },
   content = function(file) { 
+    print('in temp dir')
     #To create temporary directory
     temp_directory_sample <- file.path(tempdir(), as.integer(Sys.time()))
     dir.create(temp_directory_sample)
     
     csv_dataset <- read.csv("www/DiMA_HCV.csv")
-    MSA_dataset_Core <- read.fasta("www/Core_mafft.fasta")
+    MSA_dataset_Core <- seqinr::read.fasta("www/Core_mafft.fasta")
     csv_dataset_Core <- read.csv("www/core_9mer.csv")
     JSON_dataset_Core<- rjson::fromJSON(file = "www/core_9mer.json")
-    MSA_dataset_NS3 <- read.fasta("www/NS3_mafft.fasta")
+    MSA_dataset_NS3 <- seqinr::read.fasta("www/NS3_mafft.fasta")
     csv_dataset_NS3 <- read.csv("www/NS3_9mer.csv")
     JSON_dataset_NS3<- rjson::fromJSON(file = "www/NS3_9mer.json")
     csv_dataset_metadata <- read.csv("www/oneID_GISAID.csv")
 
     #write sample dataset in CSV, FA & JSON formats into temp directory
     write.csv(csv_dataset,paste0(temp_directory_sample,"/HCV_DiMA.csv"))
-    write.fasta(MSA_dataset_Core,names=names(MSA_dataset_Core),file.out = paste0(temp_directory_sample,"/HCV_aligned_Core.fasta"))
+    seqinr::write.fasta(MSA_dataset_Core,names=names(MSA_dataset_Core),file.out = paste0(temp_directory_sample,"/HCV_aligned_Core.fasta"))
     write.csv(csv_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.csv"))
     write_json(JSON_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.json"))
-    write.fasta(MSA_dataset_NS3,names=names(MSA_dataset_NS3),file.out = paste0(temp_directory_sample,"/HCV_aligned_NS3.fasta"))
+    seqinr::write.fasta(MSA_dataset_NS3,names=names(MSA_dataset_NS3),file.out = paste0(temp_directory_sample,"/HCV_aligned_NS3.fasta"))
     write.csv(csv_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.csv"))
     write_json(JSON_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.json"))
     write.csv(csv_dataset_metadata,paste0(temp_directory_sample,"/metadata.csv"))
-    print('donwloading..............')
     zip::zip(zipfile = file,files = dir(temp_directory_sample), root = temp_directory_sample)
   },
   contentType = "application/zip"
@@ -245,13 +246,17 @@ generate_entropyTable<-function(data, output, proteinName){
 generate_CCS_HCS_table<-function(input, output, data){
   # for now not splitted by hosts
   output$plot7_seqs <- renderDataTable({
-    seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, conservation=input$conserv_lvl)[[input$table_type]]
+     seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, 
+                     threshold_pct = as.numeric(input$conserv_percent),
+                     conservation=input$conserv_lvl)[[input$table_type]]
   })
   
   output$conservSeq_download <- downloadHandler(
     filename =  function() {paste0(input$conserv_lvl, ".", input$table_type)},
     content = function(fname) {
-      df <- seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, conservation=input$conserv_lvl)[[input$table_type]]
+      df <- seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, 
+                             threshold_pct = as.numeric(input$conserv_percent),
+                             conservation=input$conserv_lvl)[[input$table_type]]
       write.table(df, file = fname, col.names = ifelse(input$table_type == "csv", TRUE, FALSE), sep = ",", row.names = FALSE, quote = FALSE)
     }
   )
@@ -287,8 +292,9 @@ server <- function(input, output,session) {
   observeEvent(input$start, {
     newtab <- switch(input$tabs,
                 "description" = "inputdata_description",
-                "plot1" = "inputdata_description",
+                "MetaData" = "inputdata_description",
                 "plotEntropy" = "inputdata_description",
+                "plot1" = "inputdata_description",
                 "plot2" = "inputdata_description",
                 "plot3" = "inputdata_description",
                 "plot4" = "inputdata_description",
@@ -403,12 +409,6 @@ server <- function(input, output,session) {
     content = function(file) {write.csv(TimeInFo(), file, quote = F)}
   )
 
-  
-  
-  
-  
-  
-  print('create dir')
   #To create directory
   temp_directory <- file.path(tempdir(), as.integer(Sys.time()))
   dir.create(temp_directory)
@@ -477,7 +477,6 @@ server <- function(input, output,session) {
       proteinName_secondHost <- unlist(lapply(strsplit(input$proteinNames_secondHost,','),trimws))
       
       if (length(proteinName_secondHost) < length(filepath_secondHost)){ #if number of protein names != number of files, then assign NA to that protein
-        print("different len")
         proteinName_secondHost <- append(proteinName_secondHost,rep("Unknown",each = length(filepath_secondHost)-length(proteinName_secondHost)))
       }# }else if (length(proteinName_secondHost) > length(filepath_secondHost)){
       #   #do something
@@ -829,7 +828,6 @@ server <- function(input, output,session) {
         data$host = factor(data$host)
         #split the data into multiple subsets (if multiple hosts detected)
         plot7_list<-split(data,data$host)
-        print("plot 7 - 2 host")
         plot7_multihost<-lapply(plot7_list,plot_conservationLevel,input$line_dot_size, input$wordsize, input$host, input$proteinOrder,input$conservationLabel)
         
         #create spacing between multihost plots
@@ -841,6 +839,10 @@ server <- function(input, output,session) {
     })
 
     generate_plot7(input, output, plot7)
+    output$conserv_threshold_box <- renderUI({
+      textInput(inputId="conserv_percent", label=NULL, 
+                value = ifelse(input$conserv_lvl == "CCS", 100, 90))
+    })
     generate_CCS_HCS_table(input, output, data)
     
     output$downloadDiMA <- downloadHandler(
@@ -919,37 +921,7 @@ server <- function(input, output,session) {
     }    
   })
   
-  # downloadSampleData(output)
-  output$downloadSampleData <- downloadHandler(
-  filename = function() {
-    paste("DiMA_sample_output_", Sys.Date(), ".zip", sep = "")
-  },
-  content = function(file) { 
-    #To create temporary directory
-    temp_directory_sample <- file.path(tempdir(), as.integer(Sys.time()))
-    dir.create(temp_directory_sample)
-    
-    csv_dataset <- read.csv("www/DiMA_HCV.csv")
-    MSA_dataset_Core <- read.fasta("www/Core_mafft.fasta")
-    csv_dataset_Core <- read.csv("www/core_9mer.csv")
-    JSON_dataset_Core<- rjson::fromJSON(file = "www/core_9mer.json")
-    MSA_dataset_NS3 <- read.fasta("www/NS3_mafft.fasta")
-    csv_dataset_NS3 <- read.csv("www/NS3_9mer.csv")
-    JSON_dataset_NS3<- rjson::fromJSON(file = "www/NS3_9mer.json")
-
-    #write sample dataset in CSV, FA & JSON formats into temp directory
-    write.csv(csv_dataset,paste0(temp_directory_sample,"/HCV_DiMA.csv"))
-    write.fasta(MSA_dataset_Core,names=names(MSA_dataset_Core),file.out = paste0(temp_directory_sample,"/HCV_aligned_Core.fasta"))
-    write.csv(csv_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.csv"))
-    write_json(JSON_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.json"))
-    write.fasta(MSA_dataset_NS3,names=names(MSA_dataset_NS3),file.out = paste0(temp_directory_sample,"/HCV_aligned_NS3.fasta"))
-    write.csv(csv_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.csv"))
-    write_json(JSON_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.json"))
-    print('donwloading..............')
-    zip::zip(zipfile = file,files = dir(temp_directory_sample), root = temp_directory_sample)
-  },
-  contentType = "application/zip"
-)  
+  downloadSampleData(output)
   
   observeEvent(input$samplesubmit,ignoreInit=TRUE,{
     
@@ -1047,6 +1019,10 @@ server <- function(input, output,session) {
     })
     
     generate_plot7(input, output, plot7)
+    output$conserv_threshold_box <- renderUI({
+      textInput(inputId="conserv_percent", label=NULL, 
+                value = ifelse(input$conserv_lvl == "CCS", 100, 90))
+    })
     generate_CCS_HCS_table(input, output, data)
     
     shinyjs::removeClass(id = "UpdateAnimate", class = "loading dots")

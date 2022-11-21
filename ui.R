@@ -157,8 +157,8 @@ sideBar<-dashboardSidebar(
     menuItem("Project Description", tabName = "description", icon = icon("r-project")),
     menuItem("Input Data Description", tabName = "inputdata_description", icon = icon("info-circle")),
     menuItem("Metadata", tabName = "MetaData", icon = icon("th")),
-    menuItem("Entropy And Incidence Of Total Variants", tabName = "plot1", icon = icon("area-chart")),
     menuItem("Entropy", tabName = "plotEntropy", icon = icon("area-chart")),
+    menuItem("Entropy And Incidence Of Total Variants", tabName = "plot1", icon = icon("area-chart")),
     menuItem("Correlation Of Entropy", tabName = "plot2", icon = icon("chart-line")),
     menuItem("Dynamics Of Diversity Motifs (Proteome)", tabName = "plot3", icon = icon("area-chart", lib = "font-awesome")),
     menuItem("Dynamics Of Diversity Motifs (Protein)", tabName = "plot4", icon = icon("area-chart")),
@@ -372,14 +372,14 @@ body<-## Body content
               fluidRow(
                 box(title = "Metadata Input Format", width =12,status = "primary", solidHeader = TRUE,
                     div(img(src='metadat_input_format.jpg' ,width="30%", height='30%'), style="text-align: left;"),
-                    HTML("<ol>
+                    HTML("<br><ol>
                           <li>Name : name of the protein or component</li>\
                           <li>Accession : ID of the protein sequences</li>\
                           <li>Country : country of isolation for the respective sequence based on sequence database source (<i>e.g.</i> GISAID)</li>\
                           <li>Year : date of the sequence was discovered, format: YYYY/MM/DD </li>\
                           </ol> "))
                 ),
-              fluidRow(box(width=9, title = "Data input", status = "primary" ,solidHeader = T,
+              fluidRow(box(width=10, title = "Data input", status = "primary" ,solidHeader = T,
                            fileInput(inputId = "Metafile",label = HTML("Input your metadata with csv format :"), accept = c(".csv"), placeholder = "metadata.csv", multiple = T),
                            textOutput("inmetafilename"),
                            uiOutput('protein_selection'))),
@@ -402,7 +402,7 @@ body<-## Body content
               fluidRow(
                 box(
                   width=10, title = "Time", status = "primary" ,solidHeader = T,
-                  shinyThings::radioSwitchButtons(inputId = 'time_scale',label = "Diplay y-scale", choices = c("count", "log"), selected = "count"),
+                  shinyThings::radioSwitchButtons(inputId = 'time_scale',label = "Display y-scale", choices = c("count", "log"), selected = "count"),
                   h4("Date"),
                   plotOutput("plot_time", height = 500),
                   h4("Date (Table)"),

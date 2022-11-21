@@ -36,7 +36,7 @@ seqConcatenation <- function(input_file, kmer, conservation, threshold_pct = NUL
              input_file %>%
                dplyr::filter(proteinName == protein) %>%
                dplyr::select(indexSequence) %>%
-               slice(n()) %>%
+               dplyr::slice(n()) %>%
                as.character() %>%
                str_sub(2))
   }
