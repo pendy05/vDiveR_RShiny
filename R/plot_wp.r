@@ -16,7 +16,7 @@ plot_wp<-function(data,wordsize){
 plot_tm<-function(data, wordsize, scale){
   gg <- ggplot(data, aes(x = time, y = sum_count)) + geom_bar(stat = "identity", position = "dodge") + 
                ylab('Number of protein sequence records') +
-               scale_x_date(date_breaks = "1 months",labels = date_format("%b-%Y")) +
+               scale_x_date(date_breaks = "1 months",labels = date_format("%Y-%m-%d")) +
                theme_classic(base_size = wordsize) + 
                theme(axis.text.x = element_text(angle = 90, vjust = 0, hjust = 1),
                      axis.title.x = element_blank())
