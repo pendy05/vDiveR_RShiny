@@ -24,7 +24,15 @@ library(shinyjs)
 library(jsonlite)
 library(glue)
 library(shinyThings) # devtools::install_github("gadenbuie/shinyThings")
-
+library(maptools)
+library(lubridate)
+library(scales)
+library(NGLVieweR)
+library(bio3d)
+library(Biostrings)
+library(NGLVieweR)
+library(ggmsa) #devtools::install_github("YuLab-SMU/ggmsa")
+               #devtools::install_github("hrbrmstr/ggalt", ref = "noproj")  
 #reticulate::use_virtualenv("python_env", required = TRUE)
 
 #individual functions
@@ -43,11 +51,17 @@ resetInput_to_initialState <-function(output){
   shinyjs::reset("hostname_secondHost")
   shinyjs::reset("MSAfile")
   shinyjs::reset("MSAfile_secondHost")
+  shinyjs::reset("Metafile")
   shinyjs::disable(id="downloadDiMA")
 
   #clear output
   output$alert <- renderUI({})
   output$alertSample <- renderUI({})
+  output$protein_selection <- renderUI({})
+  output$plot_worldmap<- renderPlot({})
+  output$countrytable<- renderDataTable({})
+  output$plot_time<- renderPlot({})
+  output$timetable<- renderDataTable({})
   output$plot1<- renderPlot({})
   output$plotEntropy<- renderPlot({})
   output$plot2<- renderPlot({})
@@ -76,6 +90,7 @@ downloadSampleData<-function(output){
     MSA_dataset_NS3 <- read.fasta("www/NS3_mafft.fasta")
     csv_dataset_NS3 <- read.csv("www/NS3_9mer.csv")
     JSON_dataset_NS3<- rjson::fromJSON(file = "www/NS3_9mer.json")
+    csv_dataset_metadata <- read.csv("www/oneID_GISAID.csv")
 
     #write sample dataset in CSV, FA & JSON formats into temp directory
     write.csv(csv_dataset,paste0(temp_directory_sample,"/HCV_DiMA.csv"))
@@ -85,6 +100,7 @@ downloadSampleData<-function(output){
     write.fasta(MSA_dataset_NS3,names=names(MSA_dataset_NS3),file.out = paste0(temp_directory_sample,"/HCV_aligned_NS3.fasta"))
     write.csv(csv_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.csv"))
     write_json(JSON_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.json"))
+    write.csv(csv_dataset_metadata,paste0(temp_directory_sample,"/metadata.csv"))
     print('donwloading..............')
     zip::zip(zipfile = file,files = dir(temp_directory_sample), root = temp_directory_sample)
   },
@@ -93,6 +109,34 @@ downloadSampleData<-function(output){
 }
 
 #plot generators
+generate_worldmap <-function(input, output, plot_worldmap){
+  output$plot_worldmap <- renderPlot({
+    plot_worldmap()  
+  })
+  
+  output$plot_worldmap_download <- downloadHandler(
+    filename = function() { paste("plot_world_map", '.jpg', sep='') },
+    content = function(file) {
+      ggsave(file, plot = plot_worldmap(), width=input$width_wm, height=input$height_wm,unit="in", device = "jpg", dpi=input$dpi_wm)
+    }
+  )
+  
+}
+
+generate_timeplot <-function(input, output, plot_time){
+  output$plot_time <- renderPlot({
+    plot_time()  
+  })
+  
+  output$plot_time_download <- downloadHandler(
+    filename = function() { paste("plot_time", '.jpg', sep='') },
+    content = function(file) {
+      ggsave(file, plot = plot_time(), width=input$width_tm, height=input$height_tm,unit="in", device = "jpg", dpi=input$dpi_tm)
+    }
+  )
+  
+}
+
 generate_plot1<-function(input, output, plot1){
   output$plot1 <- renderPlot({
     plot1()  
@@ -201,17 +245,13 @@ generate_entropyTable<-function(data, output, proteinName){
 generate_CCS_HCS_table<-function(input, output, data){
   # for now not splitted by hosts
   output$plot7_seqs <- renderDataTable({
-    seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, 
-                     threshold_pct = as.numeric(input$conserv_percent),
-                     conservation=input$conserv_lvl)[[input$table_type]]
+    seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, conservation=input$conserv_lvl)[[input$table_type]]
   })
   
   output$conservSeq_download <- downloadHandler(
     filename =  function() {paste0(input$conserv_lvl, ".", input$table_type)},
     content = function(fname) {
-      df <- seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, 
-                             threshold_pct = as.numeric(input$conserv_percent),
-                             conservation=input$conserv_lvl)[[input$table_type]]
+      df <- seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, conservation=input$conserv_lvl)[[input$table_type]]
       write.table(df, file = fname, col.names = ifelse(input$table_type == "csv", TRUE, FALSE), sep = ",", row.names = FALSE, quote = FALSE)
     }
   )
@@ -277,6 +317,96 @@ server <- function(input, output,session) {
       paste("File(s):",toString(input$MSAfile_secondHost$name),sep=" ")
     }
   })
+  #=====================================================#
+  #                   MetaData                          #
+  #         show the World map and time plot            #
+  #=====================================================#
+  output$inmetafilename <- renderText({
+    if (is.null(input$Metafile)){
+      return(NULL)
+    }else{
+      paste("File:",toString(input$Metafile$name),sep=" ")
+    }
+  })
+  
+  Meta <- reactive({
+    req(input$Metafile)
+    filepath <- input$Metafile$datapath
+    Meta <- read.csv(filepath, header = T, stringsAsFactors = F)
+    Meta$Country[Meta$Country == "DRC"] = "Democratic Republic of the Congo"
+    Meta$Country[Meta$Country == "NewCaledonia"] = "New Caledonia"
+    Meta$Country[Meta$Country == "Northern Ireland"] = "New Caledonia"
+    Meta$Country[Meta$Country %in% c("England","Scotland","Wales")] = "UK"
+    Meta
+  })
+  output$protein_selection <- renderUI({
+    req(input$Metafile); meta <- Meta()
+    selectInput('protein_selection', 'Select the component', c('All',unique(meta$Name)), selected = 'All')
+  })
+  WorldmapInFo <- reactive({
+    req(input$Metafile); meta <- Meta()
+    if(input$protein_selection != "All"){
+      meta <- meta[meta$Name == input$protein_selection,]
+    }
+    countrylist <- meta$Country
+    countrylist <- data.frame(table(countrylist))
+    colnames(countrylist) <- c('Country','Number of sequences')
+    countrylist
+  })
+  TimeInFo <- reactive({
+    req(input$Metafile); meta <- Meta()
+    if(input$protein_selection != "All"){
+      meta <- meta[meta$Name == input$protein_selection,]
+    }
+    meta$Date <- as.Date(meta$Year)
+    meta <- na.omit(meta)
+    meta$count <- 1
+    meta$year <- year(meta$Date)
+    meta$month <- month(meta$Date)
+    meta$time <- as.character(paste(meta$year, meta$month, '1',sep="/"))
+    temporal <- meta %>% group_by(time) %>% summarize(sum_count = sum(count, na.rm = TRUE))
+    temporal$time <- as_date(temporal$time)
+    temporal
+  })
+
+  plot_worldmap <- reactive({
+    req(WorldmapInFo())
+    plot_wp(WorldmapInFo(), input$wordsize)
+  })
+  
+  generate_worldmap(input,output,plot_worldmap)
+  
+  output$countrytable = DT::renderDataTable({
+    req(WorldmapInFo())
+    WorldmapInFo()
+  })
+  
+  output$table_worldmap_download <- downloadHandler(
+    filename = function() {paste("CountryInfo", '.csv', sep='')},
+    content = function(file) {write.csv(WorldmapInFo(), file, quote = F)}
+  )
+  
+  plot_time <- reactive({
+    req(TimeInFo())
+    plot_tm(TimeInFo(), input$wordsize, input$time_scale)
+  })
+  
+  generate_timeplot(input,output,plot_time)
+  
+  output$timetable = DT::renderDataTable({
+    req(TimeInFo())
+    TimeInFo()
+  })
+  
+  output$table_time_download <- downloadHandler(
+    filename = function() {paste("TimeInfo", '.csv', sep='')},
+    content = function(file) {write.csv(TimeInFo(), file, quote = F)}
+  )
+
+  
+  
+  
+  
   
   print('create dir')
   #To create directory
@@ -290,7 +420,7 @@ server <- function(input, output,session) {
   #     Trigger the Diver Run (DiMA & Plotting)        #
   #         -By Clicking on Submit Button              #
   #----------------------------------------------------#
-  observeEvent(input$submitDiMA,ignoreInit=TRUE,{
+  observeEvent(input$submitDiMA, ignoreInit=TRUE,{
     req(input$MSAfile)
     shinyjs::addClass(id = "submitAnimate", class = "loading dots")
     MY_THEME<-theme(
@@ -709,15 +839,9 @@ server <- function(input, output,session) {
       }
       
     })
-    
-    generate_plot7(input, output, plot7)
-    output$conserv_threshold_box <- renderUI({
-      textInput(inputId="conserv_percent", label=NULL, 
-                value = ifelse(input$conserv_lvl == "CCS", 100, 90))
-    })
-    generate_CCS_HCS_table(input, output, data)
-    
 
+    generate_plot7(input, output, plot7)
+    generate_CCS_HCS_table(input, output, data)
     
     output$downloadDiMA <- downloadHandler(
       filename = function(){
@@ -921,16 +1045,9 @@ server <- function(input, output,session) {
 
        plot_conservationLevel(data,input$line_dot_size, input$wordsize, input$host, input$proteinOrder,input$conservationLabel)  
     })
-  
     
     generate_plot7(input, output, plot7)
-    output$conserv_threshold_box <- renderUI({
-      textInput(inputId="conserv_percent", label=NULL, 
-                value = ifelse(input$conserv_lvl == "CCS", 100, 90))
-    })
     generate_CCS_HCS_table(input, output, data)
-    
-
     
     shinyjs::removeClass(id = "UpdateAnimate", class = "loading dots")
     #Alert results are ready
