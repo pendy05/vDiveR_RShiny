@@ -77,7 +77,7 @@ for (protein in unique(proteins$proteinName)) {
            proteins %>% 
            filter(proteinName == protein) %>% 
              select(indexSequence) %>% 
-             slice(n()) %>% 
+             dplyr::slice(n()) %>% 
              as.character() %>% str_sub(2))
 }
 
