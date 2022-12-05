@@ -3,7 +3,6 @@ options(shiny.maxRequestSize=3000*1024^2)
 #https://www.shinyapps.io/admin/#/application/5536925/logs
 library(ggplot2)
 library(gridExtra) #tutorial: https://ggplot2.tidyverse.org/reference/facet_grid.html 
-library(facetscales) #https://stackoverflow.com/a/54074323/13970350
 library(plyr)
 library(dplyr)
 library(tidyr)
@@ -74,38 +73,45 @@ resetInput_to_initialState <-function(output){
 
 #download sample data
 downloadSampleData<-function(output){
-  print('hola')
   output$downloadSampleData <- downloadHandler(
-  filename = function() {
-    paste("vDiveR_sample_input_", Sys.Date(), ".zip", sep = "")
-  },
-  content = function(file) { 
-    print('in temp dir')
-    #To create temporary directory
-    temp_directory_sample <- file.path(tempdir(), as.integer(Sys.time()))
-    dir.create(temp_directory_sample)
+    filename <- function() {
+        paste("vDiveR_sample_input_", Sys.Date(), ".zip", sep = "")
+    },
     
-    csv_dataset <- read.csv("www/DiMA_HCV.csv")
-    MSA_dataset_Core <- seqinr::read.fasta("www/Core_mafft.fasta")
-    csv_dataset_Core <- read.csv("www/core_9mer.csv")
-    JSON_dataset_Core<- rjson::fromJSON(file = "www/core_9mer.json")
-    MSA_dataset_NS3 <- seqinr::read.fasta("www/NS3_mafft.fasta")
-    csv_dataset_NS3 <- read.csv("www/NS3_9mer.csv")
-    JSON_dataset_NS3<- rjson::fromJSON(file = "www/NS3_9mer.json")
-    csv_dataset_metadata <- read.csv("www/oneID_GISAID.csv")
-
-    #write sample dataset in CSV, FA & JSON formats into temp directory
-    write.csv(csv_dataset,paste0(temp_directory_sample,"/HCV_DiMA.csv"))
-    seqinr::write.fasta(MSA_dataset_Core,names=names(MSA_dataset_Core),file.out = paste0(temp_directory_sample,"/HCV_aligned_Core.fasta"))
-    write.csv(csv_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.csv"))
-    write_json(JSON_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.json"))
-    seqinr::write.fasta(MSA_dataset_NS3,names=names(MSA_dataset_NS3),file.out = paste0(temp_directory_sample,"/HCV_aligned_NS3.fasta"))
-    write.csv(csv_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.csv"))
-    write_json(JSON_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.json"))
-    write.csv(csv_dataset_metadata,paste0(temp_directory_sample,"/metadata.csv"))
-    zip::zip(zipfile = file,files = dir(temp_directory_sample), root = temp_directory_sample)
-  },
-  contentType = "application/zip"
+    content <- function(file) {
+      file.copy("www/vDiveR_sample_input.zip", file)
+    },
+    contentType = "application/zip"
+  # filename = function() {
+  #   paste("vDiveR_sample_input_", Sys.Date(), ".zip", sep = "")
+  # },
+  # content = function(file) { 
+  #   print('in temp dir')
+  #   #To create temporary directory
+  #   temp_directory_sample <- file.path(tempdir(), as.integer(Sys.time()))
+  #   dir.create(temp_directory_sample)
+  #   
+  #   csv_dataset <- read.csv("www/DiMA_HCV.csv")
+  #   MSA_dataset_Core <- seqinr::read.fasta("www/Core_mafft.fasta")
+  #   csv_dataset_Core <- read.csv("www/core_9mer.csv")
+  #   JSON_dataset_Core<- rjson::fromJSON(file = "www/core_9mer.json")
+  #   MSA_dataset_NS3 <- seqinr::read.fasta("www/NS3_mafft.fasta")
+  #   csv_dataset_NS3 <- read.csv("www/NS3_9mer.csv")
+  #   JSON_dataset_NS3<- rjson::fromJSON(file = "www/NS3_9mer.json")
+  #   csv_dataset_metadata <- read.csv("www/oneID_GISAID.csv")
+  # 
+  #   #write sample dataset in CSV, FA & JSON formats into temp directory
+  #   write.csv(csv_dataset,paste0(temp_directory_sample,"/HCV_DiMA.csv"))
+  #   seqinr::write.fasta(MSA_dataset_Core,names=names(MSA_dataset_Core),file.out = paste0(temp_directory_sample,"/HCV_aligned_Core.fasta"))
+  #   write.csv(csv_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.csv"))
+  #   write_json(JSON_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.json"))
+  #   seqinr::write.fasta(MSA_dataset_NS3,names=names(MSA_dataset_NS3),file.out = paste0(temp_directory_sample,"/HCV_aligned_NS3.fasta"))
+  #   write.csv(csv_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.csv"))
+  #   write_json(JSON_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.json"))
+  #   write.csv(csv_dataset_metadata,paste0(temp_directory_sample,"/metadata.csv"))
+  #   zip::zip(zipfile = file,files = dir(temp_directory_sample), root = temp_directory_sample)
+  # },
+  # contentType = "application/zip"
 )
 }
 
