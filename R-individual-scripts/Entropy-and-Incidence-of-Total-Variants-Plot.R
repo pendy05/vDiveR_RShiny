@@ -1,7 +1,6 @@
 #Entropy and incidence of total variants
 library(ggplot2)
 library(gridExtra) #tutorial: https://ggplot2.tidyverse.org/reference/facet_grid.html 
-library(facetscales) #https://stackoverflow.com/a/54074323/13970350
 library(dplyr)
 
 #load data from csv file
@@ -12,7 +11,7 @@ df <- data.frame(data)
 proteinOrder=""
 
 #NOTE: user is required to input the number of host here
-host <-1
+host <- 1
 #determine number of host
 #scale the amino acid position for each protein
 if (host ==1){ #single host
@@ -21,9 +20,6 @@ if (host ==1){ #single host
     proteinName<-as.vector(names(a))
     position<-as.vector(a)
     df$size_f = factor(df$proteinName,levels = proteinName)
-    scales_x<-mapply(function(x,y){
-      x = scale_x_continuous(limits = c(0,y),breaks = seq(0,y,50))
-    }, proteinName,position)
   }else{
     #order the proteins based on user input
     level<-strsplit(proteinOrder, ',')[[1]]
@@ -32,23 +28,17 @@ if (host ==1){ #single host
       position<-append(position,table(df$proteinName)[names(table(df$proteinName)) == i])
     }
     df$size_f = factor(df$proteinName,levels = level)
-    scales_x<-mapply(function(x,y){
-      x = scale_x_continuous(limits = c(0,y),breaks = seq(0,y,50))
-    }, level,position)
   } 
 }else{ # multihost
   #categorise data based on host
-  df$Host<- factor(df$Host)
+  df$host<- factor(df$host)
   #count the aa length for each proteins (each host is expected to have same number of proteins with same length)
-  df_sub<-df[df$Host==unique(df$Host[1]),]
+  df_sub<-df[df$host==unique(df$host[1]),]
   if (proteinOrder ==""){
     a<-table(df_sub$proteinName)
     proteinName<-as.vector(names(a))
     position<-as.vector(a)
     df$size_f = factor(df$proteinName,levels = proteinName)
-    scales_x<-mapply(function(x,y){
-      x = scale_x_continuous(limits = c(0,y),breaks = seq(0,y,50))
-    }, proteinName,position)
   }else{
     #order the proteins based on user input
     level<-strsplit(proteinOrder, ',')[[1]]
@@ -57,9 +47,6 @@ if (host ==1){ #single host
       position<-append(position,table(df_sub$proteinName)[names(table(df_sub$proteinName)) == i])
     }
     df$size_f = factor(df$proteinName,levels = level)
-    scales_x<-mapply(function(x,y){
-      x = scale_x_continuous(limits = c(0,y),breaks = seq(0,y,50))
-    }, level,position)
   }
 }
 
@@ -96,6 +83,14 @@ if (max(df$entropy) <= 10){
   maxy <- ceiling(max(df$entropy))
 }
 
+breaks_fun <- function(x) {
+    seq(0,max(x),50)
+}
+
+limits_fun <- function(x) {
+    c(0,max(x))
+}
+
 #----------------plotting--------------------#
 #detect if low support present
 if (TRUE %in% df$lowSupport){
@@ -106,11 +101,12 @@ if (TRUE %in% df$lowSupport){
               aes(xmin=position, xmax=end, ymin=-Inf, ymax=+Inf), 
               fill='#FFECAF', alpha=ifelse(df$end == -1, 0, 0.5))+
     geom_area(mapping = aes(x = position, y = entropy,color= "k-mer Entropy", linetype="k-mer Entropy"), show.legend=F)+
-    geom_hline(mapping = aes(yintercept=9.2, color = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)", linetype = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)"), size= 0.2)+
-    geom_point(mapping = aes(x = position,y=lowSupportPos),col=ifelse(df$lowSupportPos==-0.5, 'black', ifelse(df$lowSupportPos==-0.3, 'white', 'white')), alpha=ifelse(df$lowSupportPos==-0.5, 1, ifelse(df$lowSupportPos==-0.3, 0,0)),pch=17)+
-    geom_line(mapping = aes(x = position, y = totalVariants.incidence * maxy / 100, color = "Total Variants",linetype="Total Variants"), size= 0.3 )+ 
-    geom_hline(mapping = aes( yintercept=98* maxy / 100, color = "Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)",linetype ="Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)"), size= 0.2)+ 
+    geom_hline(mapping = aes(yintercept=9.2, color = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)", linetype = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)"), linewidth = 0.2)+
+    geom_point(mapping = aes(x = position,y=lowSupportPos),col=ifelse(df$lowSupportPos==-0.5, 'black', ifelse(df$lowSupportPos==-0.3, 'white', 'white')), alpha=ifelse(df$lowSupportPos==-0.5, 1, ifelse(df$lowSupportPos==-0.3, 0,0)),pch=17, linewidth = 0.2)+
+    geom_line(mapping = aes(x = position, y = totalVariants.incidence * maxy / 100, color = "Total Variants",linetype="Total Variants"), linewidth = 0.3 )+ 
+    geom_hline(mapping = aes( yintercept=98* maxy / 100, color = "Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)",linetype ="Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)"), linewidth = 0.2)+ 
     labs(y = "k-mer entropy (bits)\n",x= "\nk-mer position (aa)",color = "#f7238a")+
+    scale_x_continuous(limits = limits_fun,breaks = breaks_fun)+
     #how to second y-axis: https://whatalnk.github.io/r-tips/ggplot2-rbind.nb.html
     scale_y_continuous(sec.axis = sec_axis(~ . * 100 / maxy , name = "Total variants (%)",breaks = c(0,25,50,75,100),labels=c("0","25","50","75","100")), 
                        breaks = seq(0.0, maxy, length.out = 5),labels= sprintf(seq(0.0, maxy, length.out = 5), fmt = "%.1f")) + 
@@ -136,9 +132,9 @@ if (TRUE %in% df$lowSupport){
   
   #number of host
   if (host == 1){ #one host
-    plot1 +facet_grid_sc(col=vars(df$size_f),scales = list(x = scales_x),space = "free",switch = "x")
+    plot1 +facet_grid(col=vars(df$size_f),scales = 'free',space = "free",switch = "x")
   }else{ # multi host
-    plot1 +facet_grid_sc(rows = vars(df$host),col=vars(df$size_f),scales = list(x = scales_x),space = "free",switch = "both")
+    plot1 +facet_grid(rows = vars(df$host),col=vars(df$size_f),scales = 'free',space = "free",switch = "both")
   }
   
 }else{
@@ -147,10 +143,11 @@ if (TRUE %in% df$lowSupport){
               aes(xmin=position, xmax=end, ymin=-Inf, ymax=+Inf), 
               fill='#FFECAF', alpha=ifelse(df$end == -1, 0, 0.5))+
   geom_area(mapping = aes(x = position, y = entropy,color= "k-mer Entropy", linetype="k-mer Entropy"),show.legend = F)+
-    geom_hline(mapping = aes(yintercept=9.2, color = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)", linetype = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)"), size= 0.2)+
-    geom_line(mapping = aes(x = position, y = totalVariants.incidence * maxy / 100, color = "Total Variants",linetype="Total Variants"), size= 0.3 )+ 
-    geom_hline(mapping = aes( yintercept=98 * maxy /100, color = "Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)",linetype ="Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)"), size= 0.2)+ 
+    geom_hline(mapping = aes(yintercept=9.2, color = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)", linetype = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)"), linewidth = 0.2)+
+    geom_line(mapping = aes(x = position, y = totalVariants.incidence * maxy / 100, color = "Total Variants",linetype="Total Variants"), linewidth = 0.3 )+ 
+    geom_hline(mapping = aes( yintercept=98 * maxy /100, color = "Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)",linetype ="Reference: Maximum Total Variants (98%) for HIV-1 Clade B (Env Protein)"), linewidth = 0.2)+ 
     labs(y = "k-mer entropy (bits)\n",x= "\nk-mer position (aa)",color = "#f7238a")+
+    scale_x_continuous(limits = limits_fun,breaks = breaks_fun)+
     #how to second y-axis: https://whatalnk.github.io/r-tips/ggplot2-rbind.nb.html
     scale_y_continuous(sec.axis = sec_axis(~ . * 100 / maxy , name = "Total variants (%)",breaks = c(0,25,50,75,100),labels=c("0","25","50","75","100")),
                        breaks = seq(0.0, maxy, length.out = 5),labels= sprintf(seq(0.0, maxy, length.out = 5), fmt = "%.1f")) +
@@ -175,9 +172,9 @@ if (TRUE %in% df$lowSupport){
                                       "Total Variants"=1))
   #number of host
   if (host == 1){ #one host
-    plot1 +facet_grid_sc(col=vars(df$size_f),scales = list(x = scales_x),space = "free",switch = "x")
+    plot1 +facet_grid(col=vars(df$size_f),scales = 'free',space = "free",switch = "x")
   }else{ # multi host
-    plot1 +facet_grid_sc(rows = vars(df$host),col=vars(df$size_f),scales = list(x = scales_x),space = "free",switch = "both")
+    plot1 +facet_grid(rows = vars(df$host),col=vars(df$size_f),scales = 'free',space = "free",switch = "both")
   }
 }
 

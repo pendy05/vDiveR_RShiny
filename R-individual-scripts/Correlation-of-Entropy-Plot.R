@@ -24,7 +24,7 @@ if (host == 1){ #single host
   #plot the scatter plot with density
   plot2
 }else{ #multiple host
-  plot2+facet_grid_sc(rows = vars(df$host),space = "free",switch = "x")
+  plot2+facet_grid(rows = vars(df$host),space = "free",switch = "x")
 }
 #save the image with 600dpi, modify based on need
 ggsave(filename="plot-Correlation-Plot.jpg",width = 5.5, height = 5.5, unit="in",device='jpg', dpi=600)
