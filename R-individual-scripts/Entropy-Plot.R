@@ -1,13 +1,12 @@
 #Entropy plot
 library(ggplot2)
 library(gridExtra) #tutorial: https://ggplot2.tidyverse.org/reference/facet_grid.html 
-library(facetscales) #https://stackoverflow.com/a/54074323/13970350
 library(dplyr)
 
 #load data from csv file
 data<-read.csv("../www/DiMA_HCV.csv")
-data<-read.csv("C:\\projects\\DiveR_public\\DiveR\\protein_2hosts.csv")
 df <- data.frame(data) 
+
 #NOTE: user is required to set the protein order here
 #leave the protein order as default; follow the order in csv file
 proteinOrder=""
@@ -97,6 +96,14 @@ if (max(df$entropy) <= 10){
   maxy <- ceiling(max(df$entropy))
 }
 
+breaks_fun <- function(x) {
+    seq(0,max(x),50)
+}
+
+limits_fun <- function(x) {
+    c(0,max(x))
+}
+
 #----------------plotting--------------------#
 #detect if low support present
 if (TRUE %in% df$lowSupport){
@@ -109,6 +116,7 @@ if (TRUE %in% df$lowSupport){
     geom_area(mapping = aes(x = position, y = entropy,color= "k-mer Entropy", linetype="k-mer Entropy"), show.legend=F)+
     geom_hline(mapping = aes(yintercept=9.2, color = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)", linetype = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)"), size= 0.2)+
     geom_point(mapping = aes(x = position,y=lowSupportPos),col=ifelse(df$lowSupportPos==-0.5, 'black', ifelse(df$lowSupportPos==-0.3, 'white', 'white')), alpha=ifelse(df$lowSupportPos==-0.5, 1, ifelse(df$lowSupportPos==-0.3, 0,0)),pch=17)+
+    scale_x_continuous(limits = limits_fun,breaks = breaks_fun)+
     geom_line(mapping = aes(x = position, y = totalVariants.incidence * maxy / 100, color = "Total Variants",linetype="Total Variants"), size= 0.3 )+ 
     labs(y = "k-mer entropy (bits)\n",x= "\nk-mer position (aa)",color = "#f7238a")+
     theme_classic() + 
@@ -127,9 +135,9 @@ if (TRUE %in% df$lowSupport){
   
   #number of host
   if (host == 1){ #one host
-    plot1 +facet_grid_sc(col=vars(df$size_f),scales = list(x = scales_x),space = "free",switch = "x")
+    plot1 +facet_grid(col=vars(df$size_f),scales="free" ,space = "free",switch = "x")
   }else{ # multi host
-    plot1 +facet_grid_sc(rows = vars(df$host),col=vars(df$size_f),scales = list(x = scales_x),space = "free",switch = "both")
+    plot1 +facet_grid(rows = vars(df$host),col=vars(df$size_f),scales="free" ,space = "free",switch = "both")
   }
   
 }else{
@@ -140,6 +148,7 @@ if (TRUE %in% df$lowSupport){
   geom_area(mapping = aes(x = position, y = entropy,color= "k-mer Entropy", linetype="k-mer Entropy"),show.legend = F)+
     geom_hline(mapping = aes(yintercept=9.2, color = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)", linetype = "Reference: Maximum Entropy (9.2) for HIV-1 Clade B (Env Protein)"), size= 0.2)+
     labs(y = "k-mer entropy (bits)\n",x= "\nk-mer position (aa)",color = "#f7238a")+
+    scale_x_continuous(limits = limits_fun,breaks = breaks_fun)+
     theme_classic() +
     theme(
       panel.grid.major = element_blank(),
@@ -155,9 +164,9 @@ if (TRUE %in% df$lowSupport){
       ylim(0, maxy)
   #number of host
   if (host == 1){ #one host
-    plot1 +facet_grid_sc(col=vars(df$size_f),scales = list(x = scales_x),space = "free",switch = "x")
+    plot1 +facet_grid(col=vars(df$size_f),scales = 'free',space = "free",switch = "x")
   }else{ # multi host
-    plot1 +facet_grid_sc(rows = vars(df$host),col=vars(df$size_f),scales = list(x = scales_x),space = "free",switch = "both")
+    plot1 +facet_grid(rows = vars(df$host),col=vars(df$size_f),scales = "free",space = "free",switch = "both")
   }
 }
 
