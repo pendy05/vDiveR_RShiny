@@ -371,18 +371,25 @@ body<-## Body content
               h2("Sequence Metadata"),
               fluidRow(
                 box(title = "Metadata Input Format", width =12,status = "primary", solidHeader = TRUE,
-                    div(img(src='metadat_input_format.jpg' ,width="30%", height='30%'), style="text-align: left;"),
+                    div(DT::dataTableOutput("metademo")),
                     HTML("<br><ol>
-                          <li>Name : name of the protein or component</li>\
-                          <li>Accession : ID of the protein sequences</li>\
+                          <li>Accession_ID : ID of the protein sequences</li>\
                           <li>Country : country of isolation for the respective sequence based on sequence database source (<i>e.g.</i> GISAID)</li>\
                           <li>Year : date of the sequence was discovered, format: YYYY/MM/DD </li>\
                           </ol> "))
                 ),
-              fluidRow(box(width=10, title = "Data input", status = "primary" ,solidHeader = T,
+              fluidRow(box(width=9, title = "Data input in csv format", status = "primary" ,solidHeader = T,
                            fileInput(inputId = "Metafile",label = HTML("Input your metadata with csv format :"), accept = c(".csv"), placeholder = "metadata.csv", multiple = T),
                            textOutput("inmetafilename"),
-                           uiOutput('protein_selection'))),
+                           actionButton("submitMeta1","Get metadata",icon("submitMeta1", id="submitmeta1", class=""))
+              )),
+              fluidRow(box(width=9, title = "Data input in fasta format", status = "primary" ,solidHeader = T,
+                           fileInput(inputId = "Metafasta",label = HTML("input your fasta file for metadata extracting:"), accept = c(".fa",".faa",".fasta",".fas",".json",".JSON"), placeholder = "alignedNS1.fa, alignedCore.fa", multiple = T),
+                           radioButtons("MetafastaSource", "fasta from :", c("NCBI"='NCBI', "GISAID EpiCoV"="GISAID"), selected="NCBI"),
+                           textOutput("inmetafasta"),
+                           actionButton("submitMeta2","Get metadata",icon("submitMeta2", id="submitmeta2", class="")),
+                           div(DT::dataTableOutput("metademoSee"))
+              )),
               fluidRow(
                 box(
                   width=10, title = "Country", status = "primary" ,solidHeader = T,
