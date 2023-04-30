@@ -26,11 +26,12 @@ library(shinyThings) # devtools::install_github("gadenbuie/shinyThings")
 library(maptools)
 library(lubridate)
 library(scales)
-library(NGLVieweR)
-library(bio3d)
-library(Biostrings)
-library(NGLVieweR)
-library(ggmsa) #devtools::install_github("YuLab-SMU/ggmsa")
+library(rentrez)
+#library(NGLVieweR)
+#library(bio3d)
+#library(Biostrings)
+#library(NGLVieweR)
+#library(ggmsa) #devtools::install_github("YuLab-SMU/ggmsa")
                #devtools::install_github("hrbrmstr/ggalt", ref = "noproj")  
 #reticulate::use_virtualenv("python_env", required = TRUE)
 
@@ -51,12 +52,16 @@ resetInput_to_initialState <-function(output){
   shinyjs::reset("MSAfile")
   shinyjs::reset("MSAfile_secondHost")
   shinyjs::reset("Metafile")
+  shinyjs::reset("Metafasta")
+  shinyjs::reset("Meta")
+  shinyjs::reset("inmetafilename")
+  shinyjs::reset("inmetafasta")
   shinyjs::disable(id="downloadDiMA")
 
   #clear output
   output$alert <- renderUI({})
   output$alertSample <- renderUI({})
-  output$protein_selection <- renderUI({})
+  #output$protein_selection <- renderUI({})
   output$plot_worldmap<- renderPlot({})
   output$countrytable<- renderDataTable({})
   output$plot_time<- renderPlot({})
@@ -333,6 +338,11 @@ server <- function(input, output,session) {
   #                   MetaData                          #
   #         show the World map and time plot            #
   #=====================================================#
+  output$metademo <- DT::renderDT({
+    demoMeta <- read.csv("www/oneID_GISAID.csv", header = T, stringsAsFactors = F)
+    demoMeta <- demoMeta[,2:4]
+    demoMeta
+  })
   output$inmetafilename <- renderText({
     if (is.null(input$Metafile)){
       return(NULL)
@@ -340,81 +350,129 @@ server <- function(input, output,session) {
       paste("File:",toString(input$Metafile$name),sep=" ")
     }
   })
-  
-  Meta <- reactive({
-    req(input$Metafile)
-    filepath <- input$Metafile$datapath
-    Meta <- read.csv(filepath, header = T, stringsAsFactors = F)
-    Meta$Country[Meta$Country == "DRC"] = "Democratic Republic of the Congo"
-    Meta$Country[Meta$Country == "NewCaledonia"] = "New Caledonia"
-    Meta$Country[Meta$Country == "Northern Ireland"] = "New Caledonia"
-    Meta$Country[Meta$Country %in% c("England","Scotland","Wales")] = "UK"
-    Meta
-  })
-  output$protein_selection <- renderUI({
-    req(input$Metafile); meta <- Meta()
-    selectInput('protein_selection', 'Select the component', c('All',unique(meta$Name)), selected = 'All')
-  })
-  WorldmapInFo <- reactive({
-    req(input$Metafile); meta <- Meta()
-    if(input$protein_selection != "All"){
-      meta <- meta[meta$Name == input$protein_selection,]
+  output$inmetafasta <- renderText({
+    if (is.null(input$Metafasta)){
+      return(NULL)
+    }else{
+      paste("File:",toString(input$Metafasta$name),sep=" ")
     }
-    countrylist <- meta$Country
-    countrylist <- data.frame(table(countrylist))
-    colnames(countrylist) <- c('Country','Number of sequences')
-    countrylist
   })
-  TimeInFo <- reactive({
-    req(input$Metafile); meta <- Meta()
-    if(input$protein_selection != "All"){
-      meta <- meta[meta$Name == input$protein_selection,]
-    }
-    meta$Date <- as.Date(meta$Year)
-    meta <- na.omit(meta)
-    meta$count <- 1
-    meta$year <- year(meta$Date)
-    meta$month <- month(meta$Date)
-    meta$time <- as.character(paste(meta$year, meta$month, '1',sep="/"))
-    temporal <- meta %>% group_by(time) %>% summarize(sum_count = sum(count, na.rm = TRUE))
-    temporal$time <- as_date(temporal$time)
-    temporal
+  observeEvent(input$submitMeta1, {
+    shinyjs::addClass(id = "submitmeta1", class = "loading dots")
+    Meta <- reactive({
+      req(input$Metafile)
+      filepath <- input$Metafile$datapath
+      Meta <- read.csv(filepath, header = T, stringsAsFactors = F)
+      Meta$Country[Meta$Country == "DRC"] = "Democratic Republic of the Congo"
+      Meta$Country[Meta$Country == "NewCaledonia"] = "New Caledonia"
+      Meta$Country[Meta$Country == "Northern Ireland"] = "New Caledonia"
+      Meta$Country[Meta$Country %in% c("England","Scotland","Wales")] = "UK"
+      Meta
+    })
+    WorldmapInFo <- reactive({
+      req(Meta())
+      meta <- Meta()
+      countrylist <- meta$Country
+      countrylist <- data.frame(table(countrylist))
+      colnames(countrylist) <- c('Country','Number of sequences')
+      countrylist
+    })
+    TimeInFo <- reactive({
+      req(Meta())
+      temporal <- Meta()
+      temporal$count <- 1
+      temporal$Date <- as.Date(temporal$Date)
+      temporal <- aggregate(temporal$count, by=list(temporal$Date), sum)
+      colnames(temporal) <- c('time', 'sum_count')
+      temporal
+    })
+    plot_worldmap <- reactive({
+      req(WorldmapInFo())
+      plot_wp(WorldmapInFo(), input$wordsize)
+    })
+    generate_worldmap(input,output,plot_worldmap)
+    output$countrytable = DT::renderDataTable({
+      req(WorldmapInFo())
+      WorldmapInFo()
+    })
+    output$table_worldmap_download <- downloadHandler(
+      filename = function() {paste("CountryInfo", '.csv', sep='')},
+      content = function(file) {write.csv(WorldmapInFo(), file, quote = F)}
+    )
+    plot_time <- reactive({
+      req(TimeInFo())
+      plot_tm(TimeInFo(), input$wordsize, input$time_scale)
+    })
+    generate_timeplot(input,output,plot_time)
+    output$timetable = DT::renderDataTable({
+      req(TimeInFo())
+      TimeInFo()
+    })
+    output$table_time_download <- downloadHandler(
+      filename = function() {paste("TimeInfo", '.csv', sep='')},
+      content = function(file) {write.csv(TimeInFo(), file, quote = F)}
+    )
+    shinyjs::removeClass(id = "submitmeta1", class = "loading dots")
   })
-
-  plot_worldmap <- reactive({
-    req(WorldmapInFo())
-    plot_wp(WorldmapInFo(), input$wordsize)
+  
+  observeEvent(input$submitMeta2, {
+    shinyjs::addClass(id = "submitmeta2", class = "loading dots")
+    Meta <- reactive({
+      req(input$Metafasta)
+      filepath <- input$Metafasta$datapath
+      Meta <- metadataExtraction(filepath, input$MetafastaSource)
+      Meta <- refineCounty(Meta)
+      Meta
+    })
+    output$metademoSee <- DT::renderDT({
+      req(input$Metafasta)
+      Meta()
+    })
+    WorldmapInFo <- reactive({
+      req(Meta())
+      meta <- Meta()
+      countrylist <- meta$Country
+      countrylist <- data.frame(table(countrylist))
+      colnames(countrylist) <- c('Country','Number of sequences')
+      countrylist
+    })
+    TimeInFo <- reactive({
+      req(Meta())
+      temporal <- Meta()
+      temporal$count <- 1
+      temporal$Date <- as.Date(temporal$Date)
+      temporal <- aggregate(temporal$count, by=list(temporal$Date), sum)
+      colnames(temporal) <- c('time', 'sum_count')
+      temporal
+    })
+    plot_worldmap <- reactive({
+      req(WorldmapInFo())
+      plot_wp(WorldmapInFo(), input$wordsize)
+    })
+    generate_worldmap(input,output,plot_worldmap)
+    output$countrytable = DT::renderDataTable({
+      req(WorldmapInFo())
+      WorldmapInFo()
+    })
+    output$table_worldmap_download <- downloadHandler(
+      filename = function() {paste("CountryInfo", '.csv', sep='')},
+      content = function(file) {write.csv(WorldmapInFo(), file, quote = F)}
+    )
+    plot_time <- reactive({
+      req(TimeInFo())
+      plot_tm(TimeInFo(), input$wordsize, input$time_scale)
+    })
+    generate_timeplot(input,output,plot_time)
+    output$timetable = DT::renderDataTable({
+      req(TimeInFo())
+      TimeInFo()
+    })
+    output$table_time_download <- downloadHandler(
+      filename = function() {paste("TimeInfo", '.csv', sep='')},
+      content = function(file) {write.csv(TimeInFo(), file, quote = F)}
+    )
+    shinyjs::removeClass(id = "submitmeta2", class = "loading dots")
   })
-  
-  generate_worldmap(input,output,plot_worldmap)
-  
-  output$countrytable = DT::renderDataTable({
-    req(WorldmapInFo())
-    WorldmapInFo()
-  })
-  
-  output$table_worldmap_download <- downloadHandler(
-    filename = function() {paste("CountryInfo", '.csv', sep='')},
-    content = function(file) {write.csv(WorldmapInFo(), file, quote = F)}
-  )
-  
-  plot_time <- reactive({
-    req(TimeInFo())
-    plot_tm(TimeInFo(), input$wordsize, input$time_scale)
-  })
-  
-  generate_timeplot(input,output,plot_time)
-  
-  output$timetable = DT::renderDataTable({
-    req(TimeInFo())
-    TimeInFo()
-  })
-  
-  output$table_time_download <- downloadHandler(
-    filename = function() {paste("TimeInfo", '.csv', sep='')},
-    content = function(file) {write.csv(TimeInFo(), file, quote = F)}
-  )
-
   #To create directory
   temp_directory <- file.path(tempdir(), as.integer(Sys.time()))
   dir.create(temp_directory)
