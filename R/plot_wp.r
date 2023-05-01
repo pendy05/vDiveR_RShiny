@@ -45,8 +45,13 @@ extract_from_NCBI <- function(file_path){
       IDs <- c(IDs, ID)
     }
   }
-  countrys <- c(); dates <- c()
+  countrys <- c(); dates <- c(); dropsample <- c(); keepsample <- c()
   for(ID in IDs){
+    if(substr(ID,1,3) == 'pdb'){
+      dropsample <- c(dropsample, ID)
+      next
+    }
+    keepsample <- c(keepsample, ID)
     search_result <- entrez_search(db = "protein", term = ID, retmax = 1)
     accession <- search_result$ids[[1]]
     info <- entrez_fetch(db = "protein", id = accession, rettype = "gb", retmode = "text")
@@ -58,9 +63,8 @@ extract_from_NCBI <- function(file_path){
     date <- strsplit(info2, '\\"')[[1]][2]
     countrys <- c(countrys, country); dates <- c(dates, date)
   }
-  tmp <- data.frame('ID' = IDs, 'country' = countrys, 'date' = dates)
+  tmp <- data.frame('ID' = keepsample, 'country' = countrys, 'date' = dates)
   
-  dropsample <- c()
   for(i in 1:nrow(tmp)){
     if(!is.na(as.Date(tmp$date[i],format='%Y-%m-%d'))){
       tt <- 1
