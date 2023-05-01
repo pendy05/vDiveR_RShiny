@@ -344,7 +344,7 @@ body<-## Body content
                            tags$br()
               )),
               fluidRow(box(title = "DiMA JSON-Converted CSV Output Format", width =12,status = "primary", solidHeader = TRUE,
-                           div(img(src='inputFileformat.JPG' ,width="95%", height='auto'), style="text-align: center;"),
+                           div(DT::dataTableOutput('mainDataSample'), style="overflow-x: scroll; display: block;"),
                            HTML("<br><br>\
                            <ol>
                            <li>proteinName: name of the protein</li>\

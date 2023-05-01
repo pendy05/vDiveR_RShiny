@@ -278,6 +278,16 @@ server <- function(input, output,session) {
   # initial state of downloadDiMA button is disabled
   shinyjs::disable(id="downloadDiMA")
   shinyjs::disable(selector = '.nav-tabs a[data-value="Second Host"')
+
+  #=====================================================#
+  #                Sample Input Format                  #
+  #          display a table of sample input            #
+  #=====================================================#
+  output$mainDataSample <- DT::renderDT({
+    mainDataSample <- read.csv("www/DiMA_HCV.csv", header = T, stringsAsFactors = F)
+    mainDataSample
+  })
+
   
   #if "two hosts" is selected, allow user to input data at the second tab
   observeEvent(input$host, {
