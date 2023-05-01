@@ -7,11 +7,13 @@ option_list = list(
               help="input csv filename", metavar="character"),
   make_option(c("-o", "--output"), type="character", default=NULL, 
               help="output filename (FASTA and CSV)", metavar="character"),
-  make_option(c("-k", "--kmer"), type="integer", default=NULL, 
+  make_option(c("-k", "--kmer"), type="integer", default=9L, 
               help="kmer size", metavar="character"),
   make_option(c("-c", "--conservation"), type="character", default="CCS",  
               help="conservation level: completely conserved(CCS); both completely conserved and highly conserved(HCS) [Default: CCS]", 
-              metavar="character")
+              metavar="character"),
+  make_option(c("-p", "--pct"), type="integer", default=NULL, 
+              help="threshold for conseration level to use instead of standard HCS (90%) and CCS (100%) thresholds", metavar="character"),
 )
 
 opt_parser = OptionParser(option_list=option_list);
@@ -39,7 +41,11 @@ proteins <- read.csv(opt$input)
 # HCS or CCS conservation level
 conservation <- opt$conservation
 # threshold HCS / CCS
-threshold <- ifelse(conservation == "CCS", 100, 90)
+if (is.null(opt$pct)) {
+  threshold <- ifelse(conservation == "CCS", 100, 90)
+} else {
+  threshold <- opt$pct
+}
 
 
 # filter whole dataset by index.incidence (HCS/CCS)
@@ -71,7 +77,7 @@ for (protein in unique(proteins$proteinName)) {
            proteins %>% 
            filter(proteinName == protein) %>% 
              select(indexSequence) %>% 
-             slice(n()) %>% 
+             dplyr::slice(n()) %>% 
              as.character() %>% str_sub(2))
 }
 
@@ -134,8 +140,28 @@ csv_df <- bind_rows(
         !!conservation := sprintf("%s_%s_%i", conservation, prot_name, n),
         Position = sprintf("%i-%i", start, end),
         Sequence = str_sub(proteins_seq[[prot_name]], start, end)
-      ) %>% 
-      select(-c(n, start, end))
+      )
+    
+    # add mean index.incidence and mean.entropy
+    index_df <-
+      cbind(index_df,
+            bind_rows(lapply(1:nrow(index_df), function (x) {
+              start <- index_df[x,]$start
+              end <- index_df[x,]$end
+              data.frame(mean.index.incidence = mean((
+                df_x %>% filter(position %in% c(start:end - kmer + 1)) %>% dplyr::select(index.incidence)
+              )[, 1]),
+              mean.entropy = mean((
+                df_x %>% filter(position %in% c(start:end - kmer + 1)) %>% dplyr::select(entropy)
+              )[, 1]))
+            }))) %>%
+      select(-c(n, start, end)) %>% 
+      mutate(
+        mean.index.incidence = round(mean.index.incidence, 5),
+        mean.entropy = round(mean.entropy, 5)
+      )
+    
+    
     
   })
   

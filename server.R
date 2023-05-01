@@ -3,7 +3,6 @@ options(shiny.maxRequestSize=3000*1024^2)
 #https://www.shinyapps.io/admin/#/application/5536925/logs
 library(ggplot2)
 library(gridExtra) #tutorial: https://ggplot2.tidyverse.org/reference/facet_grid.html 
-library(facetscales) #https://stackoverflow.com/a/54074323/13970350
 library(plyr)
 library(dplyr)
 library(tidyr)
@@ -32,6 +31,17 @@ library(shinyThings) # devtools::install_github("gadenbuie/shinyThings")
 virtualenv_create(envname = "python_env", python= "python3")
 virtualenv_install("python_env", packages = c('pandas','numpy','dima-cli==4.1.1'))
 reticulate::use_virtualenv("python_env", required = TRUE)
+library(maptools)
+library(lubridate)
+library(scales)
+library(rentrez)
+#library(NGLVieweR)
+#library(bio3d)
+#library(Biostrings)
+#library(NGLVieweR)
+#library(ggmsa) #devtools::install_github("YuLab-SMU/ggmsa")
+               #devtools::install_github("hrbrmstr/ggalt", ref = "noproj")  
+#reticulate::use_virtualenv("python_env", required = TRUE)
 
 #individual functions
 #reset input and output settings
@@ -49,12 +59,23 @@ resetInput_to_initialState <-function(output){
   shinyjs::reset("hostname_secondHost")
   shinyjs::reset("MSAfile")
   shinyjs::reset("MSAfile_secondHost")
+  shinyjs::reset("Metafile")
+  shinyjs::reset("Metafasta")
+  shinyjs::reset("Meta")
+  shinyjs::reset("inmetafilename")
+  shinyjs::reset("inmetafasta")
   shinyjs::disable(id="downloadDiMA")
 
   #clear output
   output$alert <- renderUI({})
   output$alertSample <- renderUI({})
+  #output$protein_selection <- renderUI({})
+  output$plot_worldmap<- renderPlot({})
+  output$countrytable<- renderDataTable({})
+  output$plot_time<- renderPlot({})
+  output$timetable<- renderDataTable({})
   output$plot1<- renderPlot({})
+  output$plotEntropy<- renderPlot({})
   output$plot2<- renderPlot({})
   output$plot3<- renderPlot({})
   output$plot4<- renderPlot({})
@@ -66,38 +87,76 @@ resetInput_to_initialState <-function(output){
 #download sample data
 downloadSampleData<-function(output){
   output$downloadSampleData <- downloadHandler(
-  filename = function() {
-    paste("DiMA_sample_output_", Sys.Date(), ".zip", sep = "")
-  },
-  content = function(file) { 
-    #To create temporary directory
-    temp_directory_sample <- file.path(tempdir(), as.integer(Sys.time()))
-    dir.create(temp_directory_sample)
+    filename <- function() {
+        paste("vDiveR_sample_input_", Sys.Date(), ".zip", sep = "")
+    },
     
-    csv_dataset <- read.csv("www/DiMA_HCV.csv")
-    MSA_dataset_Core <- read.fasta("www/Core_mafft.fasta")
-    csv_dataset_Core <- read.csv("www/core_9mer.csv")
-    JSON_dataset_Core<- rjson::fromJSON(file = "www/core_9mer.json")
-    MSA_dataset_NS3 <- read.fasta("www/NS3_mafft.fasta")
-    csv_dataset_NS3 <- read.csv("www/NS3_9mer.csv")
-    JSON_dataset_NS3<- rjson::fromJSON(file = "www/NS3_9mer.json")
-
-    #write sample dataset in CSV, FA & JSON formats into temp directory
-    write.csv(csv_dataset,paste0(temp_directory_sample,"/HCV_DiMA.csv"))
-    write.fasta(MSA_dataset_Core,names=names(MSA_dataset_Core),file.out = paste0(temp_directory_sample,"/HCV_aligned_Core.fasta"))
-    write.csv(csv_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.csv"))
-    write_json(JSON_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.json"))
-    write.fasta(MSA_dataset_NS3,names=names(MSA_dataset_NS3),file.out = paste0(temp_directory_sample,"/HCV_aligned_NS3.fasta"))
-    write.csv(csv_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.csv"))
-    write_json(JSON_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.json"))
-    print('donwloading..............')
-    zip::zip(zipfile = file,files = dir(temp_directory_sample), root = temp_directory_sample)
-  },
-  contentType = "application/zip"
+    content <- function(file) {
+      file.copy("www/vDiveR_sample_input.zip", file)
+    },
+    contentType = "application/zip"
+  # filename = function() {
+  #   paste("vDiveR_sample_input_", Sys.Date(), ".zip", sep = "")
+  # },
+  # content = function(file) { 
+  #   print('in temp dir')
+  #   #To create temporary directory
+  #   temp_directory_sample <- file.path(tempdir(), as.integer(Sys.time()))
+  #   dir.create(temp_directory_sample)
+  #   
+  #   csv_dataset <- read.csv("www/DiMA_HCV.csv")
+  #   MSA_dataset_Core <- seqinr::read.fasta("www/Core_mafft.fasta")
+  #   csv_dataset_Core <- read.csv("www/core_9mer.csv")
+  #   JSON_dataset_Core<- rjson::fromJSON(file = "www/core_9mer.json")
+  #   MSA_dataset_NS3 <- seqinr::read.fasta("www/NS3_mafft.fasta")
+  #   csv_dataset_NS3 <- read.csv("www/NS3_9mer.csv")
+  #   JSON_dataset_NS3<- rjson::fromJSON(file = "www/NS3_9mer.json")
+  #   csv_dataset_metadata <- read.csv("www/oneID_GISAID.csv")
+  # 
+  #   #write sample dataset in CSV, FA & JSON formats into temp directory
+  #   write.csv(csv_dataset,paste0(temp_directory_sample,"/HCV_DiMA.csv"))
+  #   seqinr::write.fasta(MSA_dataset_Core,names=names(MSA_dataset_Core),file.out = paste0(temp_directory_sample,"/HCV_aligned_Core.fasta"))
+  #   write.csv(csv_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.csv"))
+  #   write_json(JSON_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.json"))
+  #   seqinr::write.fasta(MSA_dataset_NS3,names=names(MSA_dataset_NS3),file.out = paste0(temp_directory_sample,"/HCV_aligned_NS3.fasta"))
+  #   write.csv(csv_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.csv"))
+  #   write_json(JSON_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.json"))
+  #   write.csv(csv_dataset_metadata,paste0(temp_directory_sample,"/metadata.csv"))
+  #   zip::zip(zipfile = file,files = dir(temp_directory_sample), root = temp_directory_sample)
+  # },
+  # contentType = "application/zip"
 )
 }
 
 #plot generators
+generate_worldmap <-function(input, output, plot_worldmap){
+  output$plot_worldmap <- renderPlot({
+    plot_worldmap()  
+  })
+  
+  output$plot_worldmap_download <- downloadHandler(
+    filename = function() { paste("plot_world_map", '.jpg', sep='') },
+    content = function(file) {
+      ggsave(file, plot = plot_worldmap(), width=input$width_wm, height=input$height_wm,unit="in", device = "jpg", dpi=input$dpi_wm)
+    }
+  )
+  
+}
+
+generate_timeplot <-function(input, output, plot_time){
+  output$plot_time <- renderPlot({
+    plot_time()  
+  })
+  
+  output$plot_time_download <- downloadHandler(
+    filename = function() { paste("plot_time", '.jpg', sep='') },
+    content = function(file) {
+      ggsave(file, plot = plot_time(), width=input$width_tm, height=input$height_tm,unit="in", device = "jpg", dpi=input$dpi_tm)
+    }
+  )
+  
+}
+
 generate_plot1<-function(input, output, plot1){
   output$plot1 <- renderPlot({
     plot1()  
@@ -107,6 +166,20 @@ generate_plot1<-function(input, output, plot1){
     filename = function() { paste("plot_entropy_incidence", '.jpg', sep='') },
     content = function(file) {
       ggsave(file, plot = plot1(), width=input$width, height=input$height,unit="in", device = "jpg", dpi=input$dpi)
+    }
+  )
+  
+}
+
+generate_plotEntropy<-function(input, output, plotEntropy){
+  output$plotEntropy <- renderPlot({
+    plotEntropy()  
+  })
+  
+  output$plotEntropy_download <- downloadHandler(
+    filename = function() { paste("plot_entropy", '.jpg', sep='') },
+    content = function(file) {
+      ggsave(file, plot = plotEntropy(), width=input$width, height=input$height,unit="in", device = "jpg", dpi=input$dpi)
     }
   )
   
@@ -137,7 +210,7 @@ generate_plot3<-function(input, output, plot3){
   output$plot3_download <- downloadHandler(
     filename = function() { paste("plot_dynamics_diversity_motifs_proteome", '.jpg', sep='') },
     content = function(file) {
-      ggsave(file, plot = plot3(), width=input$width3, height=input$height3,unit="in", device = "jpg", dpi=input$dpi3)
+      ggsave(file, plot = plot3(), width=input$width3, height=input$height3,unit="in", device = "jpg", dpi=input$dpi3,bg='white')
     }
   )
 }
@@ -150,7 +223,7 @@ generate_plot4<-function(input, output, plot4){
   output$plot4_download <- downloadHandler(
     filename = function() { paste("plot_dynamics_diversity_motifs_proteins", '.jpg', sep='') },
     content = function(file) {
-      ggsave(file, plot = plot4(), width=input$width4, height=input$height4,unit="in", device = "jpg", dpi=input$dpi4)
+      ggsave(file, plot = plot4(), width=input$width4, height=input$height4,unit="in", device = "jpg", dpi=input$dpi4, bg='white')
     }
   )
 }
@@ -161,7 +234,7 @@ generate_plot7<-function(input, output, plot7){
   })
   
   output$plot7_download <- downloadHandler(
-    filename = function() { paste("plot_conservation levels_protein", '.jpg', sep='') },
+    filename = function() { paste("plot_conservationLevels_protein", '.jpg', sep='') },
     content = function(file) {
       ggsave(file, plot = plot7(),  width=input$width7, height=input$height7, unit="in", device = "jpg", dpi=input$dpi7)
   })
@@ -191,13 +264,17 @@ generate_entropyTable<-function(data, output, proteinName){
 generate_CCS_HCS_table<-function(input, output, data){
   # for now not splitted by hosts
   output$plot7_seqs <- renderDataTable({
-    seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, conservation=input$conserv_lvl)[[input$table_type]]
+     seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, 
+                     threshold_pct = as.numeric(input$conserv_percent),
+                     conservation=input$conserv_lvl)[[input$table_type]]
   })
   
   output$conservSeq_download <- downloadHandler(
     filename =  function() {paste0(input$conserv_lvl, ".", input$table_type)},
     content = function(fname) {
-      df <- seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, conservation=input$conserv_lvl)[[input$table_type]]
+      df <- seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, 
+                             threshold_pct = as.numeric(input$conserv_percent),
+                             conservation=input$conserv_lvl)[[input$table_type]]
       write.table(df, file = fname, col.names = ifelse(input$table_type == "csv", TRUE, FALSE), sep = ",", row.names = FALSE, quote = FALSE)
     }
   )
@@ -208,6 +285,16 @@ server <- function(input, output,session) {
   # initial state of downloadDiMA button is disabled
   shinyjs::disable(id="downloadDiMA")
   shinyjs::disable(selector = '.nav-tabs a[data-value="Second Host"')
+
+  #=====================================================#
+  #                Sample Input Format                  #
+  #          display a table of sample input            #
+  #=====================================================#
+  output$mainDataSample <- DT::renderDT({
+    mainDataSample <- read.csv("www/DiMA_HCV.csv", header = T, stringsAsFactors = F)
+    mainDataSample
+  })
+
   
   #if "two hosts" is selected, allow user to input data at the second tab
   observeEvent(input$host, {
@@ -232,13 +319,15 @@ server <- function(input, output,session) {
   #https://stackoverflow.com/questions/32971921/navigate-to-particular-sidebar-menu-item-in-shinydashboard
   observeEvent(input$start, {
     newtab <- switch(input$tabs,
-                     "description" = "inputdata_description",
-                     "plot1" = "inputdata_description",
-                     "plot2" = "inputdata_description",
-                     "plot3" = "inputdata_description",
-                     "plot4" = "inputdata_description",
-                     "plot7" = "inputdata_description",
-                     "helppage" = "inputdata_description"           
+                "description" = "inputdata_description",
+                "MetaData" = "inputdata_description",
+                "plotEntropy" = "inputdata_description",
+                "plot1" = "inputdata_description",
+                "plot2" = "inputdata_description",
+                "plot3" = "inputdata_description",
+                "plot4" = "inputdata_description",
+                "plot7" = "inputdata_description",
+                "helppage" = "inputdata_description"
     )
     updateTabItems(session, "tabs", newtab)
   })
@@ -262,7 +351,144 @@ server <- function(input, output,session) {
       paste("File(s):",toString(input$MSAfile_secondHost$name),sep=" ")
     }
   })
+  #=====================================================#
+  #                   MetaData                          #
+  #         show the World map and time plot            #
+  #=====================================================#
+  output$metademo <- DT::renderDT({
+    demoMeta <- read.csv("www/oneID_GISAID.csv", header = T, stringsAsFactors = F)
+    demoMeta
+  })
+  output$inmetafilename <- renderText({
+    if (is.null(input$Metafile)){
+      return(NULL)
+    }else{
+      paste("File:",toString(input$Metafile$name),sep=" ")
+    }
+  })
+  output$inmetafasta <- renderText({
+    if (is.null(input$Metafasta)){
+      return(NULL)
+    }else{
+      paste("File:",toString(input$Metafasta$name),sep=" ")
+    }
+  })
+  observeEvent(input$submitMeta1, {
+    shinyjs::addClass(id = "submitmeta1", class = "loading dots")
+    Meta <- reactive({
+      req(input$Metafile)
+      filepath <- input$Metafile$datapath
+      Meta <- read.csv(filepath, header = T, stringsAsFactors = F)
+      Meta$Country[Meta$Country == "DRC"] = "Democratic Republic of the Congo"
+      Meta$Country[Meta$Country == "NewCaledonia"] = "New Caledonia"
+      Meta$Country[Meta$Country == "Northern Ireland"] = "New Caledonia"
+      Meta$Country[Meta$Country %in% c("England","Scotland","Wales")] = "UK"
+      Meta
+    })
+    WorldmapInFo <- reactive({
+      req(Meta())
+      meta <- Meta()
+      countrylist <- meta$Country
+      countrylist <- data.frame(table(countrylist))
+      colnames(countrylist) <- c('Country','Number of sequences')
+      countrylist
+    })
+    TimeInFo <- reactive({
+      req(Meta())
+      temporal <- Meta()
+      temporal$count <- 1
+      temporal$Date <- as.Date(temporal$Date)
+      temporal <- aggregate(temporal$count, by=list(temporal$Date), sum)
+      colnames(temporal) <- c('time', 'sum_count')
+      temporal
+    })
+    plot_worldmap <- reactive({
+      req(WorldmapInFo())
+      plot_wp(WorldmapInFo(), input$wordsize)
+    })
+    generate_worldmap(input,output,plot_worldmap)
+    output$countrytable = DT::renderDataTable({
+      req(WorldmapInFo())
+      WorldmapInFo()
+    })
+    output$table_worldmap_download <- downloadHandler(
+      filename = function() {paste("CountryInfo", '.csv', sep='')},
+      content = function(file) {write.csv(WorldmapInFo(), file, quote = F)}
+    )
+    plot_time <- reactive({
+      req(TimeInFo())
+      plot_tm(TimeInFo(), input$wordsize, input$time_scale)
+    })
+    generate_timeplot(input,output,plot_time)
+    output$timetable = DT::renderDataTable({
+      req(TimeInFo())
+      TimeInFo()
+    })
+    output$table_time_download <- downloadHandler(
+      filename = function() {paste("TimeInfo", '.csv', sep='')},
+      content = function(file) {write.csv(TimeInFo(), file, quote = F)}
+    )
+    shinyjs::removeClass(id = "submitmeta1", class = "loading dots")
+  })
   
+  observeEvent(input$submitMeta2, {
+    shinyjs::addClass(id = "submitmeta2", class = "loading dots")
+    Meta <- reactive({
+      req(input$Metafasta)
+      filepath <- input$Metafasta$datapath
+      Meta <- metadataExtraction(filepath, input$MetafastaSource)
+      Meta <- refineCounty(Meta)
+      Meta
+    })
+    output$metademoSee <- DT::renderDT({
+      req(input$Metafasta)
+      Meta()
+    })
+    WorldmapInFo <- reactive({
+      req(Meta())
+      meta <- Meta()
+      countrylist <- meta$Country
+      countrylist <- data.frame(table(countrylist))
+      colnames(countrylist) <- c('Country','Number of sequences')
+      countrylist
+    })
+    TimeInFo <- reactive({
+      req(Meta())
+      temporal <- Meta()
+      temporal$count <- 1
+      temporal$Date <- as.Date(temporal$Date)
+      temporal <- aggregate(temporal$count, by=list(temporal$Date), sum)
+      colnames(temporal) <- c('time', 'sum_count')
+      temporal
+    })
+    plot_worldmap <- reactive({
+      req(WorldmapInFo())
+      plot_wp(WorldmapInFo(), input$wordsize)
+    })
+    generate_worldmap(input,output,plot_worldmap)
+    output$countrytable = DT::renderDataTable({
+      req(WorldmapInFo())
+      WorldmapInFo()
+    })
+    output$table_worldmap_download <- downloadHandler(
+      filename = function() {paste("CountryInfo", '.csv', sep='')},
+      content = function(file) {write.csv(WorldmapInFo(), file, quote = F)}
+    )
+    plot_time <- reactive({
+      req(TimeInFo())
+      plot_tm(TimeInFo(), input$wordsize, input$time_scale)
+    })
+    generate_timeplot(input,output,plot_time)
+    output$timetable = DT::renderDataTable({
+      req(TimeInFo())
+      TimeInFo()
+    })
+    output$table_time_download <- downloadHandler(
+      filename = function() {paste("TimeInfo", '.csv', sep='')},
+      content = function(file) {write.csv(TimeInFo(), file, quote = F)}
+    )
+    shinyjs::removeClass(id = "submitmeta2", class = "loading dots")
+  })
   #To create directory
   temp_directory <- file.path(tempdir(), as.integer(Sys.time()))
   dir.create(temp_directory)
@@ -274,7 +500,7 @@ server <- function(input, output,session) {
   #     Trigger the Diver Run (DiMA & Plotting)        #
   #         -By Clicking on Submit Button              #
   #----------------------------------------------------#
-  observeEvent(input$submitDiMA,ignoreInit=TRUE,{
+  observeEvent(input$submitDiMA, ignoreInit=TRUE,{
     req(input$MSAfile)
     shinyjs::addClass(id = "submitAnimate", class = "loading dots")
     
@@ -282,16 +508,16 @@ server <- function(input, output,session) {
     if (is.null(input$MSAfile)){
       return(NULL)
     }
-    #default host name: unknown
+    #default host name: Unknown Host 1
     if (input$hostname == ""){
-      hostname <-"Unknown"
+      hostname <-"Unknown Host 1"
     }else{
       hostname<-input$hostname
     }
     
-    #default host name: unknown
+    #default host name: Unknown Host 2
     if (input$hostname_secondHost == ""){
-      hostname_secondHost <-"Unknown"
+      hostname_secondHost <-"Unknown Host 2"
     }else{
       hostname_secondHost<-input$hostname_secondHost
     }
@@ -324,7 +550,6 @@ server <- function(input, output,session) {
       proteinName_secondHost <- unlist(lapply(strsplit(input$proteinNames_secondHost,','),trimws))
       
       if (length(proteinName_secondHost) < length(filepath_secondHost)){ #if number of protein names != number of files, then assign NA to that protein
-        print("different len")
         proteinName_secondHost <- append(proteinName_secondHost,rep("Unknown",each = length(filepath_secondHost)-length(proteinName_secondHost)))
       }# }else if (length(proteinName_secondHost) > length(filepath_secondHost)){
       #   #do something
@@ -673,11 +898,18 @@ server <- function(input, output,session) {
     
     #----------------------Plotting-----------------------#
     plot1<-reactive({
-    plot_entropy_incidence(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder, input$kmerlength)
+      plot_entropy_incidence(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder, input$kmerlength)
     })
 
     generate_plot1(input,output,plot1)
 
+
+    #Additional plot: Entropy plot
+    plotEntropy<-reactive({
+      plot_entropy(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder, input$kmerlength)
+    })
+
+    generate_plotEntropy(input, output, plotEntropy)
 
     #Tab 2: correlation plot
     plot2<-reactive({
@@ -695,7 +927,7 @@ server <- function(input, output,session) {
     })
     
     output$plot3_download <- downloadHandler(
-      filename = function() { paste("plot3", '.jpg', sep='') },
+      filename = function() { paste("plot_dynamics_proteome", '.jpg', sep='') },
       content = function(file) {
         ggsave(file, plot = plot3(), width=input$width3, height=input$height3,unit="in", device = "jpg", dpi=input$dpi3)
       }
@@ -711,7 +943,7 @@ server <- function(input, output,session) {
     })
     
     output$plot4_download <- downloadHandler(
-      filename = function() { paste("plot4", '.jpg', sep='') },
+      filename = function() { paste("plot_dynamics_proteins", '.jpg', sep='') },
       content = function(file) {
         ggsave(file, plot = plot4(), width=input$width4, height=input$height4,unit="in", device = "jpg", dpi=input$dpi4)
       }
@@ -734,7 +966,6 @@ server <- function(input, output,session) {
         data$host = factor(data$host)
         #split the data into multiple subsets (if multiple hosts detected)
         plot7_list<-split(data,data$host)
-        print("plot 7 - 2 host")
         plot7_multihost<-lapply(plot7_list,plot_conservationLevel,input$line_dot_size, input$wordsize, input$host, input$proteinOrder,input$conservationLabel)
         
         #create spacing between multihost plots
@@ -746,6 +977,10 @@ server <- function(input, output,session) {
     })
 
     generate_plot7(input, output, plot7)
+    output$conserv_threshold_box <- renderUI({
+      textInput(inputId="conserv_percent", label=NULL, 
+                value = ifelse(input$conserv_lvl == "CCS", 100, 90))
+    })
     generate_CCS_HCS_table(input, output, data)
     
     output$downloadDiMA <- downloadHandler(
@@ -824,37 +1059,7 @@ server <- function(input, output,session) {
     }    
   })
   
-  # downloadSampleData(output)
-  output$downloadSampleData <- downloadHandler(
-  filename = function() {
-    paste("DiMA_sample_output_", Sys.Date(), ".zip", sep = "")
-  },
-  content = function(file) { 
-    #To create temporary directory
-    temp_directory_sample <- file.path(tempdir(), as.integer(Sys.time()))
-    dir.create(temp_directory_sample)
-    
-    csv_dataset <- read.csv("www/DiMA_HCV.csv")
-    MSA_dataset_Core <- read.fasta("www/Core_mafft.fasta")
-    csv_dataset_Core <- read.csv("www/core_9mer.csv")
-    JSON_dataset_Core<- rjson::fromJSON(file = "www/core_9mer.json")
-    MSA_dataset_NS3 <- read.fasta("www/NS3_mafft.fasta")
-    csv_dataset_NS3 <- read.csv("www/NS3_9mer.csv")
-    JSON_dataset_NS3<- rjson::fromJSON(file = "www/NS3_9mer.json")
-
-    #write sample dataset in CSV, FA & JSON formats into temp directory
-    write.csv(csv_dataset,paste0(temp_directory_sample,"/HCV_DiMA.csv"))
-    write.fasta(MSA_dataset_Core,names=names(MSA_dataset_Core),file.out = paste0(temp_directory_sample,"/HCV_aligned_Core.fasta"))
-    write.csv(csv_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.csv"))
-    write_json(JSON_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.json"))
-    write.fasta(MSA_dataset_NS3,names=names(MSA_dataset_NS3),file.out = paste0(temp_directory_sample,"/HCV_aligned_NS3.fasta"))
-    write.csv(csv_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.csv"))
-    write_json(JSON_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.json"))
-    print('donwloading..............')
-    zip::zip(zipfile = file,files = dir(temp_directory_sample), root = temp_directory_sample)
-  },
-  contentType = "application/zip"
-)  
+  downloadSampleData(output)
   
   observeEvent(input$samplesubmit,ignoreInit=TRUE,{
     
@@ -907,6 +1112,14 @@ server <- function(input, output,session) {
     generate_plot1(input,output,plot1)
     generate_entropyTable(data, output, proteinName)
 
+    #Additional plot: Entropy plot
+    plotEntropy<-reactive({
+      plot_entropy(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder, input$kmerlength)
+    })
+
+    generate_plotEntropy(input, output, plotEntropy)
+    
+
     #Tab 2: Relationship between entropy and total variants for <i>k</i>-mer positions of the viral protein(s)
     plot2<-reactive({
       plot_correlation(df,input$line_dot_size,input$wordsize,input$host)
@@ -944,6 +1157,10 @@ server <- function(input, output,session) {
     })
     
     generate_plot7(input, output, plot7)
+    output$conserv_threshold_box <- renderUI({
+      textInput(inputId="conserv_percent", label=NULL, 
+                value = ifelse(input$conserv_lvl == "CCS", 100, 90))
+    })
     generate_CCS_HCS_table(input, output, data)
     
     shinyjs::removeClass(id = "UpdateAnimate", class = "loading dots")

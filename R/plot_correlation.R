@@ -12,6 +12,6 @@ plot_correlation<-function(df,line_dot_size,wordsize,host){
   if (host == 1){ #one host
     plot2
   }else{ #multiple host
-    plot2+facet_grid_sc(rows = vars(df$host),space = "free",switch = "x")
+    plot2+facet_grid(rows = vars(df$host),space = "free",switch = "x")
   }
 }

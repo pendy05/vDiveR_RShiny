@@ -36,7 +36,7 @@ json2csvinR_unnest <-function(infile, host, proteinName){
   #extract the first encountered index kmer info if > 1 index is encountered for each position (rarely happens)
   index_data<-subset(data_flatten, motif_short == "I") %>% #extract rows that are of index
     group_by(results.position) %>% #group them based on position
-    slice(1) %>% #take the first index encountered per position
+    dplyr::slice(1) %>% #take the first index encountered per position
     as.data.frame() #return the data in dataframe
   
   #replace low_support of NAN to FALSE

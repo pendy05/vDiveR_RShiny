@@ -120,21 +120,38 @@ plot4_5<-function(data,line_dot_size,wordsize,host,proteinOrder){
     variants<-subset(plot5_data, Group=="Major variant" | Group=="Minor variants" | Group=="Unique variants")
     max_ylim<-ceiling((max(variants$Incidence)/10))*10
     
-    scales_y <- list(
-      "Index k-mer" = scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20)),
-      "Total variants" = scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20)),
-      "Distinct variants" = scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20)),
-      "Major variant" = scale_y_continuous(limits = c(0, max_ylim), breaks = seq(0, max_ylim, 10)),
-      "Minor variants" = scale_y_continuous(limits = c(0, max_ylim), breaks = seq(0, max_ylim, 10)),
-      "Unique variants" = scale_y_continuous(limits = c(0, max_ylim), breaks = seq(0, max_ylim, 10))
-    )
+    # scales_y <- list(
+    #   "Index k-mer" = scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20)),
+    #   "Total variants" = scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20)),
+    #   "Distinct variants" = scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20)),
+    #   "Major variant" = scale_y_continuous(limits = c(0, max_ylim), breaks = seq(0, max_ylim, 10)),
+    #   "Minor variants" = scale_y_continuous(limits = c(0, max_ylim), breaks = seq(0, max_ylim, 10)),
+    #   "Unique variants" = scale_y_continuous(limits = c(0, max_ylim), breaks = seq(0, max_ylim, 10))
+    # )
     
+    breaks_fun <- function(x) {
+      if (max(x)<= max_ylim){
+        seq(0,max_ylim,10)
+      }else{
+        seq(0,100,20)
+      }
+    }
+
+    limits_fun <- function(x) {
+      if (max(x)<= max_ylim){
+        c(0,max_ylim)
+      }else{
+        c(0,100)
+      }
+    }
+
     plot5<-ggplot()+
       geom_violin(data=plot5_data,aes(x=proteinName,y=Incidence, fill=Group, color=Group), trim=FALSE)+
       theme_classic(base_size = 8)+xlab("Protein")+ylab("Incidence (%)\n")+
       theme(panel.border = element_rect(colour = "black", fill=NA, size=1),
             legend.position="none")+
-      facet_grid_sc(rows = vars(Group),switch="y",scales = list(y = scales_y))+
+      scale_y_continuous(limits = limits_fun,breaks = breaks_fun)+
+      facet_grid(rows = vars(Group),switch="y",scales = 'free')+
       scale_colour_manual('',values = c("Index k-mer"="black","Total variants"="#f7238a", "Major variant"="#37AFAF","Minor variants"="#42aaff","Unique variants"="#af10f1","Nonatypes"="#c2c7cb" ))+
       scale_fill_manual('',values = c("Index k-mer"="black","Total variants"="#f7238a", "Major variant"="#37AFAF","Minor variants"="#42aaff","Unique variants"="#af10f1","Nonatypes"="#c2c7cb" ))
     

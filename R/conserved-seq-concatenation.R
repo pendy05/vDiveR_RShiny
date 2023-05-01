@@ -1,5 +1,5 @@
 # function to create csv or fasta files with conservative sequences
-seqConcatenation <- function(input_file, kmer, conservation) {
+seqConcatenation <- function(input_file, kmer, conservation, threshold_pct = NULL) {
   
   # ---- load libs ----
   libs <- c("dplyr", "tidyr", "stringr")
@@ -8,11 +8,18 @@ seqConcatenation <- function(input_file, kmer, conservation) {
                              warn.conflicts = FALSE, quietly = TRUE))
   }
   
-  threshold <- ifelse(conservation == "CCS", 100, 90)
-  
+  if (is.null(threshold_pct)) {
+    threshold <- ifelse(conservation == "CCS", 100, 90)
+  } else {
+    threshold <- threshold_pct
+  }
+
+  print(threshold)
+
   # filter whole dataset by index.incidence (HCS/CCS)
   df <- input_file %>%
     dplyr::filter(index.incidence >= threshold)
+  print(nrow(df))
   
   # ---- 1. Protein Sequences ----
   # remember whole sequence of the protein
@@ -29,7 +36,7 @@ seqConcatenation <- function(input_file, kmer, conservation) {
              input_file %>%
                dplyr::filter(proteinName == protein) %>%
                dplyr::select(indexSequence) %>%
-               slice(n()) %>%
+               dplyr::slice(n()) %>%
                as.character() %>%
                str_sub(2))
   }
@@ -91,8 +98,26 @@ seqConcatenation <- function(input_file, kmer, conservation) {
           !!conservation := sprintf("%s_%s_%i", conservation, prot_name, n),
           Position = sprintf("%i-%i", start, end),
           Sequence = str_sub(proteins_seq[[prot_name]], start, end)
-        ) %>%
-        select(-c(n, start, end))
+        )
+      
+      # add mean index.incidence and mean.entropy
+      index_df <-
+        cbind(index_df,
+              bind_rows(lapply(1:nrow(index_df), function (x) {
+                start <- index_df[x, ]$start
+                end <- index_df[x, ]$end
+                data.frame(mean.index.incidence = mean((
+                  df_x %>% filter(position %in% c(start:end - kmer + 1)) %>% dplyr::select(index.incidence)
+                )[, 1]),
+                mean.entropy = mean((
+                  df_x %>% filter(position %in% c(start:end - kmer + 1)) %>% dplyr::select(entropy)
+                )[, 1]))
+              }))) %>% 
+        select(-c(n, start, end)) %>% 
+        mutate(
+          mean.index.incidence = round(mean.index.incidence, 5),
+          mean.entropy = round(mean.entropy, 5)
+        )
   
     })
   
