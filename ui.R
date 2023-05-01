@@ -573,7 +573,7 @@ body<-## Body content
       tabItem(tabName = "helppage",
               h2("Help Page"),
               fluidRow(box(width=12,title="Contact",solidHeader = TRUE, status="primary",
-                           HTML('For technical assistance or bug report, please reach us out via GitHub (<a href=\'https://github.com/pendy05/vDiveR\'>https://github.com/pendy05/DiveR</a>). For the general correspondence, please email Dr. Asif M. Khan (<a href=\'asif@perdanauniversity.edu.my\'>asif@perdanauniversity.edu.my</a>, <a href=\'makhan@bezmialem.edu.tr\'>makhan@bezmialem.edu.tr</a>).')                           
+                           HTML('For technical assistance or bug report, please reach us out via GitHub (<a href=\'https://github.com/pendy05/vDiveR\'>https://github.com/pendy05/vDiveR</a>). For the general correspondence, please email Dr. Asif M. Khan (<a href=\'asif.khan@udst.edu.qa\'>asif.khan@udst.edu.qa</a>).')                           
               )),
               fluidRow(box(width=12,title="Frequently Asked Questions (FAQs)",solidHeader = TRUE,status="primary",
                            HTML("1. What can I do if the elements in the plot appear to be overlapping each other due to the displayed plot size? <br>\

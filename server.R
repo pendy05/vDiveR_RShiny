@@ -350,7 +350,6 @@ server <- function(input, output,session) {
   #=====================================================#
   output$metademo <- DT::renderDT({
     demoMeta <- read.csv("www/oneID_GISAID.csv", header = T, stringsAsFactors = F)
-    demoMeta <- demoMeta[,2:4]
     demoMeta
   })
   output$inmetafilename <- renderText({
