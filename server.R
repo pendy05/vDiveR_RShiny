@@ -27,12 +27,13 @@ library(maptools)
 library(lubridate)
 library(scales)
 library(rentrez)
+library(vDiveR) # install.packages("vDiveR")
 #library(NGLVieweR)
 #library(bio3d)
 #library(Biostrings)
 #library(NGLVieweR)
 #library(ggmsa) #devtools::install_github("YuLab-SMU/ggmsa")
-               #devtools::install_github("hrbrmstr/ggalt", ref = "noproj")  
+#devtools::install_github("hrbrmstr/ggalt", ref = "noproj")  
 #reticulate::use_virtualenv("python_env", required = TRUE)
 
 #individual functions
@@ -57,7 +58,7 @@ resetInput_to_initialState <-function(output){
   shinyjs::reset("inmetafilename")
   shinyjs::reset("inmetafasta")
   shinyjs::disable(id="downloadDiMA")
-
+  
   #clear output
   output$alert <- renderUI({})
   output$alertSample <- renderUI({})
@@ -80,44 +81,44 @@ resetInput_to_initialState <-function(output){
 downloadSampleData<-function(output){
   output$downloadSampleData <- downloadHandler(
     filename <- function() {
-        paste("vDiveR_sample_input_", Sys.Date(), ".zip", sep = "")
+      paste("vDiveR_sample_input_", Sys.Date(), ".zip", sep = "")
     },
     
     content <- function(file) {
       file.copy("www/vDiveR_sample_input.zip", file)
     },
     contentType = "application/zip"
-  # filename = function() {
-  #   paste("vDiveR_sample_input_", Sys.Date(), ".zip", sep = "")
-  # },
-  # content = function(file) { 
-  #   print('in temp dir')
-  #   #To create temporary directory
-  #   temp_directory_sample <- file.path(tempdir(), as.integer(Sys.time()))
-  #   dir.create(temp_directory_sample)
-  #   
-  #   csv_dataset <- read.csv("www/DiMA_HCV.csv")
-  #   MSA_dataset_Core <- seqinr::read.fasta("www/Core_mafft.fasta")
-  #   csv_dataset_Core <- read.csv("www/core_9mer.csv")
-  #   JSON_dataset_Core<- rjson::fromJSON(file = "www/core_9mer.json")
-  #   MSA_dataset_NS3 <- seqinr::read.fasta("www/NS3_mafft.fasta")
-  #   csv_dataset_NS3 <- read.csv("www/NS3_9mer.csv")
-  #   JSON_dataset_NS3<- rjson::fromJSON(file = "www/NS3_9mer.json")
-  #   csv_dataset_metadata <- read.csv("www/oneID_GISAID.csv")
-  # 
-  #   #write sample dataset in CSV, FA & JSON formats into temp directory
-  #   write.csv(csv_dataset,paste0(temp_directory_sample,"/HCV_DiMA.csv"))
-  #   seqinr::write.fasta(MSA_dataset_Core,names=names(MSA_dataset_Core),file.out = paste0(temp_directory_sample,"/HCV_aligned_Core.fasta"))
-  #   write.csv(csv_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.csv"))
-  #   write_json(JSON_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.json"))
-  #   seqinr::write.fasta(MSA_dataset_NS3,names=names(MSA_dataset_NS3),file.out = paste0(temp_directory_sample,"/HCV_aligned_NS3.fasta"))
-  #   write.csv(csv_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.csv"))
-  #   write_json(JSON_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.json"))
-  #   write.csv(csv_dataset_metadata,paste0(temp_directory_sample,"/metadata.csv"))
-  #   zip::zip(zipfile = file,files = dir(temp_directory_sample), root = temp_directory_sample)
-  # },
-  # contentType = "application/zip"
-)
+    # filename = function() {
+    #   paste("vDiveR_sample_input_", Sys.Date(), ".zip", sep = "")
+    # },
+    # content = function(file) { 
+    #   print('in temp dir')
+    #   #To create temporary directory
+    #   temp_directory_sample <- file.path(tempdir(), as.integer(Sys.time()))
+    #   dir.create(temp_directory_sample)
+    #   
+    #   csv_dataset <- read.csv("www/DiMA_HCV.csv")
+    #   MSA_dataset_Core <- seqinr::read.fasta("www/Core_mafft.fasta")
+    #   csv_dataset_Core <- read.csv("www/core_9mer.csv")
+    #   JSON_dataset_Core<- rjson::fromJSON(file = "www/core_9mer.json")
+    #   MSA_dataset_NS3 <- seqinr::read.fasta("www/NS3_mafft.fasta")
+    #   csv_dataset_NS3 <- read.csv("www/NS3_9mer.csv")
+    #   JSON_dataset_NS3<- rjson::fromJSON(file = "www/NS3_9mer.json")
+    #   csv_dataset_metadata <- read.csv("www/oneID_GISAID.csv")
+    # 
+    #   #write sample dataset in CSV, FA & JSON formats into temp directory
+    #   write.csv(csv_dataset,paste0(temp_directory_sample,"/HCV_DiMA.csv"))
+    #   seqinr::write.fasta(MSA_dataset_Core,names=names(MSA_dataset_Core),file.out = paste0(temp_directory_sample,"/HCV_aligned_Core.fasta"))
+    #   write.csv(csv_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.csv"))
+    #   write_json(JSON_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.json"))
+    #   seqinr::write.fasta(MSA_dataset_NS3,names=names(MSA_dataset_NS3),file.out = paste0(temp_directory_sample,"/HCV_aligned_NS3.fasta"))
+    #   write.csv(csv_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.csv"))
+    #   write_json(JSON_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.json"))
+    #   write.csv(csv_dataset_metadata,paste0(temp_directory_sample,"/metadata.csv"))
+    #   zip::zip(zipfile = file,files = dir(temp_directory_sample), root = temp_directory_sample)
+    # },
+    # contentType = "application/zip"
+  )
 }
 
 #plot generators
@@ -229,7 +230,7 @@ generate_plot7<-function(input, output, plot7){
     filename = function() { paste("plot_conservationLevels_protein", '.jpg', sep='') },
     content = function(file) {
       ggsave(file, plot = plot7(),  width=input$width7, height=input$height7, unit="in", device = "jpg", dpi=input$dpi7)
-  })
+    })
 }
 
 
@@ -257,17 +258,17 @@ generate_entropyTable<-function(data, output, proteinName){
 generate_CCS_HCS_table<-function(input, output, data){
   # for now not splitted by hosts
   output$plot7_seqs <- renderDataTable({
-     seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, 
-                     threshold_pct = as.numeric(input$conserv_percent),
-                     conservation=input$conserv_lvl)[[input$table_type]]
+    concat_conserved_kmer(data=data.frame(data), kmer=input$kmerlength, 
+                          threshold_pct = as.numeric(input$conserv_percent),
+                          conservation_level=input$conserv_lvl)[[input$table_type]]
   })
   
   output$conservSeq_download <- downloadHandler(
     filename =  function() {paste0(input$conserv_lvl, ".", input$table_type)},
     content = function(fname) {
-      df <- seqConcatenation(input_file=data.frame(data), kmer=input$kmerlength, 
-                             threshold_pct = as.numeric(input$conserv_percent),
-                             conservation=input$conserv_lvl)[[input$table_type]]
+      df <- concat_conserved_kmer(data=data.frame(data), kmer=input$kmerlength, 
+                                  threshold_pct = as.numeric(input$conserv_percent),
+                                  conservation_level=input$conserv_lvl)[[input$table_type]]
       write.table(df, file = fname, col.names = ifelse(input$table_type == "csv", TRUE, FALSE), sep = ",", row.names = FALSE, quote = FALSE)
     }
   )
@@ -278,7 +279,7 @@ server <- function(input, output,session) {
   # initial state of downloadDiMA button is disabled
   shinyjs::disable(id="downloadDiMA")
   shinyjs::disable(selector = '.nav-tabs a[data-value="Second Host"')
-
+  
   #=====================================================#
   #                Sample Input Format                  #
   #          display a table of sample input            #
@@ -287,7 +288,7 @@ server <- function(input, output,session) {
     mainDataSample <- read.csv("www/DiMA_HCV.csv", header = T, stringsAsFactors = F)
     mainDataSample
   })
-
+  
   
   #if "two hosts" is selected, allow user to input data at the second tab
   observeEvent(input$host, {
@@ -312,15 +313,15 @@ server <- function(input, output,session) {
   #https://stackoverflow.com/questions/32971921/navigate-to-particular-sidebar-menu-item-in-shinydashboard
   observeEvent(input$start, {
     newtab <- switch(input$tabs,
-                "description" = "inputdata_description",
-                "MetaData" = "inputdata_description",
-                "plotEntropy" = "inputdata_description",
-                "plot1" = "inputdata_description",
-                "plot2" = "inputdata_description",
-                "plot3" = "inputdata_description",
-                "plot4" = "inputdata_description",
-                "plot7" = "inputdata_description",
-                "helppage" = "inputdata_description"
+                     "description" = "inputdata_description",
+                     "MetaData" = "inputdata_description",
+                     "plotEntropy" = "inputdata_description",
+                     "plot1" = "inputdata_description",
+                     "plot2" = "inputdata_description",
+                     "plot3" = "inputdata_description",
+                     "plot4" = "inputdata_description",
+                     "plot7" = "inputdata_description",
+                     "helppage" = "inputdata_description"
     )
     updateTabItems(session, "tabs", newtab)
   })
@@ -531,7 +532,7 @@ server <- function(input, output,session) {
       proteinName <- list(rep("Unknown",each = length(filepath)))
     }else{
       proteinName <- unlist(lapply(strsplit(input$proteinNames,','),trimws))
-         
+      
       if (length(proteinName) < length(filepath)){ #if number of protein names != number of files, then assign NA to that protein
         proteinName <- append(proteinName,rep("Unknown",each = length(filepath)-length(proteinName)))
       }
@@ -545,7 +546,7 @@ server <- function(input, output,session) {
     #---------------------#
     
     filepath_secondHost <- input$MSAfile_secondHost$datapath
-
+    
     if (input$proteinNames_secondHost != ""){
       proteinName_secondHost <- unlist(lapply(strsplit(input$proteinNames_secondHost,','),trimws))
       
@@ -556,7 +557,7 @@ server <- function(input, output,session) {
       # }
     }
     
-
+    
     #--------------------------------------------------------------#
     #                Check the Input Type of Files                 #
     #    1. MSA Files - Run DiMA                                   #
@@ -570,24 +571,24 @@ server <- function(input, output,session) {
       outfile<-""
       csvfilelist<-c()
       if (input$inputtype == 1){
-          inputtype <- "protein"
+        inputtype <- "protein"
       }else{
-          inputtype <- "nucleotide"
+        inputtype <- "nucleotide"
       }
       #run DiMA
       for (i in 1:length(filepath)){        
         outfile<- paste0(proteinName[[i]][1],"_",hostname,"_",i,".json",sep="")
-
+        
         #print('before dima-cli', paste0(temp_directory, "/",outfile))
         system(paste("python_env/Scripts/dima-cli.exe -i", filepath[i], "-o",paste0(temp_directory, "/",outfile),"-s",input$supportLimit, "-q",proteinName[[i]][1], "-l",input$kmerlength, "-a",inputtype))
-
+        
         print('after dima-cli')
         #https://stackoverflow.com/questions/5990654/incomplete-final-line-warning-when-trying-to-read-a-csv-file-into-r
         #write("\r\n", file = paste0("./",outfile), append = TRUE, sep = "\n")
         print('before unnest')
         json2csvinR_unnest(paste0(temp_directory, "/",outfile),hostname, proteinName[[i]][1])
         print('after unnest')
-
+        
         #store the DiMA csv output names into a list (for further concatenation into one file)
         csvfile<-paste0(temp_directory, "/",proteinName[[i]][1],"_",hostname,"_",i,".csv",sep="")
         csvfilelist <- append(csvfilelist, csvfile)
@@ -673,7 +674,7 @@ server <- function(input, output,session) {
         #"proteinName" are needed?
         csvfile<-paste0(strsplit(input$MSAfile$name[i], ".json")[[1]][1],".csv",sep="")
         direct_json2csvinR(filepath[i],hostname,proteinName[[i]][1], paste0(temp_directory,"/",csvfile))
-
+        
         #store the DiMA csv output names into a list (for further concatenation into one file)
         csvfilelist <- append(csvfilelist, paste0(temp_directory,"/",csvfile))
       }
@@ -823,7 +824,7 @@ server <- function(input, output,session) {
         
       }
     }
-
+    
     group_names<-c("Index","Major","Minor","Unique","Total variants","Nonatypes")    
     
     #--------------------Table Output----------------------#
@@ -835,22 +836,22 @@ server <- function(input, output,session) {
     plot1<-reactive({
       plot_entropy_incidence(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder, input$kmerlength)
     })
-
+    
     generate_plot1(input,output,plot1)
-
-
+    
+    
     #Additional plot: Entropy plot
     plotEntropy<-reactive({
       plot_entropy(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder, input$kmerlength)
     })
-
+    
     generate_plotEntropy(input, output, plotEntropy)
-
+    
     #Tab 2: correlation plot
     plot2<-reactive({
       plot_correlation(df,input$line_dot_size,input$wordsize,input$host)
     })
-
+    
     generate_plot2(input, output, plot2)
     
     plot3<-reactive({
@@ -910,7 +911,7 @@ server <- function(input, output,session) {
       }
       
     })
-
+    
     generate_plot7(input, output, plot7)
     output$conserv_threshold_box <- renderUI({
       textInput(inputId="conserv_percent", label=NULL, 
@@ -935,7 +936,7 @@ server <- function(input, output,session) {
     
   })
   
-
+  
   output$plot3_hosts<-renderUI({
     if (input$host==1){
       fluidRow(
@@ -985,7 +986,7 @@ server <- function(input, output,session) {
     }
     
   })
-
+  
   output$plot7_hosts<-renderUI({
     if(input$host==1){
       plotOutput(outputId = "plot7",height = 650)
@@ -1001,7 +1002,7 @@ server <- function(input, output,session) {
     shinyjs::addClass(id = "UpdateAnimate", class = "loading dots")
     data<-read.csv("www/DiMA_HCV.csv")
     df <- data.frame(data)
- 
+    
     MY_THEME<-theme(
       axis.title.x = element_text(size = input$wordsize),
       axis.text.x = element_text(size = input$wordsize),
@@ -1034,32 +1035,32 @@ server <- function(input, output,session) {
         x = scale_x_continuous(limits = c(0,y),breaks = seq(0,y,50))
       }, level,position)
     }
-
+    
     #--------------------------------------#
     #               Output                 #
     #--------------------------------------#
-
+    
     #Tab 1: Entropy and incidence of total variants for each aligned <i>k</i>-mer positions of a viral protein(s)
     plot1<-reactive({
       plot_entropy_incidence(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder,input$kmerlength)
     })
-
+    
     generate_plot1(input,output,plot1)
     generate_entropyTable(data, output, proteinName)
-
+    
     #Additional plot: Entropy plot
     plotEntropy<-reactive({
       plot_entropy(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder, input$kmerlength)
     })
-
+    
     generate_plotEntropy(input, output, plotEntropy)
     
-
+    
     #Tab 2: Relationship between entropy and total variants for <i>k</i>-mer positions of the viral protein(s)
     plot2<-reactive({
       plot_correlation(df,input$line_dot_size,input$wordsize,input$host)
     })
-
+    
     generate_plot2(input, output, plot2)
     
     #Tab 3: Dynamics of diversity motifs of viral proteome
@@ -1087,8 +1088,8 @@ server <- function(input, output,session) {
         data$index.incidence < 10 ~ "Extremely diverse (ED)"
         
       ))
-
-       plot_conservationLevel(data,input$line_dot_size, input$wordsize, input$host, input$proteinOrder,input$conservationLabel)  
+      
+      plot_conservationLevel(data,input$line_dot_size, input$wordsize, input$host, input$proteinOrder,input$conservationLabel)  
     })
     
     generate_plot7(input, output, plot7)
