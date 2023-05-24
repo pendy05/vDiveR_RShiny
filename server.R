@@ -833,8 +833,17 @@ server <- function(input, output,session) {
     #----------------------Plotting-----------------------#
     
     #Tab 1: entropy incidence plot
-    plot1<-reactive({
-      plot_entropy_incidence(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder, input$kmerlength)
+    plot1 <- reactive({
+      vDiveR::plot_entropy(
+        df,
+        line_dot_size = input$line_dot_size,
+        word_size = input$wordsize,
+        host = input$host,
+        # scales_x,
+        protein_order = input$proteinOrder,
+        kmer_size = input$kmerlength,
+        all = T
+      )
     })
     
     generate_plot1(input,output,plot1)
@@ -842,20 +851,39 @@ server <- function(input, output,session) {
     
     #Additional plot: Entropy plot
     plotEntropy<-reactive({
-      plot_entropy(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder, input$kmerlength)
+      vDiveR::plot_entropy(
+        df,
+        line_dot_size = input$line_dot_size,
+        word_size = input$wordsize,
+        host = input$host,
+        # scales_x,
+        protein_order = input$proteinOrder,
+        kmer_size = input$kmerlength,
+        all = F
+      )
     })
     
     generate_plotEntropy(input, output, plotEntropy)
     
     #Tab 2: correlation plot
     plot2<-reactive({
-      plot_correlation(df,input$line_dot_size,input$wordsize,input$host)
+      vDiveR::plot_correlation(
+        df,
+        line_dot_size = input$line_dot_size,
+        base_size = input$wordsize,
+        host = input$host
+      )
     })
     
     generate_plot2(input, output, plot2)
     
     plot3<-reactive({
-      plot_dynamics_proteome(data,input$line_dot_size,input$wordsize,input$host)
+      vDiveR::plot_dynamics_proteome(
+        data,
+        line_dot_size = input$line_dot_size,
+        base_size = input$wordsize,
+        host = input$host
+      )
     })
     
     output$plot3<- renderPlot({
@@ -870,8 +898,14 @@ server <- function(input, output,session) {
     )
     
     
-    plot4<-reactive({
-      plot_dynamics_protein(data,input$line_dot_size,input$wordsize,input$host,input$proteinOrder)
+    plot4 <- reactive({
+      vDiveR::plot_dynamics_protein(
+        data,
+        line_dot_size = input$line_dot_size,
+        base_size = input$wordsize,
+        host = input$host,
+        protein_order = input$proteinOrder
+      )
     })
     
     output$plot4<- renderPlot({
@@ -886,29 +920,16 @@ server <- function(input, output,session) {
     )
     
     plot7<-reactive({
-      data<- data.frame(data)
-      data<-data%>%mutate(ConservationLevel = case_when(
-        data$index.incidence == 100 ~ "Completely conserved (CC)",
-        data$index.incidence >= 90 ~ "Highly conserved (HC)",
-        data$index.incidence >= 20 ~ "Mixed variable (MV)",
-        data$index.incidence >= 10  ~ "Highly diverse (HD)",
-        data$index.incidence < 10 ~ "Extremely diverse (ED)"
-        
-      ))
-      if (input$host == 1){
-        #single host
-        plot_conservationLevel(data,input$line_dot_size, input$wordsize, input$host, input$proteinOrder,input$conservationLabel)
-      }else{#multihost
-        data$host = factor(data$host)
-        #split the data into multiple subsets (if multiple hosts detected)
-        plot7_list<-split(data,data$host)
-        plot7_multihost<-lapply(plot7_list,plot_conservationLevel,input$line_dot_size, input$wordsize, input$host, input$proteinOrder,input$conservationLabel)
-        
-        #create spacing between multihost plots
-        theme = theme(plot.margin = unit(c(2.5,1.0,0.1,0.5), "cm"))
-        do.call("grid.arrange", c(grobs=lapply(plot7_multihost,"+",theme), nrow = length(unique(data$host))))
-        
-      }
+      vDiveR::plot_conservationLevel(
+        data,
+        line_dot_size = input$line_dot_size,
+        base_size = input$wordsize,
+        host = input$host,
+        protein_order = input$proteinOrder,
+        label_size = (input$wordsize / 2) - 2,
+        conservation_label = input$conservationLabel
+      )
+      
       
     })
     
@@ -1042,7 +1063,16 @@ server <- function(input, output,session) {
     
     #Tab 1: Entropy and incidence of total variants for each aligned <i>k</i>-mer positions of a viral protein(s)
     plot1<-reactive({
-      plot_entropy_incidence(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder,input$kmerlength)
+      vDiveR::plot_entropy(
+        df,
+        line_dot_size = input$line_dot_size,
+        word_size = input$wordsize,
+        host = input$host,
+        # scales_x,
+        protein_order = input$proteinOrder,
+        kmer_size = input$kmerlength,
+        all = T
+      )
     })
     
     generate_plot1(input,output,plot1)
@@ -1050,7 +1080,16 @@ server <- function(input, output,session) {
     
     #Additional plot: Entropy plot
     plotEntropy<-reactive({
-      plot_entropy(df,input$line_dot_size,input$wordsize,input$host,scales_x,input$proteinOrder, input$kmerlength)
+      vDiveR::plot_entropy(
+        df,
+        line_dot_size = input$line_dot_size,
+        word_size = input$wordsize,
+        host = input$host,
+        # scales_x,
+        protein_order = input$proteinOrder,
+        kmer_size = input$kmerlength,
+        all = F
+      )
     })
     
     generate_plotEntropy(input, output, plotEntropy)
@@ -1058,38 +1097,52 @@ server <- function(input, output,session) {
     
     #Tab 2: Relationship between entropy and total variants for <i>k</i>-mer positions of the viral protein(s)
     plot2<-reactive({
-      plot_correlation(df,input$line_dot_size,input$wordsize,input$host)
+      vDiveR::plot_correlation(
+        df,
+        line_dot_size = input$line_dot_size,
+        base_size = input$wordsize,
+        host = input$host
+      )
     })
     
     generate_plot2(input, output, plot2)
     
     #Tab 3: Dynamics of diversity motifs of viral proteome
     plot3<-reactive({
-      plot_dynamics_proteome(data,input$line_dot_size,input$wordsize,input$host)
+      vDiveR::plot_dynamics_proteome(
+        data,
+        line_dot_size = input$line_dot_size,
+        base_size = input$wordsize,
+        host = input$host
+      )
     })
     
     generate_plot3(input, output, plot3)
     
     #Tab 4: Dynamics of diversity motifs (Protein)
     plot4<-reactive({
-      plot_dynamics_protein(data,input$line_dot_size,input$wordsize,input$host,input$proteinOrder)
+      vDiveR::plot_dynamics_protein(
+        data,
+        line_dot_size = input$line_dot_size,
+        base_size = input$wordsize,
+        host = input$host,
+        protein_order = input$proteinOrder
+      )
     })
     
     generate_plot4(input, output, plot4)
     
     #Tab 7: Conservation levels of viral <i>k</i>-mer positions for each individual protein
     plot7<-reactive({
-      data<- data.frame(data)
-      data<-data%>%mutate(ConservationLevel = case_when(
-        data$index.incidence == 100 ~ "Completely conserved (CC)",
-        data$index.incidence >= 90 ~ "Highly conserved (HC)",
-        data$index.incidence >= 20 ~ "Mixed variable (MV)",
-        data$index.incidence >= 10  ~ "Highly diverse (HD)",
-        data$index.incidence < 10 ~ "Extremely diverse (ED)"
-        
-      ))
-      
-      plot_conservationLevel(data,input$line_dot_size, input$wordsize, input$host, input$proteinOrder,input$conservationLabel)  
+      vDiveR::plot_conservationLevel(
+        data,
+        line_dot_size = input$line_dot_size,
+        base_size = input$wordsize,
+        host = input$host,
+        protein_order = input$proteinOrder,
+        label_size = (input$wordsize / 2) - 2,
+        conservation_label = input$conservationLabel
+      )
     })
     
     generate_plot7(input, output, plot7)
