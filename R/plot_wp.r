@@ -105,7 +105,7 @@ refineCounty <- function(metatable){
   metatable$Country[metatable$Country == "NewCaledonia"] = "New Caledonia"
   metatable$Country[metatable$Country == "Northern Ireland"] = "New Caledonia"
   metatable$Country[metatable$Country %in% c("England","Scotland","Wales")] = "UK"
-  metatable$Country[metatable$Country %in% c("Shangahi", "Xinjiang","Sichuan", "Guangdong","Shannxi", "Chongqing", "Inner_Mongolia","Shenzhen",
+  metatable$Country[metatable$Country %in% c("Shangahi", "Xinjiang","Sichuan", "Guangdong","Shannxi", "Chongqing", "Inner_Mongolia","Shenzhen", "Wuhan",
                                              "Fujian", "Inner Mongolia", "Tianjing", "Hebei","Jiangsu", "Shandong", "Zhejiang",
                                              "Liaoning","Shanxi", "Henan", "Chongqin", "Yunnan", "Beijing","Heilongjiang",
                                              "Hunan", "Guangxi","Ningxia","Jilin","Tibet","Hainan", "Macao", 
