@@ -4,7 +4,7 @@ plot_wp<-function(data,wordsize){
   gg <- ggplot(world_map, aes(x = long, y = lat, group = group)) + geom_polygon(fill="lightgray", colour = "#888888")
   pathogens.map <- left_join(data, world_map, by = "region")
   gg <- gg + geom_polygon(data = pathogens.map, aes(fill = count), color = "#888888") +
-             scale_fill_gradient(low = "#FFFFFF", high = "#E63F00") +
+             scale_fill_gradient(low = "#FFFFFF", high = "#E63F00", name = 'Number of sequences') +
              theme(plot.background = element_rect(fill = "transparent", colour = NA),
                    panel.border = element_blank(), panel.grid = element_blank(),
                    axis.text = element_blank(), axis.ticks = element_blank(), axis.title = element_blank(),
@@ -14,7 +14,8 @@ plot_wp<-function(data,wordsize){
 }
 
 plot_tm<-function(data, wordsize, scale){
-  gg <- ggplot(data, aes(time, sum_count)) + geom_col(position = "stack", color='black') + 
+
+    gg <- ggplot(data, aes(Date, Total)) + geom_col(position = "stack", color='black') + 
                ylab('Number of protein sequence records') +
                scale_x_date(labels = date_format("%b-%Y"), date_breaks = "1 months") +
                theme_classic(base_size = wordsize) + 
@@ -64,7 +65,7 @@ extract_from_NCBI <- function(file_path){
     countrys <- c(countrys, country); dates <- c(dates, date)
   }
   tmp <- data.frame('ID' = keepsample, 'country' = countrys, 'date' = dates)
-  
+
   for(i in 1:nrow(tmp)){
     if(!is.na(as.Date(tmp$date[i],format='%Y-%m-%d'))){
       tt <- 1

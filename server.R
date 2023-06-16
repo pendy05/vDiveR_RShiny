@@ -390,9 +390,9 @@ server <- function(input, output,session) {
       req(Meta())
       temporal <- Meta()
       temporal$count <- 1
-      temporal$Date <- as.Date(temporal$Date)
+      temporal$Date <- as.Date(temporal$Date, format = "%d/%m/%Y")
       temporal <- aggregate(temporal$count, by=list(temporal$Date), sum)
-      colnames(temporal) <- c('time', 'sum_count')
+      colnames(temporal) <- c('Date', 'Total')
       temporal
     })
     plot_worldmap <- reactive({
