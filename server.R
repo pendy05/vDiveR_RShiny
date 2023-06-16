@@ -28,7 +28,7 @@ library(shinyThings) # devtools::install_github("gadenbuie/shinyThings")
 #Sys.setenv(RETICULATE_PYTHON = "python_env/Scripts/python.exe")
 #reticulate::use_virtualenv("./python_env", required = TRUE)
 
-
+library(maps)
 library(maptools)
 library(lubridate)
 library(scales)
