@@ -28,9 +28,7 @@ library(shinyThings) # devtools::install_github("gadenbuie/shinyThings")
 #Sys.setenv(RETICULATE_PYTHON = "python_env/Scripts/python.exe")
 #reticulate::use_virtualenv("./python_env", required = TRUE)
 
-virtualenv_create(envname = "python_env", python= "python3")
-virtualenv_install("python_env", packages = c('pandas','numpy','dima-cli==4.1.1'))
-reticulate::use_virtualenv("python_env", required = TRUE)
+
 library(maptools)
 library(lubridate)
 library(scales)
@@ -42,6 +40,10 @@ library(rentrez)
 #library(ggmsa) #devtools::install_github("YuLab-SMU/ggmsa")
                #devtools::install_github("hrbrmstr/ggalt", ref = "noproj")  
 #reticulate::use_virtualenv("python_env", required = TRUE)
+
+virtualenv_create(envname = "python_env", python= "python3")
+virtualenv_install("python_env", packages = c('pandas','numpy','dima-cli==4.1.1'))
+reticulate::use_virtualenv("python_env", required = TRUE)
 
 #individual functions
 #reset input and output settings
@@ -388,7 +390,12 @@ server <- function(input, output,session) {
     WorldmapInFo <- reactive({
       req(Meta())
       meta <- Meta()
+      meta$Country[meta$Country == "DRC"] = "Democratic Republic of the Congo"
+      meta$Country[meta$Country == "NewCaledonia"] = "New Caledonia"
+      meta$Country[meta$Country == "Northern Ireland"] = "New Caledonia"
+      meta$Country[meta$Country %in% c("England","Scotland","Wales")] = "UK"
       countrylist <- meta$Country
+
       countrylist <- data.frame(table(countrylist))
       colnames(countrylist) <- c('Country','Number of sequences')
       countrylist
