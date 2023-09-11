@@ -4,7 +4,7 @@ plot_wp<-function(data,wordsize){
   gg <- ggplot(world_map, aes(x = long, y = lat, group = group)) + geom_polygon(fill="lightgray", colour = "#888888")
   pathogens.map <- left_join(data, world_map, by = "region")
   gg <- gg + geom_polygon(data = pathogens.map, aes(fill = count), color = "#888888") +
-             scale_fill_gradient(low = "#FFFFFF", high = "#E63F00") +
+             scale_fill_gradient(low = "#FFFFFF", high = "#E63F00", name = 'Number of sequences') +
              theme(plot.background = element_rect(fill = "transparent", colour = NA),
                    panel.border = element_blank(), panel.grid = element_blank(),
                    axis.text = element_blank(), axis.ticks = element_blank(), axis.title = element_blank(),
@@ -14,16 +14,18 @@ plot_wp<-function(data,wordsize){
 }
 
 plot_tm<-function(data, wordsize, scale){
-  gg <- ggplot(data, aes(time, sum_count)) + geom_col(position = "stack", color='black') + 
+
+   data$Month <- as.Date(cut(as.Date(data$Date, format = "%Y-%m-%d"), breaks = "month"))
+  gg <- ggplot(data = data, aes(x = Month)) + geom_bar() + 
                ylab('Number of protein sequence records') +
-               scale_x_date(labels = date_format("%b-%Y"), date_breaks = "1 months") +
+               scale_x_date(date_breaks = "2 month", labels = date_format("%Y-%b"))+
                theme_classic(base_size = wordsize) + 
-               theme(axis.text.x = element_text(angle = 90, vjust = 0, hjust = 1),
-                     axis.title.x = element_blank())
+               theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
   if(scale == 'log'){
     gg <- gg + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
                              labels = trans_format("log10", math_format(10^.x)))
   }
+
   gg
 }
 metadataExtraction <- function(file_path, source){
@@ -64,7 +66,7 @@ extract_from_NCBI <- function(file_path){
     countrys <- c(countrys, country); dates <- c(dates, date)
   }
   tmp <- data.frame('ID' = keepsample, 'country' = countrys, 'date' = dates)
-  
+
   for(i in 1:nrow(tmp)){
     if(!is.na(as.Date(tmp$date[i],format='%Y-%m-%d'))){
       tt <- 1
@@ -103,7 +105,7 @@ refineCounty <- function(metatable){
   metatable$Country[metatable$Country == "NewCaledonia"] = "New Caledonia"
   metatable$Country[metatable$Country == "Northern Ireland"] = "New Caledonia"
   metatable$Country[metatable$Country %in% c("England","Scotland","Wales")] = "UK"
-  metatable$Country[metatable$Country %in% c("Shangahi", "Xinjiang","Sichuan", "Guangdong","Shannxi", "Chongqing", "Inner_Mongolia","Shenzhen",
+  metatable$Country[metatable$Country %in% c("Shangahi", "Xinjiang","Sichuan", "Guangdong","Shannxi", "Chongqing", "Inner_Mongolia","Shenzhen", "Wuhan",
                                              "Fujian", "Inner Mongolia", "Tianjing", "Hebei","Jiangsu", "Shandong", "Zhejiang",
                                              "Liaoning","Shanxi", "Henan", "Chongqin", "Yunnan", "Beijing","Heilongjiang",
                                              "Hunan", "Guangxi","Ningxia","Jilin","Tibet","Hainan", "Macao", 
