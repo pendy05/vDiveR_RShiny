@@ -400,7 +400,7 @@ server <- function(input, output,session) {
             # req(WorldmapInFo())
             vDiveR::plot_worldmap(# WorldmapInFo(),
                                   Meta(),
-                                  input$wordsize)
+                                  input$wordsize, only_plot = T)
         })
         generate_worldmap(input,output,plot_worldmap)
         output$countrytable = DT::renderDataTable({
@@ -463,7 +463,7 @@ server <- function(input, output,session) {
             # req(WorldmapInFo())
             vDiveR::plot_worldmap(# WorldmapInFo(),
                                   Meta(),
-                                  input$wordsize)
+                                  input$wordsize, only_plot = T)
         })
         generate_worldmap(input,output,plot_worldmap)
         output$countrytable = DT::renderDataTable({
