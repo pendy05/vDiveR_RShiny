@@ -400,7 +400,7 @@ server <- function(input, output,session) {
             # req(WorldmapInFo())
             vDiveR::plot_worldmap(# WorldmapInFo(),
                                   Meta(),
-                                  input$wordsize, only_plot = T)
+                                  input$wordsize)$plot
         })
         generate_worldmap(input,output,plot_worldmap)
         output$countrytable = DT::renderDataTable({
@@ -415,7 +415,7 @@ server <- function(input, output,session) {
             req(TimeInFo())
             vDiveR::plot_time(metadata = TimeInFo(),
                               base_size = input$wordsize,
-                              scale = input$time_scale, only_plot = T)
+                              scale = input$time_scale)$plot
         })
         generate_timeplot(input,output,plot_time)
         output$timetable = DT::renderDataTable({
@@ -463,7 +463,7 @@ server <- function(input, output,session) {
             # req(WorldmapInFo())
             vDiveR::plot_worldmap(# WorldmapInFo(),
                                   Meta(),
-                                  input$wordsize, only_plot = T)
+                                  input$wordsize)$plot
         })
         generate_worldmap(input,output,plot_worldmap)
         output$countrytable = DT::renderDataTable({
@@ -478,7 +478,7 @@ server <- function(input, output,session) {
             req(TimeInFo())
             vDiveR::plot_time(metadata = TimeInFo(),
                               base_size = input$wordsize,
-                              scale = input$time_scale, only_plot = T)
+                              scale = input$time_scale)$plot
         })
         generate_timeplot(input,output,plot_time)
         output$timetable = DT::renderDataTable({
