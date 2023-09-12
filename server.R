@@ -398,6 +398,7 @@ server <- function(input, output,session) {
         })
         plot_worldmap <- reactive({
             # req(WorldmapInFo())
+            req(Meta())
             vDiveR::plot_worldmap(# WorldmapInFo(),
                                   Meta(),
                                   input$wordsize)$plot
@@ -412,9 +413,11 @@ server <- function(input, output,session) {
             content = function(file) {write.csv(WorldmapInFo(), file, quote = F)}
         )
         plot_time <- reactive({
-            req(TimeInFo())
-            vDiveR::plot_time(metadata = TimeInFo(),
+            # req(TimeInFo())
+            req(Meta())
+            vDiveR::plot_time(metadata = Meta(), # TimeInFo(),
                               base_size = input$wordsize,
+                              date_format = "%d/%m/%Y",
                               scale = input$time_scale)$plot
         })
         generate_timeplot(input,output,plot_time)
@@ -461,6 +464,7 @@ server <- function(input, output,session) {
         })
         plot_worldmap <- reactive({
             # req(WorldmapInFo())
+            req(Meta())
             vDiveR::plot_worldmap(# WorldmapInFo(),
                                   Meta(),
                                   input$wordsize)$plot
@@ -475,9 +479,11 @@ server <- function(input, output,session) {
             content = function(file) {write.csv(WorldmapInFo(), file, quote = F)}
         )
         plot_time <- reactive({
-            req(TimeInFo())
-            vDiveR::plot_time(metadata = TimeInFo(),
+            # req(TimeInFo())
+            req(Meta())
+            vDiveR::plot_time(metadata = Meta(), # TimeInFo(),
                               base_size = input$wordsize,
+                              date_format = "%d/%m/%Y",
                               scale = input$time_scale)$plot
         })
         generate_timeplot(input,output,plot_time)
