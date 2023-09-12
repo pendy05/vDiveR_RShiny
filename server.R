@@ -413,7 +413,9 @@ server <- function(input, output,session) {
         )
         plot_time <- reactive({
             req(TimeInFo())
-            plot_tm(TimeInFo(), input$wordsize, input$time_scale)
+            vDiveR::plot_time(metadata = TimeInFo(),
+                              base_size = input$wordsize,
+                              scale = input$time_scale, only_plot = T)
         })
         generate_timeplot(input,output,plot_time)
         output$timetable = DT::renderDataTable({
@@ -474,7 +476,9 @@ server <- function(input, output,session) {
         )
         plot_time <- reactive({
             req(TimeInFo())
-            plot_tm(TimeInFo(), input$wordsize, input$time_scale)
+            vDiveR::plot_time(metadata = TimeInFo(),
+                              base_size = input$wordsize,
+                              scale = input$time_scale, only_plot = T)
         })
         generate_timeplot(input,output,plot_time)
         output$timetable = DT::renderDataTable({

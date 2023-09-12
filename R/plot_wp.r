@@ -16,21 +16,22 @@
 #   gg
 # }
 
-plot_tm<-function(data, wordsize, scale){
-
-   data$Month <- as.Date(cut(as.Date(data$Date, format = "%Y-%m-%d"), breaks = "month"))
-  gg <- ggplot(data = data, aes(x = Month)) + geom_bar() +
-               ylab('Number of protein sequence records') +
-               scale_x_date(date_breaks = "2 month", labels = date_format("%Y-%b"))+
-               theme_classic(base_size = wordsize) +
-               theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
-  if(scale == 'log'){
-    gg <- gg + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
-                             labels = trans_format("log10", math_format(10^.x)))
-  }
-
-  gg
-}
+# plot_tm<-function(data, wordsize, scale){
+#
+#   data$Month <- as.Date(cut(as.Date(data$Date, format = "%Y-%m-%d"),
+#                             breaks = "month"))
+#   gg <- ggplot(data = data, aes(x = Month)) + geom_bar() +
+#                ylab('Number of protein sequence records') +
+#                scale_x_date(date_breaks = "2 month", labels = date_format("%Y-%b"))+
+#                theme_classic(base_size = wordsize) +
+#                theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+#   if(scale == 'log'){
+#     gg <- gg + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+#                              labels = trans_format("log10", math_format(10^.x)))
+#   }
+#
+#   gg
+# }
 
 
 
