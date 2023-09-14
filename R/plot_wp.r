@@ -1,33 +1,40 @@
-plot_wp<-function(data,wordsize){
-  colnames(data) <- c('region','count')
-  world_map <- map_data("world")
-  gg <- ggplot(world_map, aes(x = long, y = lat, group = group)) + geom_polygon(fill="lightgray", colour = "#888888")
-  pathogens.map <- left_join(data, world_map, by = "region")
-  gg <- gg + geom_polygon(data = pathogens.map, aes(fill = count), color = "#888888") +
-             scale_fill_gradient(low = "#FFFFFF", high = "#E63F00", name = 'Number of sequences') +
-             theme(plot.background = element_rect(fill = "transparent", colour = NA),
-                   panel.border = element_blank(), panel.grid = element_blank(),
-                   axis.text = element_blank(), axis.ticks = element_blank(), axis.title = element_blank(),
-                   legend.position = "right") +
-             theme_classic(base_size = wordsize)
-  gg
-}
+# plot_wp<-function(data,wordsize){
+#   colnames(data) <- c('region','count')
+#
+#   world_map <- map_data("world")
+#   gg <- ggplot(world_map, aes(x = long, y = lat, group = group)) +
+#       geom_polygon(fill="lightgray", colour = "#888888")
+#   pathogens.map <- left_join(data, world_map, by = "region")
+#
+#   gg <- gg + geom_polygon(data = pathogens.map, aes(fill = count), color = "#888888") +
+#              scale_fill_gradient(low = "#FFFFFF", high = "#E63F00", name = 'Number of sequences') +
+#              theme(plot.background = element_rect(fill = "transparent", colour = NA),
+#                    panel.border = element_blank(), panel.grid = element_blank(),
+#                    axis.text = element_blank(), axis.ticks = element_blank(), axis.title = element_blank(),
+#                    legend.position = "right") +
+#              theme_classic(base_size = wordsize)
+#   gg
+# }
 
-plot_tm<-function(data, wordsize, scale){
+# plot_tm<-function(data, wordsize, scale){
+#
+#   data$Month <- as.Date(cut(as.Date(data$Date, format = "%Y-%m-%d"),
+#                             breaks = "month"))
+#   gg <- ggplot(data = data, aes(x = Month)) + geom_bar() +
+#                ylab('Number of protein sequence records') +
+#                scale_x_date(date_breaks = "2 month", labels = date_format("%Y-%b"))+
+#                theme_classic(base_size = wordsize) +
+#                theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+#   if(scale == 'log'){
+#     gg <- gg + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+#                              labels = trans_format("log10", math_format(10^.x)))
+#   }
+#
+#   gg
+# }
 
-   data$Month <- as.Date(cut(as.Date(data$Date, format = "%Y-%m-%d"), breaks = "month"))
-  gg <- ggplot(data = data, aes(x = Month)) + geom_bar() + 
-               ylab('Number of protein sequence records') +
-               scale_x_date(date_breaks = "2 month", labels = date_format("%Y-%b"))+
-               theme_classic(base_size = wordsize) + 
-               theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
-  if(scale == 'log'){
-    gg <- gg + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
-                             labels = trans_format("log10", math_format(10^.x)))
-  }
 
-  gg
-}
+
 metadataExtraction <- function(file_path, source){
   if(source == 'NCBI'){
     meta <- extract_from_NCBI(file_path)
@@ -37,6 +44,9 @@ metadataExtraction <- function(file_path, source){
   }
   return(meta)
 }
+
+
+
 extract_from_NCBI <- function(file_path){
   IDs <- c()
   lines <- readLines(file_path, warn=FALSE)
@@ -82,6 +92,9 @@ extract_from_NCBI <- function(file_path){
   colnames(tmp) <- c("Accession_ID","Country","Date")
   return(tmp)
 }
+
+
+
 extract_from_GISAID <- function(file_path){
   heads <- c()
   lines <- readLines(file_path, warn=FALSE)
@@ -100,7 +113,9 @@ extract_from_GISAID <- function(file_path){
   return(data.frame('Accession_ID' = IDs, 'Country' = countrys, 'Date' = dates))
 }
 
-refineCounty <- function(metatable){
+
+
+refineCountry <- function(metatable){
   metatable$Country[metatable$Country == "DRC"] = "Democratic Republic of the Congo"
   metatable$Country[metatable$Country == "NewCaledonia"] = "New Caledonia"
   metatable$Country[metatable$Country == "Northern Ireland"] = "New Caledonia"
@@ -108,7 +123,7 @@ refineCounty <- function(metatable){
   metatable$Country[metatable$Country %in% c("Shangahi", "Xinjiang","Sichuan", "Guangdong","Shannxi", "Chongqing", "Inner_Mongolia","Shenzhen", "Wuhan",
                                              "Fujian", "Inner Mongolia", "Tianjing", "Hebei","Jiangsu", "Shandong", "Zhejiang",
                                              "Liaoning","Shanxi", "Henan", "Chongqin", "Yunnan", "Beijing","Heilongjiang",
-                                             "Hunan", "Guangxi","Ningxia","Jilin","Tibet","Hainan", "Macao", 
+                                             "Hunan", "Guangxi","Ningxia","Jilin","Tibet","Hainan", "Macao",
                                              "Jiangxi","Qinghai", "Hubei", "Gansu", "Anhui" ,"Guizhou" )] = "China"
   return(metatable)
 }
