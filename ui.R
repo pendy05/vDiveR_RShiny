@@ -602,7 +602,7 @@ ui <- dashboardPage(title = "vDiveR",
   sideBar,
   body,
   footer = dashboardFooter(
-    left = HTML("&copy;2021-2022, Tok et al. All Rights Reserved.<br>"),
+    left = htmlOutput("footer_wording"),
     right = ""
   )
   

@@ -279,6 +279,11 @@ server <- function(input, output,session) {
     # initial state of downloadDiMA button is disabled
     shinyjs::disable(id="downloadDiMA")
     shinyjs::disable(selector = '.nav-tabs a[data-value="Second Host"')
+    
+    output$footer_wording <- renderText({
+        currentYear <- as.numeric(format(Sys.Date(), "%Y"))
+        paste("&copy;2021-", currentYear, ", Tok et al. All Rights Reserved.<br>")
+  })
 
     #=====================================================#
     #                Sample Input Format                  #
