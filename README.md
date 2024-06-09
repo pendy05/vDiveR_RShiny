@@ -84,9 +84,13 @@ $ pip install numpy dima-cli==4.1.1 pandas typing-extensions
 - R/: consists of R functions embedded as part of vDiveR
 - R-individual-scripts/: consists of individual R scripts used for producing plots and table in vDiveR (Note: similar content as R/ but if you would like to access the R functions independently without using the vDiveR web server, please refer to scripts in this folder!)
 
+## Documentation
+
+The vDiveR documentation is available [here](https://vdiver-manual.readthedocs.io/en/latest/)!
+
 ## Bug or Questions
 
-Please leave a message on our [GitHub Issues](https://github.com/pendy05/vDiveR/issues) or contact Asif M. Khan (asif@perdanauniversity.edu.my).
+Please leave a message on our [GitHub Issues](https://github.com/pendy05/vDiveR/issues) or contact Asif M. Khan (asif@perdanauniversity.edu.my). 
 
 ## Authors
 
