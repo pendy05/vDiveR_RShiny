@@ -8,8 +8,6 @@ vDiveR is a graphical user interface (GUI)-based web application hosted on R Shi
 4. dynamics of diversity motifs for individual protein and
 5. distribution of conservation levels (completely conserved, highly conserved, mixed variable, highly diverse, and extremely diverse) of <i>k</i>-mer positions for viral proteome and protein(s).
 
-Please visit our [vDiveR web server](https://protocol-viral-diversity.shinyapps.io/vDiveR/)!
-
 <p align="center">
 <img src="https://user-images.githubusercontent.com/74284859/168590154-9870f6d9-12d2-47d2-b7ed-8150104dce91.jpg" width=80% height=80%>
 </p>
