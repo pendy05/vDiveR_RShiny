@@ -36,243 +36,8 @@ library(rentrez)
 #devtools::install_github("hrbrmstr/ggalt", ref = "noproj")
 #reticulate::use_virtualenv("python_env", required = TRUE)
 
-#individual functions
-#reset input and output settings
-resetInput_to_initialState <-function(output){
-    shinyjs::reset("proteinOrder")
-    shinyjs::reset("line_dot_size")
-    shinyjs::reset("wordsize")
-    shinyjs::reset("supportLimit")
-    shinyjs::reset("kmerlength")
-    shinyjs::reset("filetype")
-    shinyjs::reset("host")
-    shinyjs::reset("proteinNames")
-    shinyjs::reset("hostname")
-    shinyjs::reset("proteinNames_secondHost")
-    shinyjs::reset("hostname_secondHost")
-    shinyjs::reset("MSAfile")
-    shinyjs::reset("MSAfile_secondHost")
-    shinyjs::reset("Metafile")
-    shinyjs::reset("Metafasta")
-    shinyjs::reset("Meta")
-    shinyjs::reset("inmetafilename")
-    shinyjs::reset("inmetafasta")
-    shinyjs::disable(id="downloadDiMA")
+source("functions/helpers.R")
 
-    #clear output
-    output$alert <- renderUI({})
-    output$alertSample <- renderUI({})
-    #output$protein_selection <- renderUI({})
-    output$plot_worldmap<- renderPlot({})
-    output$countrytable<- renderDataTable({})
-    output$plot_time<- renderPlot({})
-    output$timetable<- renderDataTable({})
-    output$plot1<- renderPlot({})
-    output$plotEntropy<- renderPlot({})
-    output$plot2<- renderPlot({})
-    output$plot3<- renderPlot({})
-    output$plot4<- renderPlot({})
-    output$plot7<- renderPlot({})
-    output$entropyTable<-renderDataTable({})
-    output$plot7_seqs<-renderDataTable({})
-}
-
-#download sample data
-downloadSampleData<-function(output){
-    output$downloadSampleData <- downloadHandler(
-        filename <- function() {
-            paste("vDiveR_sample_input_", Sys.Date(), ".zip", sep = "")
-        },
-
-        content <- function(file) {
-            file.copy("www/vDiveR_sample_input.zip", file)
-        },
-        contentType = "application/zip"
-        # filename = function() {
-        #   paste("vDiveR_sample_input_", Sys.Date(), ".zip", sep = "")
-        # },
-        # content = function(file) {
-        #   print('in temp dir')
-        #   #To create temporary directory
-        #   temp_directory_sample <- file.path(tempdir(), as.integer(Sys.time()))
-        #   dir.create(temp_directory_sample)
-        #
-        #   csv_dataset <- read.csv("www/DiMA_HCV.csv")
-        #   MSA_dataset_Core <- seqinr::read.fasta("www/Core_mafft.fasta")
-        #   csv_dataset_Core <- read.csv("www/core_9mer.csv")
-        #   JSON_dataset_Core<- rjson::fromJSON(file = "www/core_9mer.json")
-        #   MSA_dataset_NS3 <- seqinr::read.fasta("www/NS3_mafft.fasta")
-        #   csv_dataset_NS3 <- read.csv("www/NS3_9mer.csv")
-        #   JSON_dataset_NS3<- rjson::fromJSON(file = "www/NS3_9mer.json")
-        #   csv_dataset_metadata <- read.csv("www/oneID_GISAID.csv")
-        #
-        #   #write sample dataset in CSV, FA & JSON formats into temp directory
-        #   write.csv(csv_dataset,paste0(temp_directory_sample,"/HCV_DiMA.csv"))
-        #   seqinr::write.fasta(MSA_dataset_Core,names=names(MSA_dataset_Core),file.out = paste0(temp_directory_sample,"/HCV_aligned_Core.fasta"))
-        #   write.csv(csv_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.csv"))
-        #   write_json(JSON_dataset_Core,paste0(temp_directory_sample,"/HCV_Core.json"))
-        #   seqinr::write.fasta(MSA_dataset_NS3,names=names(MSA_dataset_NS3),file.out = paste0(temp_directory_sample,"/HCV_aligned_NS3.fasta"))
-        #   write.csv(csv_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.csv"))
-        #   write_json(JSON_dataset_NS3,paste0(temp_directory_sample,"/HCV_NS3.json"))
-        #   write.csv(csv_dataset_metadata,paste0(temp_directory_sample,"/metadata.csv"))
-        #   zip::zip(zipfile = file,files = dir(temp_directory_sample), root = temp_directory_sample)
-        # },
-        # contentType = "application/zip"
-    )
-}
-
-#plot generators
-generate_worldmap <-function(input, output, plot_worldmap){
-    output$plot_worldmap <- renderPlot({
-        plot_worldmap()
-    })
-
-    output$plot_worldmap_download <- downloadHandler(
-        filename = function() { paste("plot_world_map", '.jpg', sep='') },
-        content = function(file) {
-            ggsave(file, plot = plot_worldmap(), width=input$width_wm, height=input$height_wm,unit="in", device = "jpg", dpi=input$dpi_wm)
-        }
-    )
-
-}
-
-generate_timeplot <-function(input, output, plot_time){
-    output$plot_time <- renderPlot({
-        plot_time()
-    })
-
-    output$plot_time_download <- downloadHandler(
-        filename = function() { paste("plot_time", '.jpg', sep='') },
-        content = function(file) {
-            ggsave(file, plot = plot_time(), width=input$width_tm, height=input$height_tm,unit="in", device = "jpg", dpi=input$dpi_tm)
-        }
-    )
-
-}
-
-generate_plot1<-function(input, output, plot1){
-    output$plot1 <- renderPlot({
-        plot1()
-    })
-
-    output$plot1_download <- downloadHandler(
-        filename = function() { paste("plot_entropy_incidence", '.jpg', sep='') },
-        content = function(file) {
-            ggsave(file, plot = plot1(), width=input$width, height=input$height,unit="in", device = "jpg", dpi=input$dpi)
-        }
-    )
-
-}
-
-generate_plotEntropy<-function(input, output, plotEntropy){
-    output$plotEntropy <- renderPlot({
-        plotEntropy()
-    })
-
-    output$plotEntropy_download <- downloadHandler(
-        filename = function() { paste("plot_entropy", '.jpg', sep='') },
-        content = function(file) {
-            ggsave(file, plot = plotEntropy(), width=input$width, height=input$height,unit="in", device = "jpg", dpi=input$dpi)
-        }
-    )
-
-}
-
-generate_plot2<-function(input, output, plot2){
-    output$plot2<- renderPlot({
-        plot2()
-    })
-
-    output$plot2_download <- downloadHandler(
-        filename = function() { paste("plot_relationship_entropy_total_variants", '.jpg', sep='') },
-        content = function(file) {
-            ggsave(file, plot = plot2(), width=input$width2, height=input$height2,unit="in", device = "jpg", dpi=input$dpi2)
-        }
-    )
-
-    output$info_plot2 <- renderText({
-        HTML(paste0("Total variants (%) = ", input$plot2_click$x, "<br>",em("k"),"-mer entropy (bits) = ",input$plot2_click$y))
-    })
-}
-
-generate_plot3<-function(input, output, plot3){
-    output$plot3<- renderPlot({
-        plot3()
-    })
-
-    output$plot3_download <- downloadHandler(
-        filename = function() { paste("plot_dynamics_diversity_motifs_proteome", '.jpg', sep='') },
-        content = function(file) {
-            ggsave(file, plot = plot3(), width=input$width3, height=input$height3,unit="in", device = "jpg", dpi=input$dpi3,bg='white')
-        }
-    )
-}
-
-generate_plot4<-function(input, output, plot4){
-    output$plot4<- renderPlot({
-        plot4()
-    })
-
-    output$plot4_download <- downloadHandler(
-        filename = function() { paste("plot_dynamics_diversity_motifs_proteins", '.jpg', sep='') },
-        content = function(file) {
-            ggsave(file, plot = plot4(), width=input$width4, height=input$height4,unit="in", device = "jpg", dpi=input$dpi4, bg='white')
-        }
-    )
-}
-
-generate_plot7<-function(input, output, plot7){
-    output$plot7<- renderPlot({
-        plot7()
-    })
-
-    output$plot7_download <- downloadHandler(
-        filename = function() { paste("plot_conservationLevels_protein", '.jpg', sep='') },
-        content = function(file) {
-            ggsave(file, plot = plot7(),  width=input$width7, height=input$height7, unit="in", device = "jpg", dpi=input$dpi7)
-        })
-}
-
-
-generate_entropyTable<-function(data, output, proteinName){
-    #get position of min entropy, min, max of entropy and total variant
-    entropyTable <- data %>%
-        dplyr::group_by(proteinName) %>%
-        dplyr::summarise(
-            Position = gsub("((?:\\d+,){2}\\d+),", "\\1,\n", paste0(position[which(entropy == min(entropy))], collapse = ",")),
-            minEntropy = format(round(min(entropy),digits=2),nsmall=2),
-            maxEntropy = format(round(max(entropy), digits = 2),nsmall=2),
-            minTotalVariants = format(round(min(totalVariants.incidence),digits=2),nsmall=2),
-            maxTotalVariants = format(round(max(totalVariants.incidence), digits = 2),nsmall=2)
-        )
-    #rename table df
-    names(entropyTable)<- c("Protein Name","Position (Minimum Entropy)","Minimum Entropy","Maximum Entropy","Minimum Total Variants (%)","Maximum Total Variants (%)")
-
-    output$entropyTable <- renderDataTable(
-        entropyTable,
-        width = "100%",
-        options = list(scrollX=TRUE, scrollCollapse=TRUE)
-    )
-}
-
-generate_CCS_HCS_table<-function(input, output, data){
-    # for now not splitted by hosts
-    output$plot7_seqs <- renderDataTable({
-        concat_conserved_kmer(data=data.frame(data), kmer=input$kmerlength,
-                              threshold_pct = as.numeric(input$conserv_percent),
-                              conservation_level=input$conserv_lvl)[[input$table_type]]
-    })
-
-    output$conservSeq_download <- downloadHandler(
-        filename =  function() {paste0(input$conserv_lvl, ".", input$table_type)},
-        content = function(fname) {
-            df <- concat_conserved_kmer(data=data.frame(data), kmer=input$kmerlength,
-                                        threshold_pct = as.numeric(input$conserv_percent),
-                                        conservation_level=input$conserv_lvl)[[input$table_type]]
-            write.table(df, file = fname, col.names = ifelse(input$table_type == "csv", TRUE, FALSE), sep = ",", row.names = FALSE, quote = FALSE)
-        }
-    )
-}
 
 #server main function
 server <- function(input, output,session) {
@@ -312,6 +77,14 @@ server <- function(input, output,session) {
     #reset every input and output to initial state
     observeEvent(input$reset1, {
         resetInput_to_initialState(output)
+    })
+
+    observeEvent(input$resetMeta1,{
+        resetMetaDataInput(output)
+    })
+
+    observeEvent(input$resetMeta2,{
+        resetMetaDataInput(output)
     })
 
     #redirect user to input tab when they click on start button
@@ -373,134 +146,175 @@ server <- function(input, output,session) {
         }
     })
     observeEvent(input$submitMeta1, {
-        shinyjs::addClass(id = "submitmeta1", class = "loading dots")
+        shinyjs::addClass(id = "submitMeta1", class = "loading dots")
         Meta <- reactive({
             req(input$Metafile)
             filepath <- input$Metafile$datapath
             Meta <- read.csv(filepath, header = T, stringsAsFactors = F)
-            # Meta$Country[Meta$Country == "DRC"] = "Democratic Republic of the Congo"
-            # Meta$Country[Meta$Country == "NewCaledonia"] = "New Caledonia"
-            # Meta$Country[Meta$Country == "Northern Ireland"] = "New Caledonia"
-            # Meta$Country[Meta$Country %in% c("England","Scotland","Wales")] = "UK"
             Meta
         })
-        WorldmapInFo <- reactive({
+        WorldmapInfoDf <- reactive({
             req(Meta())
-            meta <- Meta()
-            countrylist <- meta$Country
-            countrylist <- data.frame(table(countrylist))
-            colnames(countrylist) <- c('Country','Number of sequences')
-            countrylist
+            vDiveR::plot_worldmap(Meta(), input$wordsize)$df
         })
-        TimeInFo <- reactive({
+        WorldmapInfoPlot <- reactive({
             req(Meta())
-            temporal <- Meta()
-            temporal$count <- 1
-            temporal$Date <- as.Date(temporal$Date, format = "%d/%m/%Y")
-            temporal <- aggregate(temporal$count, by=list(temporal$Date), sum)
-            colnames(temporal) <- c('Date', 'Total')
-            temporal
+            vDiveR::plot_worldmap(Meta(), input$wordsize)$plot
+        })
+        TimeInfoDf <- reactive({
+            req(Meta())
+            date_format <- detect_date_format(Meta()$date)
+            vDiveR::plot_time(metadata = Meta(), 
+                              base_size = input$wordsize,
+                              date_format = date_format,
+                              scale = input$time_scale)$df
+                              
+        })
+        TimeInfoPlot <- reactive({
+            req(Meta())
+            date_format <- detect_date_format(Meta()$date)
+            tick_interval <- get_plot_time_tick_interval(Meta()$date)
+            vDiveR::plot_time(metadata = Meta(), 
+                              base_size = input$wordsize,
+                              date_format = date_format,
+                              scale = input$time_scale, 
+                              date_break = paste(tick_interval, "month"))$plot
+                                
         })
         plot_worldmap <- reactive({
-            # req(WorldmapInFo())
-            req(Meta())
-            vDiveR::plot_worldmap(# WorldmapInFo(),
-                                  Meta(),
-                                  input$wordsize)$plot
+            req(WorldmapInfoPlot())
+            WorldmapInfoPlot()
+            
+            
         })
         generate_worldmap(input,output,plot_worldmap)
         output$countrytable = DT::renderDataTable({
-            req(WorldmapInFo())
-            WorldmapInFo()
+            req(WorldmapInfoDf())
+            
+            WorldmapInfoDf()
         })
         output$table_worldmap_download <- downloadHandler(
             filename = function() {paste("CountryInfo", '.csv', sep='')},
-            content = function(file) {write.csv(WorldmapInFo(), file, quote = F)}
-        )
+            content = function(file) {
+                data <- WorldmapInfoDf()
+                if (!is.null(data)) {
+                    write.csv(data, file, quote = F)
+                } else {
+                    stop("No data available for download")
+                }}
+                )
         plot_time <- reactive({
-            # req(TimeInFo())
-            req(Meta())
-            vDiveR::plot_time(metadata = Meta(), # TimeInFo(),
-                              base_size = input$wordsize,
-                              date_format = "%d/%m/%Y",
-                              scale = input$time_scale)$plot
+            req(TimeInfoPlot())
+            TimeInfoPlot()
+                    
         })
         generate_timeplot(input,output,plot_time)
         output$timetable = DT::renderDataTable({
-            req(TimeInFo())
-            TimeInFo()
+            req(TimeInfoDf())
+            tryCatch({
+                TimeInfoDf()
+            }, error = function(e) {
+                # Log the error in the console
+                print(paste("Error in plot_time$df:", e$message))
+                # Return NULL or a user-friendly message
+                showNotification("Error generating plot time data.", type = "error")
+                NULL
+            })
+            
+            
         })
         output$table_time_download <- downloadHandler(
             filename = function() {paste("TimeInfo", '.csv', sep='')},
-            content = function(file) {write.csv(TimeInFo(), file, quote = F)}
+            content = function(file) {
+                data <- TimeInfoDf()
+                if (!is.null(data)) {
+                    write.csv(data, file, quote = F)
+                } else {
+                    stop("No data available for download")
+                }}
         )
-        shinyjs::removeClass(id = "submitmeta1", class = "loading dots")
+        shinyjs::removeClass(id = "submitMeta1", class = "loading dots")
     })
 
     observeEvent(input$submitMeta2, {
-        shinyjs::addClass(id = "submitmeta2", class = "loading dots")
+        shinyjs::addClass(id = "submitMeta2", class = "loading dots")
         Meta <- reactive({
             req(input$Metafasta)
             filepath <- input$Metafasta$datapath
-            Meta <- metadataExtraction(filepath, input$MetafastaSource)
-            # Meta <- refineCountry(Meta)
+            Meta <- vDiveR::metadata_extraction(filepath, input$MetafastaSource)
             Meta
         })
         output$metademoSee <- DT::renderDT({
             req(input$Metafasta)
             Meta()
         })
-        WorldmapInFo <- reactive({
+        WorldmapInfoDf <- reactive({
             req(Meta())
-            meta <- Meta()
-            countrylist <- meta$Country
-            countrylist <- data.frame(table(countrylist))
-            colnames(countrylist) <- c('Country','Number of sequences')
-            countrylist
+            vDiveR::plot_worldmap(Meta(), input$wordsize)$df
         })
-        TimeInFo <- reactive({
+        WorldmapInfoPlot <- reactive({
             req(Meta())
-            temporal <- Meta()
-            temporal$count <- 1
-            temporal$Date <- as.Date(temporal$Date)
-            temporal <- aggregate(temporal$count, by=list(temporal$Date), sum)
-            colnames(temporal) <- c('Date', 'Total')
-            temporal
+            vDiveR::plot_worldmap(Meta(), input$wordsize)$plot
+        })
+        TimeInfoDf <- reactive({
+            req(Meta())
+            date_format <- detect_date_format(Meta()$date)
+            vDiveR::plot_time(metadata = Meta(), 
+                              base_size = input$wordsize,
+                              date_format = date_format,
+                              scale = input$time_scale)$df
+        })
+        TimeInfoPlot <- reactive({
+            req(Meta())
+            date_format <- detect_date_format(Meta()$date)
+            tick_interval <- get_plot_time_tick_interval(Meta()$date)
+            paste(tick_interval, " month")
+            vDiveR::plot_time(metadata = Meta(), 
+                              base_size = input$wordsize,
+                              date_format = date_format,
+                              scale = input$time_scale,
+                              date_break = paste(tick_interval, "month"))$plot
+                                
         })
         plot_worldmap <- reactive({
-            # req(WorldmapInFo())
-            req(Meta())
-            vDiveR::plot_worldmap(# WorldmapInFo(),
-                                  Meta(),
-                                  input$wordsize)$plot
+            req(WorldmapInfoPlot())
+            WorldmapInfoPlot()
         })
         generate_worldmap(input,output,plot_worldmap)
         output$countrytable = DT::renderDataTable({
-            req(WorldmapInFo())
-            WorldmapInFo()
+            req(WorldmapInfoDf())
+            WorldmapInfoDf()
         })
         output$table_worldmap_download <- downloadHandler(
             filename = function() {paste("CountryInfo", '.csv', sep='')},
-            content = function(file) {write.csv(WorldmapInFo(), file, quote = F)}
+            content = function(file) {
+                data <- WorldmapInfoDf()
+                if (!is.null(data)) {
+                    write.csv(data, file, quote = F)
+                } else {
+                    stop("No data available for download")
+                }}
         )
         plot_time <- reactive({
-            # req(TimeInFo())
-            req(Meta())
-            vDiveR::plot_time(metadata = Meta(), # TimeInFo(),
-                              base_size = input$wordsize,
-                              date_format = "%d/%m/%Y",
-                              scale = input$time_scale)$plot
+            req(TimeInfoPlot())
+            TimeInfoPlot()
         })
         generate_timeplot(input,output,plot_time)
         output$timetable = DT::renderDataTable({
-            req(TimeInFo())
-            TimeInFo()
+            req(TimeInfoDf())
+            TimeInfoDf()
         })
         output$table_time_download <- downloadHandler(
             filename = function() {paste("TimeInfo", '.csv', sep='')},
-            content = function(file) {write.csv(TimeInFo(), file, quote = F)}
+            content = function(file) {
+                data <- TimeInfoDf()
+                if (!is.null(data)) {
+                    write.csv(data, file, quote = F)
+                } else {
+                    stop("No data available for download")
+                }}
         )
-        shinyjs::removeClass(id = "submitmeta2", class = "loading dots")
+        shinyjs::removeClass(id = "submitMeta2", class = "loading dots")
     })
     #To create directory
     temp_directory <- file.path(tempdir(), as.integer(Sys.time()))
@@ -515,7 +329,7 @@ server <- function(input, output,session) {
     #----------------------------------------------------#
     observeEvent(input$submitDiMA, ignoreInit=TRUE,{
         req(input$MSAfile)
-        shinyjs::addClass(id = "submitAnimate", class = "loading dots")
+        shinyjs::addClass(id = "submitDiMA", class = "loading dots")
         MY_THEME<-theme(
             axis.title.x = element_text(size = input$wordsize),
             axis.text.x = element_text(size = input$wordsize),
@@ -972,7 +786,7 @@ server <- function(input, output,session) {
 
             contentType = "application/zip"
         )
-        shinyjs::removeClass(id = "submitAnimate", class = "loading dots")
+        shinyjs::removeClass(id = "submitDiMA", class = "loading dots")
 
     })
 
@@ -1039,7 +853,7 @@ server <- function(input, output,session) {
 
     observeEvent(input$samplesubmit,ignoreInit=TRUE,{
 
-        shinyjs::addClass(id = "UpdateAnimate", class = "loading dots")
+        shinyjs::addClass(id = "samplesubmit", class = "loading dots")
         data<-read.csv("www/DiMA_HCV.csv")
         df <- data.frame(data)
 
@@ -1171,7 +985,7 @@ server <- function(input, output,session) {
         })
         generate_CCS_HCS_table(input, output, data)
 
-        shinyjs::removeClass(id = "UpdateAnimate", class = "loading dots")
+        shinyjs::removeClass(id = "samplesubmit", class = "loading dots")
         #Alert results are ready
         output$alertSample <- renderUI({
             h5("Click on other tabs for sample run visualization!", style = "color:white")

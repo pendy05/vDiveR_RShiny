@@ -197,7 +197,7 @@ sideBar<-dashboardSidebar(
     # Horizontal line ----
     tags$hr(),
     div(style="display:inline-block;",actionButton("start","Start")),
-    div(style="display:inline-block",actionButton("samplesubmit","Load Sample Dataset",icon("samplesubmit", id="UpdateAnimate", class=""), onclick="www/HCV_protein.csv")),
+    div(style="display:inline-block",actionButton("samplesubmit","Load Sample Dataset",icon("paper-plane", id="samplesubmit", class=""), onclick="www/HCV_protein.csv")),
     tags$br(),
     div(style="display:inline-block; margin: 6px 5px 6px 15px;color: #000000;",downloadButton("downloadSampleData", "Download Sample",style="color: #000000")),
     div(style="display:inline-block",actionButton("reset1","Clear")),
@@ -338,7 +338,7 @@ body<-## Body content
                            tags$hr(style="border-width: 1px;border-color:#265071;margin: 0em 0.1em 1.5em 0.1em;"),
                            #Alert results are ready
                            uiOutput("alert"),
-                           div(style="display:inline-block",actionButton("submitDiMA","Submit",icon("submitDiMA", id="submitAnimate", class=""))),
+                           div(style="display:inline-block",actionButton("submitDiMA","Submit",icon("paper-plane", id="submitDiMA", class=""))),
                            div(style="display:inline-block",downloadButton("downloadDiMA","Download")),
                            div(style="display:inline-block",actionButton("reset","Clear")),
                            tags$br()
@@ -381,14 +381,17 @@ body<-## Body content
               fluidRow(box(width=9, title = "Data input in csv format", status = "primary" ,solidHeader = T,
                            fileInput(inputId = "Metafile",label = HTML("Input your metadata with csv format :"), accept = c(".csv"), placeholder = "metadata.csv", multiple = T),
                            textOutput("inmetafilename"),
-                           actionButton("submitMeta1","Get metadata",icon("submitMeta1", id="submitmeta1", class=""))
+                           actionButton("submitMeta1","Get metadata",icon("paper-plane", id="submitMeta1"), style="display:inline-block"),
+                           actionButton("resetMeta1","Clear", style="display:inline-block")
+
               )),
               fluidRow(box(width=9, title = "Data input in fasta format", status = "primary" ,solidHeader = T,
                            fileInput(inputId = "Metafasta",label = HTML("input your fasta file for metadata extracting:"), accept = c(".fa",".faa",".fasta",".fas",".json",".JSON"), placeholder = "alignedNS1.fa, alignedCore.fa", multiple = T),
                            radioButtons("MetafastaSource", "fasta from :", c("NCBI"='NCBI', "GISAID EpiCoV"="GISAID"), selected="NCBI"),
                            textOutput("inmetafasta"),
-                           actionButton("submitMeta2","Get metadata",icon("submitMeta2", id="submitmeta2", class="")),
-                           div(DT::dataTableOutput("metademoSee"))
+                           actionButton("submitMeta2","Get metadata",icon("paper-plane", id="submitMeta2"), style="display:inline-block"),
+                            actionButton("resetMeta2","Clear", style="display:inline-block"),
+                           div(DT::dataTableOutput("metademoSee"), style="margin-top:5%;")
               )),
               fluidRow(
                 box(
