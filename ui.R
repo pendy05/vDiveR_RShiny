@@ -4,151 +4,10 @@ library(shinydashboardPlus)
 library(DT) #https://stackoverflow.com/questions/32149487/controlling-table-width-in-shiny-datatableoutput
 library(shinyjs)
 library(shinycssloaders)
+
 shinyThings::radioSwitchButtons_default_style(selected_background = "#265071")  #00589a
 
 #https://stackoverflow.com/questions/31703241/activate-tabpanel-from-another-tabpanel
-css <- "
-.nav li a.disabled {
-background-color: #dddddd !important;
-color: #474747 !important;
-cursor: not-allowed !important;
-border-color: #dddddd !important;
-}
-/*
-          box status
-      */
-      
-      .box{box-shadow: 0 0px 0px rgb(0 0 0 / 10%)}
-      
-      /*change primary status properties*/
-      .box.box-solid.box-primary{
-        border-bottom-color:#265071;
-        border-left-color:#265071;
-        border-right-color:#265071;
-        border-top-color:#265071;
-      }
-      
-      /*change properties of primary status header*/
-      .box.box-solid.box-primary>.box-header {
-      color:#fff;
-       background:#265071
-      }
-      
-      //change box header properties
-      .box-header.with-border {
-        border-bottom: 0px solid #f4f4f4;
-      }
-    
-      .btn-primary{
-        background:#265071
-      }
-    
-      /*
-          navigation bar modification
-      */
-      
-      /*change logo background color*/
-      .skin-blue .main-header .logo {
-        background-color: #265071;
-      }
-      
-      /*change header background color*/
-      .skin-blue .main-header .navbar {
-        background-color: #265071;
-      }
-      
-      /*change header font properties*/
-      .myClass { 
-        font-size: 25px;
-        line-height: 50px;
-        text-align: center;
-        font-family: Arial;
-        padding: 0 6%;
-        overflow: hidden;
-        color: white;
-      }
-      @media screen and (max-width: 1090px) {
-        .myClass { 
-          font-size: 20px;
-          line-height: 50px;
-          text-align: center;
-          font-family: Arial;
-          padding: 0 8%;
-          overflow: hidden;
-          color: white;
-        }
-      }
-      @media screen and (max-width: 975px) {
-        .myClass { 
-          font-size: 18px;
-          line-height: 50px;
-          text-align: center;
-          font-family: Arial;
-          padding: 0 8%;
-          overflow: hidden;
-          color: white;
-        }
-      }
-      @media screen and (max-width: 910px) {
-        .myClass { 
-          font-size: 16px;
-          line-height: 50px;
-          text-align: center;
-          font-family: Arial;
-          padding: 0 8%;
-          overflow: hidden;
-          color: white;
-        }
-      }
-      
-      
-      /*
-          modification on elements in all pages
-      */
-      
-      /*anchor tag right-aligned*/
-      .a {
-        text-align: right;
-      }
-      
-      .wrapper {
-      height: auto  !important; 
-      position:relative; 
-      overflow-x:hidden; 
-      overflow-y:auto}
-      .box box-solid{
-      
-      }
-      
-      /*set table width to 50%*/
-      .tablewidth{
-        width: 50%;
-      }
-      
-      /*set container properties*/
-      #container{
-        background-color:#ecf0f5;
-      }
-      
-      /*set font family to Arial*/
-      * {font-family: \"Arial\"};
-"
-
-jscode <-"
-shinyjs.disableTab = function(name) {
-  var tab = $('.nav-tabs li a[data-value=' + name + ']');
-  tab.bind('click.tab', function(e) {
-    e.preventDefault();
-    return false;
-  });
-  tab.addClass('disabled');
-}
-shinyjs.enableTab = function(name) {
-  var tab = $('.nav li a[data-value=' + name + ']');
-  tab.unbind('click.tab');
-  tab.removeClass('disabled');
-}
-"
 
 sideBar<-dashboardSidebar(
   width = 320,
@@ -173,11 +32,6 @@ sideBar<-dashboardSidebar(
     textInput(inputId = "proteinOrder", 
               label="Protein Names in Order (Plotting)", 
               placeholder="Core,NS3"),
-    #tags$style("@import url(https://use.fontawesome.com/releases/v5.7.2/css/all.css);"),
-    #line / dot size
-    tags$style(type = "text/css", 
-               ".irs-grid-text:nth-child(n) {color: white}",
-               ".irs-grid-pol:nth-of-type(n) {background: white}"),
     
     sliderInput(inputId = "line_dot_size",
                 label = "Line and Dot Size:",
@@ -210,8 +64,9 @@ body<-## Body content
   dashboardBody(
     #initiate the usage of shinyjs
     shinyjs::useShinyjs(),
-    shinyjs::extendShinyjs(text = jscode, functions = c("disableTab","enableTab")),
-    shinyjs::inlineCSS(css),
+    tags$script(src = "www/functions.js"),
+    includeCSS("www/styles.css"),
+    
     tags$title("vDiveR"),
     tags$script(HTML('
       $(document).ready(function() {
@@ -219,153 +74,190 @@ body<-## Body content
       })
      ')),
     tags$head(
-      tags$link(rel = "icon", type = "image/png", sizes = "32x32", href = "vDiveR_logo.png"),
-      tags$style(type="text/css", '
-            .loading {
-                display: inline-block;
-                overflow: hidden;
-                height: 1.3em;
-                margin-top: -0.3em;
-                line-height: 1.5em;
-                vertical-align: text-bottom;
-                box-sizing: border-box;
-            }
-            .loading.dots::after {
-                text-rendering: geometricPrecision;
-                content: "⠋\\A⠙\\A⠹\\A⠸\\A⠼\\A⠴\\A⠦\\A⠧\\A⠇\\A⠏";
-                animation: spin10 1s steps(10) infinite;
-                animation-duration: 1s;
-                animation-timing-function: steps(10);
-                animation-delay: 0s;
-                animation-iteration-count: infinite;
-                animation-direction: normal;
-                animation-fill-mode: none;
-                animation-play-state: running;
-                animation-name: spin10;
-            }
-            .loading::after {
-                display: inline-table;
-                white-space: pre;
-                text-align: left;
-            }
-            @keyframes spin10 { to { transform: translateY(-15.0em); } }
-            ')),
-    tags$script("document.getElementsByClassName('sidebar-toggle')[0].style.visibility = 'hidden';"), #hide sidebar toggle
+      tags$link(rel = "icon", type = "image/png", sizes = "32x32", href = "vDiveR_logo.png")),
     tabItems( 
-      tabItem(tabName = "description",
-              h2("Dissecting the dynamics of viral protein sequence diversity"),
-              fluidRow(
-                box(title="Project Description",width = 12,status = "primary", solidHeader = TRUE,
-                    HTML('Sequence diversity, as a result of various evolutionary forces, \
-                challenges the design of diagnostic, prophylactic and therapeutic interventions against viruses. \
-                 The publicly available tool, Diversity Motif Analyser\
-                (DiMA; <a href=\'https://github.com/PU-SDS/DiMA\'>https://github.com/PU-SDS/DiMA</a>) was developed to facilitate the dissection of sequence diversity dynamics for viruses. \
-                Herein, we present vDiveR, a DiMA wrapper implemented as a web-based application \
-                                  to ease the visualization of outputs from DiMA. vDiveR allows visualization of the diversity motifs\
-                         (index and its variants – major, minor and unique) for elucidation of the underlying inherent dynamics.\
-                         '),
-                    div(img(src='glossary_bold.jpg' ,height='auto',width="60%", align = "center"), style="text-align: center;"),
-                    tags$ol(
-                      tags$li(HTML("Diversity motif: a signature term used to refer to the index or any of its variants (major, minor, unique), as well as distinct variant. \
-                            Collectively these terms elucidate the inherent patterns of sequence diversity.")), 
-                      tags$ol(
-                        HTML("(i) Index: the sequence with the highest incidence at a given <i>k</i>-mer position in a protein alignment <br>\
-                        (ii) Major: the predominant sequence(s) amongst the variants <br>\
-                        (iii) Minor: distinct sequences with frequency lesser than the major variant, but occur more than once <br>\ 
-                             (iv) Unique: distinct sequences that occur only once <br>")), 
-                      tags$li("Total variants: sequences that are variant to the index; comprises the major variant, minor variants and unique variants"), 
-                      tags$li(HTML("distinct variant incidence: incidence of the distinct <i>k</i>-mer variant"))
-                    ))
-              )
+      tabItem(
+        tabName = "description",
+        h2("Dissecting the dynamics of viral protein sequence diversity"),
+        fluidRow(
+          box(
+            title = "Project Description", 
+            width = 12, 
+            status = "primary", 
+            solidHeader = TRUE,
+            HTML('
+              Sequence diversity, driven by various evolutionary forces, challenges the design of interventions against viruses.
+              The publicly available tool, Diversity Motif Analyser (DiMA; <a href="https://github.com/PU-SDS/DiMA">DiMA</a>),
+              was developed to explore viral sequence diversity dynamics. vDiveR, a DiMA wrapper, is a web application
+              that eases the visualization of diversity motifs (index, major, minor, unique variants) to elucidate underlying sequence dynamics.
+            '),
+            div(
+              img(src = 'glossary_bold.jpg', height = 'auto', width = '60%', align = 'center'),
+              style = "text-align: center;"
+            ),
+            tags$ol(
+              tags$li(HTML("Diversity motif: a term referring to the index or any variants (major, minor, unique), which elucidate sequence diversity patterns.")),
+              tags$ol(
+                HTML("
+                  (i) Index: sequence with highest incidence at a given k-mer position<br>
+                  (ii) Major: predominant sequence(s) among the variants<br>
+                  (iii) Minor: distinct sequences that occur more than once but less than major variants<br>
+                  (iv) Unique: sequences that occur only once<br>
+                ")
+              ),
+              tags$li("Total variants: sequences that vary from the index, including major, minor, and unique variants."),
+              tags$li(HTML("Distinct variant incidence: frequency of the distinct k-mer variant"))
+            )
+          )
+        )
       ),
-      tabItem(tabName = "inputdata_description",
-              fluidRow(box(title = "Input Data", width =12,status = "primary", solidHeader = TRUE,
-                           sidebarLayout(position = 'right',
-                                         sidebarPanel(width=3 ,
-                                                      numericInput(inputId = "supportLimit", label = "Minimum Support Threshold", value = 30, min = 0, step =1),
-                                                      numericInput(inputId = "kmerlength", label = HTML("<i>k</i>-mer length"), value = 9, min = 0, step =1),
-                                                      splitLayout(
-                                                        radioButtons(inputId="filetype", label = HTML("Aligned Sequence / DiMA Output File Format  <span style='color:red'>*</span>"),
-                                                                     choices = list("FASTA (.fasta/.fas/.fa/.faa/.fnn/.fna)" = 1, "DiMA (.json)" = 2, "DiMA (.csv)"=3), 
-                                                                     selected = 1)
-                                                      )),
-                                         mainPanel(width=9,
-                                                   tabsetPanel(id="hostSelection_input",
-                                                               
-                                                               tabPanel("Description",tags$br(),
-                                                                        HTML('vDiveR requires either aligned sequence file(s) or DiMA output file(s) as input file(s), \
-                                                               where vDiveR will convert and concatenate them (the inputs) into a single CSV file. This CSV file will act as the source for subsequent data visualisation. \
-                                                               Each file is treated as one viral protein. Currently, vDiveR accepts FASTA or JSON/CSV \
-                                                               files generated using multiple sequence alignment (MSA) tools and DiMA, respectively. <br><br>\
-                                                               Parameters such as host number selection (one or two hosts), <i>k</i>-mer size, support threshold, host name, and protein name are defined by the user. So, <b>please assign files of same host under one tab</b>. Users can also manipulate additional plotting parameters: \
-                                                               order of protein name, font, line, and dot size.'),
-                                                                        tags$br(),tags$br(),
-                                                                        div(
-                                                                            style = "display: flex;",
-                                                                            div(
-                                                                                style = "flex: 1;",
-                                                                                radioButtons(inputId="host", label = HTML("Number of host"),
-                                                                                     choices = list("One Host" = 1, "Two Host" = 2),
-                                                                                     selected = 1)
-                                                                                           ),
-                                                                            div(
-                                                                                style = "flex: 1;",
-                                                                                radioButtons(inputId="inputtype", label = HTML("Input File Type"),
-                                                                                             choices = list("Protein" = 1, "Nucleotide" = 2),
-                                                                                             selected = 1)
-                                                                            )
-                                                                        )
-                                                               ),
-                                                               tabPanel("First Host",tags$br(),fileInput(inputId = "MSAfile",label = HTML("Aligned Sequences / DiMA Output File(s)"), accept = c(".fa",".faa",".fasta",".fas",".json",".JSON",".csv"), placeholder = "alignedNS1.fa,alignedCore.fa", multiple = TRUE),
-                                                                        uiOutput("infilename"),tags$br(),
-                                                                        splitLayout(
-                                                                          #Protein Names in Order
-                                                                          textInput(inputId = "proteinNames", label=HTML("Protein Name(s) in Ascending Order <span style='color:red'>*</span>"), placeholder="Core, NS3"),
-                                                                          textInput(inputId = "hostname", label=HTML("Host Name <span style='color:red'>*</span>"), placeholder="Human")
-                                                                        ),),
-                                                               tabPanel("Second Host",tags$br(),fileInput(inputId = "MSAfile_secondHost",label = HTML("Aligned Sequences / DiMA Output File(s)"), accept = c(".fa",".faa",".fasta",".fas",".json",".csv"), placeholder = "alignedNS1.fa,alignedCore.fa", multiple = TRUE),
-                                                                        uiOutput("infilename_secondHost"),tags$br(),
-                                                                        splitLayout(
-                                                                          #Protein Names in Order
-                                                                          textInput(inputId = "proteinNames_secondHost", label=HTML("Protein Name(s) in Ascending Order <span style='color:red'>*</span>"), placeholder="Core, NS3"),
-                                                                          textInput(inputId = "hostname_secondHost", label=HTML("Host Name <span style='color:red'>*</span>"), placeholder="Bat")
-                                                                        ))
-                                                   ))
-                           ),
-                           
-                           # Horizontal line ----
-                           tags$br(),
-                           tags$hr(style="border-width: 1px;border-color:#265071;margin: 0em 0.1em 1.5em 0.1em;"),
-                           #Alert results are ready
-                           uiOutput("alert"),
-                           div(style="display:inline-block",actionButton("submitDiMA","Submit",icon("paper-plane", id="submitDiMA", class=""))),
-                           div(style="display:inline-block",downloadButton("downloadDiMA","Download")),
-                           div(style="display:inline-block",actionButton("reset","Clear")),
-                           tags$br()
-              )),
-              fluidRow(box(title = "DiMA JSON-Converted CSV Output Format", width =12,status = "primary", solidHeader = TRUE,
-                           div(DT::dataTableOutput('mainDataSample'), style="overflow-x: scroll; display: block;"),
-                           HTML("<br><br>\
-                           <ol>
-                           <li>proteinName: name of the protein</li>\
-                             <li>position: starting position of the aligned, overlapping <i>k</i>-mer window</li>\
-                             <li>count: number of <i>k</i>-mer sequences at the given position</li>\
-                             <li>lowSupport: <i>k</i>-mer position with sequences lesser than the minimum support threshold (TRUE) are considered of low support, in terms of sample size </li>\
-                             <li>entropy: level of variability at the <i>k</i>-mer position, with zero representing completely conserved</li>\
-                             <li>indexSequence: the predominant sequence (index motif) at the given <i>k</i>-mer position</li>\
-                             <li>index.incidence: the fraction (in percentage) of the index sequences at the <i>k</i>-mer position </li>\
-                             <li>major.incidence: the fraction (in percentage) of the major sequence (the predominant variant to the index) at the <i>k</i>-mer position </li>\
-                            <li> minor.incidence: the fraction (in percentage) of minor sequences (of frequency lesser than the major variant, but not singletons) at the <i>k</i>-mer position</li>
-                             <li>unique.incidence: the fraction (in percentage) of unique sequences (singletons, observed only once) at the <i>k</i>-mer position</li>\
-                             <li> totalVariants.incidence: the fraction (in percentage) of sequences at the  <i>k</i>-mer position that are variants to the index (includes: major, minor and unique variants)</li>\
-                             <li> distinctVariant.incidence: incidence of the distinct <i>k</i>-mer peptides at the <i>k</i>-mer position </li>\
-                             <li> multiIndex: presence of more than one index sequence of equal incidence </li>\
-                             <li> host: species name of the organism host to the virus</li>\
-                             <li>highestEntropy.position: <i>k</i>-mer position that has the highest entropy value</li>\
-                             <li>highestEntropy: highest entropy values observed in the studied protein</li>\
-                             <li>averageEntropy: average entropy values across all the <i>k</i>-mer positions</li>\
-                             </ol>
-                                ")))
+      tabItem(
+        tabName = "inputdata_description",
+        fluidRow(
+          box(
+            title = "Input Data", width = 12, status = "primary", solidHeader = TRUE,
+            sidebarLayout(
+              position = 'right',
+              sidebarPanel(
+                width = 3,
+                numericInput("supportLimit", "Minimum Support Threshold", value = 30, min = 0, step = 1),
+                numericInput("kmerlength", HTML("<i>k</i>-mer length"), value = 9, min = 0, step = 1),
+                splitLayout(
+                  radioButtons(
+                    "filetype", 
+                    HTML("Aligned Sequence / DiMA Output File Format  <span style='color:red'>*</span>"),
+                    choices = list(
+                      "FASTA (.fasta/.fas/.fa/.faa/.fnn/.fna)" = 1, 
+                      "DiMA (.json)" = 2, 
+                      "DiMA (.csv)" = 3
+                    ),
+                    selected = 1
+                  )
+                )
+              ),
+              mainPanel(
+                width = 9,
+                tabsetPanel(
+                  id = "hostSelection_input",
+                  tabPanel(
+                    "Description", tags$br(),
+                    HTML('
+                      vDiveR requires aligned sequence file(s) or DiMA output file(s) as inputs, 
+                      which vDiveR converts and concatenates into a single CSV file for subsequent data visualization. 
+                      Each file represents one viral protein. Supported formats: FASTA, JSON, CSV. Users define parameters such as 
+                      <i>k</i>-mer size, support threshold, and host/protein names. 
+                      <b>Please assign files of the same host under one tab.</b> Additional plotting parameters can be adjusted, such as 
+                      font size, line size, and order of protein names.
+                    '),
+                    tags$br(), tags$br(),
+                    div(
+                      style = "display: flex;",
+                      div(
+                        style = "flex: 1;",
+                        radioButtons(
+                          "host", 
+                          HTML("Number of hosts"), 
+                          choices = list("One Host" = 1, "Two Hosts" = 2),
+                          selected = 1
+                        )
+                      ),
+                      div(
+                        style = "flex: 1;",
+                        radioButtons(
+                          "inputtype", 
+                          HTML("Input File Type"), 
+                          choices = list("Protein" = 1, "Nucleotide" = 2),
+                          selected = 1
+                        )
+                      )
+                    )
+                  ),
+                  tabPanel(
+                    "First Host", tags$br(),
+                    fileInput(
+                      "MSAfile", 
+                      HTML("Aligned Sequences / DiMA Output File(s)"), 
+                      accept = c(".fa", ".faa", ".fasta", ".fas", ".json", ".csv"), 
+                      placeholder = "alignedNS1.fa, alignedCore.fa", 
+                      multiple = TRUE
+                    ),
+                    uiOutput("infilename"), tags$br(),
+                    splitLayout(
+                      textInput(
+                        "proteinNames", 
+                        HTML("Protein Name(s) in Ascending Order <span style='color:red'>*</span>"), 
+                        placeholder = "Core, NS3"
+                      ),
+                      textInput(
+                        "hostname", 
+                        HTML("Host Name <span style='color:red'>*</span>"), 
+                        placeholder = "Human"
+                      )
+                    )
+                  ),
+                  tabPanel(
+                    "Second Host", tags$br(),
+                    fileInput(
+                      "MSAfile_secondHost", 
+                      HTML("Aligned Sequences / DiMA Output File(s)"), 
+                      accept = c(".fa", ".faa", ".fasta", ".fas", ".json", ".csv"), 
+                      placeholder = "alignedNS1.fa, alignedCore.fa", 
+                      multiple = TRUE
+                    ),
+                    uiOutput("infilename_secondHost"), tags$br(),
+                    splitLayout(
+                      textInput(
+                        "proteinNames_secondHost", 
+                        HTML("Protein Name(s) in Ascending Order <span style='color:red'>*</span>"), 
+                        placeholder = "Core, NS3"
+                      ),
+                      textInput(
+                        "hostname_secondHost", 
+                        HTML("Host Name <span style='color:red'>*</span>"), 
+                        placeholder = "Bat"
+                      )
+                    )
+                  )
+                )
+              )
+            ),
+            tags$br(),
+            tags$hr(style = "border-width: 1px; border-color: #265071; margin: 0.1em;"),
+            uiOutput("alert"),
+            div(style = "display:inline-block;", actionButton("submitDiMA", "Submit", icon("paper-plane"))),
+            div(style = "display:inline-block;", downloadButton("downloadDiMA", "Download")),
+            div(style = "display:inline-block;", actionButton("reset", "Clear")),
+            tags$br()
+          )
+        ),
+        fluidRow(
+          box(
+            title = "DiMA JSON-Converted CSV Output Format", width = 12, status = "primary", solidHeader = TRUE,
+            div(DT::dataTableOutput('mainDataSample'), style = "overflow-x: scroll; display: block;"),
+            HTML("
+              <br><br>
+              <ol>
+                <li>proteinName: name of the protein</li>
+                <li>position: starting position of the aligned, overlapping <i>k</i>-mer window</li>
+                <li>count: number of <i>k</i>-mer sequences at the given position</li>
+                <li>lowSupport: positions with sequence counts below the support threshold (TRUE)</li>
+                <li>entropy: variability at the <i>k</i>-mer position (0 is conserved)</li>
+                <li>indexSequence: the predominant sequence (index motif)</li>
+                <li>index.incidence: percentage of index sequences</li>
+                <li>major.incidence: percentage of major sequences</li>
+                <li>minor.incidence: percentage of minor sequences</li>
+                <li>unique.incidence: percentage of unique sequences (singletons)</li>
+                <li>totalVariants.incidence: percentage of all variant sequences</li>
+                <li>distinctVariant.incidence: incidence of distinct <i>k</i>-mer peptides</li>
+                <li>multiIndex: more than one index sequence present</li>
+                <li>host: species name of the organism</li>
+                <li>highestEntropy.position: position with highest entropy</li>
+                <li>highestEntropy: highest entropy value</li>
+                <li>averageEntropy: average entropy across all positions</li>
+              </ol>
+            ")
+          )
+        )
       ),
       tabItem(tabName = "MetaData",
               h2("Sequence Metadata"),
@@ -593,9 +485,6 @@ body<-## Body content
       
     )
   )
-
-
-
 
 #client side
 ui <- dashboardPage(title = "vDiveR",
