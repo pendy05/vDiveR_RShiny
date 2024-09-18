@@ -139,7 +139,12 @@ server <- function(input, output,session) {
         }
     })
     observeEvent(input$submitMeta1, {
-        shinyjs::addClass(id = "submitMeta1", class = "loading dots")
+        showModal(modalDialog(
+            title = "Processing Metadata",
+            "vDiveR processing metadata...",
+            footer = NULL
+        ))
+
         Meta <- reactive({
             req(input$Metafile)
             filepath <- input$Metafile$datapath
@@ -226,11 +231,16 @@ server <- function(input, output,session) {
                     stop("No data available for download")
                 }}
         )
-        shinyjs::removeClass(id = "submitMeta1", class = "loading dots")
+        removeModal()
     })
 
     observeEvent(input$submitMeta2, {
-        shinyjs::addClass(id = "submitMeta2", class = "loading dots")
+        showModal(modalDialog(
+            title = "Processing Metadata",
+            "vDiveR processing metadata...",
+            footer = NULL
+        ))
+        
         Meta <- reactive({
             req(input$Metafasta)
             filepath <- input$Metafasta$datapath
@@ -307,8 +317,10 @@ server <- function(input, output,session) {
                     stop("No data available for download")
                 }}
         )
-        shinyjs::removeClass(id = "submitMeta2", class = "loading dots")
+        
+        removeModal()
     })
+
     #To create directory
     temp_directory <- file.path(tempdir(), as.integer(Sys.time()))
     dir.create(temp_directory)
@@ -322,8 +334,12 @@ server <- function(input, output,session) {
     #----------------------------------------------------#
     observeEvent(input$submitDiMA, ignoreInit=TRUE,{
         req(input$MSAfile)
+        showModal(modalDialog(
+            title = "Processing Data",
+            "vDiveR processing data...",
+            footer = NULL
+        ))
 
-        shinyjs::addClass(id = "submitDiMA", class = "loading dots")
         MY_THEME<-theme(
             axis.title.x = element_text(size = input$wordsize),
             axis.text.x = element_text(size = input$wordsize),
@@ -774,7 +790,8 @@ server <- function(input, output,session) {
 
             contentType = "application/zip"
         )
-        shinyjs::removeClass(id = "submitDiMA", class = "loading dots")
+
+        removeModal()
 
     })
 
@@ -840,8 +857,12 @@ server <- function(input, output,session) {
     downloadSampleData(output)
 
     observeEvent(input$samplesubmit,ignoreInit=TRUE,{
+        showModal(modalDialog(
+            title = "Putting in Sample Data",
+            "vDiveR processing sample data...",
+            footer = NULL
+        ))
 
-        shinyjs::addClass(id = "samplesubmit", class = "loading dots")
         data<-read.csv("www/DiMA_HCV.csv")
         df <- data.frame(data)
 
@@ -973,7 +994,7 @@ server <- function(input, output,session) {
         })
         generate_CCS_HCS_table(input, output, data)
 
-        shinyjs::removeClass(id = "samplesubmit", class = "loading dots")
+        removeModal()
         #Alert results are ready
         output$alertSample <- renderUI({
             h5("Click on other tabs for sample run visualization!", style = "color:white")

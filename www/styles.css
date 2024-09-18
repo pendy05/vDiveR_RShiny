@@ -141,35 +141,3 @@ box status
 * {
   font-family: "Arial";
 }
-
-.loading {
-  display: inline-block;
-  overflow: hidden;
-  height: 1.3em !important;
-  margin-top: -0.3em;
-  line-height: 1.5em;
-  vertical-align: text-bottom;
-  box-sizing: border-box;
-}
-
-.loading.dots::after {
-  text-rendering: geometricPrecision;
-  height: 1.3em !important;
-  content: "⠋\A⠙\A⠹\A⠸\A⠼\A⠴\A⠦\\A⠧\A⠇\A⠏";
-  animation: spin10 30s steps(10) infinite;
-}
-
-.loading::after {
-  display: inline-block;
-  height: 1.3em !important;
-  white-space: pre;
-  text-align: left;
-}
-
-@keyframes spin10 {
-  to {
-    transform: translateY(-15em);
-  }
-}
-
-
