@@ -5,6 +5,18 @@
   border-color: #dddddd !important;
 }
 
+.sidebar-toggle {
+  visibility: hidden;
+}
+
+.irs-grid-pol:nth-of-type(n) {
+  background: white;
+}
+
+.irs-grid-text:nth-child(n) {
+  color: white;
+}
+
 /*
 box status
 */
@@ -133,7 +145,7 @@ box status
 .loading {
   display: inline-block;
   overflow: hidden;
-  height: 1.3em;
+  height: 1.3em !important;
   margin-top: -0.3em;
   line-height: 1.5em;
   vertical-align: text-bottom;
@@ -142,12 +154,14 @@ box status
 
 .loading.dots::after {
   text-rendering: geometricPrecision;
+  height: 1.3em !important;
   content: "⠋\A⠙\A⠹\A⠸\A⠼\A⠴\A⠦\\A⠧\A⠇\A⠏";
-  animation: spin10 1s steps(10) infinite;
+  animation: spin10 30s steps(10) infinite;
 }
 
 .loading::after {
-  display: inline-table;
+  display: inline-block;
+  height: 1.3em !important;
   white-space: pre;
   text-align: left;
 }
@@ -158,14 +172,4 @@ box status
   }
 }
 
-.sidebar-toggle {
-  visibility: hidden;
-}
 
-.irs-grid-pol:nth-of-type(n) {
-  background: white;
-}
-
-.irs-grid-text:nth-child(n) {
-  color: white;
-}

@@ -329,6 +329,7 @@ server <- function(input, output,session) {
     #----------------------------------------------------#
     observeEvent(input$submitDiMA, ignoreInit=TRUE,{
         req(input$MSAfile)
+
         shinyjs::addClass(id = "submitDiMA", class = "loading dots")
         MY_THEME<-theme(
             axis.title.x = element_text(size = input$wordsize),
@@ -505,11 +506,13 @@ server <- function(input, output,session) {
                 #----------------------NOTE (2/5/2022)-------------------#
                 #"OUTFILE" SHOULD directly be the name of the input files user provided
                 #"proteinName" are needed?
-                csvfile<-paste0(strsplit(input$MSAfile$name[i], ".json")[[1]][1],".csv",sep="")
-                direct_json2csvinR(filepath[i],hostname,proteinName[[i]][1], paste0(temp_directory,"/",csvfile))
+                csvfile<-file.path(temp_directory, paste0(strsplit(input$MSAfile$name[i], ".json")[[1]][1],".csv",sep=""))
+                json_data<-fromJSON(filepath[i])
+                dima_df<-vDiveR::json2csv(json_data, hostname, proteinName[[i]][1])
+                write.table(dima_df, sep=",", row.names = FALSE , file = csvfile)
 
                 #store the DiMA csv output names into a list (for further concatenation into one file)
-                csvfilelist <- append(csvfilelist, paste0(temp_directory,"/",csvfile))
+                csvfilelist <- append(csvfilelist, csvfile)
             }
             data <-  read.csv(csvfilelist[1])
 
@@ -532,10 +535,14 @@ server <- function(input, output,session) {
                 csvfilelist_secondHost<-c()
                 #run DiMA
                 for (i in 1:length(filepath_secondHost)){
-                    csvfile<-paste0(strsplit(input$MSAfile_secondHost$name[i], ".json")[[1]][1],".csv",sep="")
-                    direct_json2csvinR(filepath[i],hostname_secondHost,proteinName_secondHost[[i]][1], paste0(temp_directory,"/",csvfile))
+                    csvfile<-file.path(temp_directory, paste0(strsplit(input$MSAfile_secondHost$name[i], ".json")[[1]][1],".csv",sep=""))
+                    
+                    json_data<-fromJSON(filepath_secondHost[i])
+                    dima_df<-vDiveR::json2csv(json_data, hostname_secondHost, proteinName_secondHost[[i]][1])
+                    write.table(dima_df, sep=",", row.names = FALSE , file = csvfile)
+                    
                     #store the DiMA csv output names into a list (for further concatenation into one file)
-                    csvfilelist_secondHost <- append(csvfilelist_secondHost, paste0(temp_directory,"/",csvfile))
+                    csvfilelist_secondHost <- append(csvfilelist_secondHost, csvfile)
                 }
 
                 data_secondHost <-  read.csv(csvfilelist_secondHost[1])
@@ -560,14 +567,10 @@ server <- function(input, output,session) {
                     bind_rows
             }else{ #2 hosts
                 filepath<-append(filepath,filepath_secondHost)
-                print('filepath')
-                print(filepath)
                 data <- filepath %>%
                     lapply(read_csv) %>%
                     bind_rows
             }
-            print('csv data')
-            print(data)
         }
 
         #Alert results are ready
