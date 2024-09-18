@@ -27,14 +27,7 @@ library(maptools)
 library(lubridate)
 library(scales)
 library(rentrez)
-# library(vDiveR) # install.packages("vDiveR")
-#library(NGLVieweR)
-#library(bio3d)
-#library(Biostrings)
-#library(NGLVieweR)
-#library(ggmsa) #devtools::install_github("YuLab-SMU/ggmsa")
-#devtools::install_github("hrbrmstr/ggalt", ref = "noproj")
-#reticulate::use_virtualenv("python_env", required = TRUE)
+library(vDiveR)
 
 source("functions/helpers.R")
 
@@ -409,23 +402,26 @@ server <- function(input, output,session) {
             }else{
                 inputtype <- "nucleotide"
             }
+
+            if (!file.exists('venv/Scripts/dima-cli.exe')){
+                stop("dima-cli.exe is not found at the specified path 'venv/Scripts/'. Please check the path and try again.")
+            }
+
             #run DiMA
             for (i in 1:length(filepath)){
                 outfile<- paste0(proteinName[[i]][1],"_",hostname,"_",i,".json",sep="")
 
-                #print('before dima-cli', paste0(temp_directory, "/",outfile))
-                system(paste("python_env/Scripts/dima-cli.exe -i", filepath[i], "-o",paste0(temp_directory, "/",outfile),"-s",input$supportLimit, "-q",proteinName[[i]][1], "-l",input$kmerlength, "-a",inputtype))
-
-                print('after dima-cli')
-                #https://stackoverflow.com/questions/5990654/incomplete-final-line-warning-when-trying-to-read-a-csv-file-into-r
-                #write("\r\n", file = paste0("./",outfile), append = TRUE, sep = "\n")
-                print('before unnest')
-                json2csvinR_unnest(paste0(temp_directory, "/",outfile),hostname, proteinName[[i]][1])
-                print('after unnest')
+                system(paste("venv/Scripts/dima-cli.exe -i", filepath[i], "-o", file.path(temp_directory,outfile),"-s",input$supportLimit, "-q",proteinName[[i]][1], "-l",input$kmerlength, "-a",inputtype))
+ 
+                json_file <- file.path(temp_directory, outfile)
+                csv_file <- json_file %>% str_replace(".json",".csv")
+                
+                json_data <- fromJSON(json_file)
+                dima_df <- vDiveR::json2csv(json_data, hostname_secondHost, proteinName_secondHost[[i]][1])
+                write.table(dima_df, sep=",", row.names = FALSE , file = csv_file)
 
                 #store the DiMA csv output names into a list (for further concatenation into one file)
-                csvfile<-paste0(temp_directory, "/",proteinName[[i]][1],"_",hostname,"_",i,".csv",sep="")
-                csvfilelist <- append(csvfilelist, csvfile)
+                csvfilelist <- append(csvfilelist, csv_file)
             }
 
             #------------------------------------------------------------------------------------------------------#
@@ -454,33 +450,22 @@ server <- function(input, output,session) {
                 #run DiMA
                 for (i in 1:length(filepath_secondHost)){
                     outfile<- paste0(proteinName_secondHost[[i]][1],"_",hostname_secondHost,"_",i,".json",sep="")
-                    system(paste("python_env/Scripts/dima-cli.exe -i", filepath_secondHost[i], "-o",paste0(temp_directory, "/",outfile),"-s",input$supportLimit, "-q",proteinName_secondHost[[i]][1], "-l",input$kmerlength, "-a",inputtype))
-                    #py_run_string("from dima import Dima")
-                    #dima_input<- paste0("sequences=r'",filepath_secondHost[i],"',kmer_length=",input$kmerlength,",support_threshold=",input$supportLimit,",query_name=r'",proteinName_secondHost[[i]][1],"',alphabet=r'",inputtype,"'")
-                    #dima_input<- gsub("/", "\\", dima_input)
-                    #py_run_string(glue("results = Dima({dima_input}).run()"))
-                    #py_run_string(glue("results = Dima(sequences=\"{filepath[i]}\", kmer_length={input$kmerlength},support_threshold={input$supportLimit}, query_name=\"{proteinName[[i]][1]}\").run()"))
-                    #py_run_string(glue("jsonFile = open(r'{temp_directory}/{outfile}', 'w')"))
-                    #py_run_string(glue("jsonFile.write(str(results))"))
-                    #py_run_string("jsonFile.close()")
-                    #system(paste("dima-cli.exe -i ",filepath_secondHost[i]," -o ",paste0(temp_directory, "/",outfile)," -s ",input$supportLimit, " -p ",proteinName_secondHost[[i]][1], " -l ",input$kmerlength))
-
-                    #system(paste("./python_env/Scripts/dima-cli.exe -i",filepath_secondHost[i],"-o",paste0(temp_directory, "/",outfile),"-s",input$supportLimit, "-p",proteinName_secondHost[[i]][1], "-l",input$kmerlength))
-                    #system2(command="./python_env/Scripts/dima-cli.exe",args = c("-i",filepath_secondHost[i],"-o",paste0(temp_directory, "/",outfile),"-s",input$supportLimit, "-p",proteinName_secondHost[[i]][1], "-l",input$kmerlength))
-                    #system2(command="./python_env/Scripts/dima-cli.exe",args = c("-i",filepath[i],"-o",outfile,"-s",input$supportLimit, "-p",proteinName[[i]][1], "-l",input$kmerlength))
-                    #print(input$supportLimit, proteinName[[i]][1], input$kmerlength)
-                    #append "\n" to the end of file to solve the issue of 'incomplete final line'
+                    system(paste("venv/Scripts/dima-cli.exe -i", filepath_secondHost[i], "-o", file.path(temp_directory,outfile),"-s",input$supportLimit, "-q",proteinName_secondHost[[i]][1], "-l",input$kmerlength, "-a",inputtype))
+                    
                     #https://stackoverflow.com/questions/5990654/incomplete-final-line-warning-when-trying-to-read-a-csv-file-into-r
                     write("\r\n", file = outfile, append = TRUE, sep = "\n")
-                    json2csvinR_unnest(paste0(temp_directory, "/",outfile),hostname_secondHost,proteinName_secondHost[[i]][1])
-                    #json2csvinR(paste0(temp_directory, "/",outfile),hostname)
-                    #json2csvinR(outfile,hostname)
-                    #store the DiMA csv output names into a list (for further concatenation into one file)
-                    csvfile<-paste0(temp_directory, "/",proteinName_secondHost[[i]][1],"_",hostname_secondHost,"_",i,".csv",sep="")
-                    #csvfile<-paste0(proteinName[[i]][1],"_",i,".csv",sep="")
 
-                    csvfilelist_secondHost <- append(csvfilelist_secondHost, csvfile)
-                    #outfile<- paste0(proteinName[[i]][1],"_",i,".json",sep="")
+                    json_file <- file.path(temp_directory, outfile)
+                    csv_file <- json_file %>% str_replace(".json",".csv")
+                    
+                    json_data <- fromJSON(json_file)
+                    dima_df <- vDiveR::json2csv(json_data, hostname_secondHost, proteinName_secondHost[[i]][1])
+                    write.table(dima_df, sep=",", row.names = FALSE , file = csv_file)
+                    
+                    #store the DiMA csv output names into a list (for further concatenation into one file)
+                    csvfile<-file.path(temp_directory, paste0(proteinName_secondHost[[i]][1],"_",hostname_secondHost,"_",i,".csv",sep=""))
+
+                    csvfilelist_secondHost <- append(csvfilelist_secondHost, csv_file)
                 }
 
                 data_secondHost <-  read.csv(csvfilelist_secondHost[1])
@@ -495,7 +480,7 @@ server <- function(input, output,session) {
             }
 
             #write to a final csv file "DiMAoutput.csv", consists of all the submitted proteins in the temp zipped folder
-            write.table(data, sep=",", row.names = FALSE , file = paste0(temp_directory,"/DiMA.csv"))
+            write.table(data, sep=",", row.names = FALSE , file = file.path(temp_directory,"DiMA.csv"))
             #Store all the path of the files in the directory in the reactive value
             mylist$files <- list.files(temp_directory,"*.*")
 
@@ -557,7 +542,7 @@ server <- function(input, output,session) {
             }
 
             #write to a final csv file "DiMAoutput.csv", consists of all the submitted proteins in the temp zipped folder
-            write.table(data, sep=",", row.names = FALSE , file = paste0(temp_directory,"/DiMA.csv"))
+            write.table(data, sep=",", row.names = FALSE , file = file.path(temp_directory,"DiMA.csv"))
 
         }else if (input$filetype == 3){ #if the data is DiMA csv output
             #read the input file
