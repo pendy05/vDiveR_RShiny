@@ -51,7 +51,8 @@ sideBar<-dashboardSidebar(
     # Horizontal line ----
     tags$hr(),
     div(style="display:inline-block;",actionButton("start","Start")),
-    div(style="display:inline-block",actionButton("samplesubmit","Load Sample Dataset",icon("paper-plane", id="samplesubmit", class=""), onclick="www/HCV_protein.csv")),
+    div(style="display:inline-block;",
+      actionButton("samplesubmit","Load Sample Dataset",icon("paper-plane", id="samplesubmit", class=""), onclick="www/HCV_protein.csv")),
     tags$br(),
     div(style="display:inline-block; margin: 6px 5px 6px 15px;color: #000000;",downloadButton("downloadSampleData", "Download Sample",style="color: #000000")),
     div(style="display:inline-block",actionButton("reset1","Clear")),
@@ -67,7 +68,7 @@ body<-## Body content
     tags$script(src = "www/functions.js"),
     includeCSS("www/styles.css"),
     
-    tags$title("vDiveR"),
+    tags$title("vDiveR"), 
     tags$script(HTML('
       $(document).ready(function() {
         $("header").find("nav").append(\'<span class="myClass"> vDiveR: Viral Protein Diversity Dynamics Visualization in R </span>\');
@@ -224,7 +225,8 @@ body<-## Body content
             tags$br(),
             tags$hr(style = "border-width: 1px; border-color: #265071; margin: 0.1em;"),
             uiOutput("alert"),
-            div(style = "display:inline-block;", actionButton("submitDiMA", "Submit", icon("paper-plane"))),
+            div(style = "display:inline-block;", 
+              actionButton("submitDiMA", "Submit", icon("paper-plane", id="submitDiMA_icon"))),
             div(style = "display:inline-block;", downloadButton("downloadDiMA", "Download")),
             div(style = "display:inline-block;", actionButton("reset", "Clear")),
             tags$br()

@@ -5,6 +5,18 @@
   border-color: #dddddd !important;
 }
 
+.sidebar-toggle {
+  visibility: hidden;
+}
+
+.irs-grid-pol:nth-of-type(n) {
+  background: white;
+}
+
+.irs-grid-text:nth-child(n) {
+  color: white;
+}
+
 /*
 box status
 */
@@ -128,44 +140,4 @@ box status
 /*set font family to Arial*/
 * {
   font-family: "Arial";
-}
-
-.loading {
-  display: inline-block;
-  overflow: hidden;
-  height: 1.3em;
-  margin-top: -0.3em;
-  line-height: 1.5em;
-  vertical-align: text-bottom;
-  box-sizing: border-box;
-}
-
-.loading.dots::after {
-  text-rendering: geometricPrecision;
-  content: "⠋\A⠙\A⠹\A⠸\A⠼\A⠴\A⠦\\A⠧\A⠇\A⠏";
-  animation: spin10 1s steps(10) infinite;
-}
-
-.loading::after {
-  display: inline-table;
-  white-space: pre;
-  text-align: left;
-}
-
-@keyframes spin10 {
-  to {
-    transform: translateY(-15em);
-  }
-}
-
-.sidebar-toggle {
-  visibility: hidden;
-}
-
-.irs-grid-pol:nth-of-type(n) {
-  background: white;
-}
-
-.irs-grid-text:nth-child(n) {
-  color: white;
 }

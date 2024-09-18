@@ -246,6 +246,5 @@ get_plot_time_tick_interval <- function(date_column) {
     months_diff <- interval(start_date, end_date) %/% months(1)
     # Calculate the tick interval for 10 ticks
     tick_interval <- ceiling(months_diff / 10)
-    # print(tick_interval)
     return(tick_interval)
 }
