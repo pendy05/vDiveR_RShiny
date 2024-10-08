@@ -530,6 +530,9 @@ server <- function(input, output,session) {
             }
 
             os_type <- Sys.info()["sysname"]
+            if (!dir.exists(VENV_DIR)) {
+                create_and_activate_python_env()
+            }
 
             #run DiMA
             for (i in 1:length(filepath)){
