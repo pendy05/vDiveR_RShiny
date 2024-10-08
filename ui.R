@@ -272,14 +272,14 @@ body<-## Body content
                           <li>Year : date of the sequence was discovered, format: YYYY/MM/DD </li>\
                           </ol> "))
                 ),
-              fluidRow(box(width=9, title = "Data input in csv format", status = "primary" ,solidHeader = T,
+              fluidRow(box(width=12, title = "Data input in csv format", status = "primary" ,solidHeader = T,
                            fileInput(inputId = "Metafile",label = HTML("Input your metadata with csv format :"), accept = c(".csv"), placeholder = "metadata.csv", multiple = T),
                            textOutput("inmetafilename"),
                            actionButton("submitMeta1","Get metadata",icon("paper-plane", id="submitMeta1"), style="display:inline-block"),
                            actionButton("resetMeta1","Clear", style="display:inline-block")
 
               )),
-              fluidRow(box(width=9, title = "Data input in fasta format", status = "primary" ,solidHeader = T,
+              fluidRow(box(width=12, title = "Data input in fasta format", status = "primary" ,solidHeader = T,
                            fileInput(inputId = "Metafasta",label = HTML("input your fasta file for metadata extracting:"), accept = c(".fa",".faa",".fasta",".fas",".json",".JSON"), placeholder = "alignedNS1.fa, alignedCore.fa", multiple = T),
                            radioButtons("MetafastaSource", "fasta from :", c("NCBI"='NCBI', "GISAID (EpiFlu/EpiCoV/EpiPox/EpiArbo)"="GISAID"), selected="NCBI"),
                            textOutput("inmetafasta"),

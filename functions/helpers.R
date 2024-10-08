@@ -43,9 +43,10 @@ resetMetaDataInput <- function(output){
     shinyjs::reset("Metafile")
     shinyjs::reset("Metafasta")
     shinyjs::reset("Meta")
-    shinyjs::reset("inmetafilename")
-    shinyjs::reset("inmetafasta")
     shinyjs::disable(id="downloadDiMA")
+    
+    output$inmetafilename <- renderText({return("")})
+    output$inmetafasta <- renderText({return("")})
 
     #clear output
     output$alert <- renderUI({})
