@@ -222,13 +222,19 @@ body<-## Body content
                 )
               )
             ),
+            tags$hr(style = "border-width: 1px; border-color: #265071; margin-bottom: 0.2em"),
             tags$br(),
-            tags$hr(style = "border-width: 1px; border-color: #265071; margin: 0.1em;"),
             uiOutput("alert"),
+            div(style = "display: flex; justify-content: space-between; align-items: center; width: 100%;",
             div(style = "display:inline-block;", 
-              actionButton("submitDiMA", "Submit", icon("paper-plane", id="submitDiMA_icon"))),
-            div(style = "display:inline-block;", downloadButton("downloadDiMA", "Download")),
-            div(style = "display:inline-block;", actionButton("reset", "Clear")),
+              actionButton("submitDiMA", "Submit", icon("paper-plane", id="submitDiMA_icon")),
+              downloadButton("downloadDiMA", "Download DiMA Output")
+            ),
+            div(style = "display:inline-block;", 
+              actionButton("installDiMA", "Install DiMA"),
+              actionButton("reset", "Clear")
+            )),
+     
             tags$br()
           )
         ),
@@ -272,16 +278,16 @@ body<-## Body content
                           <li>Year : date of the sequence was discovered, format: YYYY/MM/DD </li>\
                           </ol> "))
                 ),
-              fluidRow(box(width=9, title = "Data input in csv format", status = "primary" ,solidHeader = T,
+              fluidRow(box(width=12, title = "Data input in csv format", status = "primary" ,solidHeader = T,
                            fileInput(inputId = "Metafile",label = HTML("Input your metadata with csv format :"), accept = c(".csv"), placeholder = "metadata.csv", multiple = T),
                            textOutput("inmetafilename"),
                            actionButton("submitMeta1","Get metadata",icon("paper-plane", id="submitMeta1"), style="display:inline-block"),
                            actionButton("resetMeta1","Clear", style="display:inline-block")
 
               )),
-              fluidRow(box(width=9, title = "Data input in fasta format", status = "primary" ,solidHeader = T,
+              fluidRow(box(width=12, title = "Data input in fasta format", status = "primary" ,solidHeader = T,
                            fileInput(inputId = "Metafasta",label = HTML("input your fasta file for metadata extracting:"), accept = c(".fa",".faa",".fasta",".fas",".json",".JSON"), placeholder = "alignedNS1.fa, alignedCore.fa", multiple = T),
-                           radioButtons("MetafastaSource", "fasta from :", c("NCBI"='NCBI', "GISAID EpiCoV"="GISAID"), selected="NCBI"),
+                           radioButtons("MetafastaSource", "fasta from :", c("NCBI"='NCBI', "GISAID (EpiFlu/EpiCoV/EpiPox/EpiArbo)"="GISAID"), selected="NCBI"),
                            textOutput("inmetafasta"),
                            actionButton("submitMeta2","Get metadata",icon("paper-plane", id="submitMeta2"), style="display:inline-block"),
                             actionButton("resetMeta2","Clear", style="display:inline-block"),
