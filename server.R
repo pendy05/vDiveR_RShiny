@@ -31,7 +31,7 @@ library(vDiveR)
 
 source("functions/helpers.R")
 
-
+FILE_EXTENSION <- c(".fasta",".fas",".fa", ".faa", ".fnn",".fna")
 #server main function
 server <- function(input, output,session) {
     # initial state of downloadDiMA button is disabled
@@ -148,6 +148,16 @@ server <- function(input, output,session) {
         Meta <- reactive({
             req(input$Metafile)
             filepath <- input$Metafile$datapath
+            # check file extension
+            if (!all(str_detect(filepath, ".csv"))){
+                showModal(modalDialog(
+                    title = "Metadata Input File Error",
+                    "Please upload CSV files only. (.csv).",
+                    easyClose = TRUE,
+                    footer = NULL
+                ))
+                req(FALSE) # Halt further execution
+            }
             Meta <- read.csv(filepath, header = T, stringsAsFactors = F)
             Meta
         })
@@ -244,6 +254,18 @@ server <- function(input, output,session) {
         Meta <- reactive({
             req(input$Metafasta)
             filepath <- input$Metafasta$datapath
+
+            # check file extension
+            if (!any(str_detect(filepath, FILE_EXTENSION))){
+                showModal(modalDialog(
+                    title = "Metadata Input File Error",
+                    "Please upload FASTA files only (.fasta/.fas/.fa/.faa/.fnn/.fna).",
+                    easyClose = TRUE,
+                    footer = NULL
+                ))
+                req(FALSE) # Halt further execution
+            }
+
             Meta <- vDiveR::metadata_extraction(filepath, input$MetafastaSource)
             Meta
         })
@@ -378,10 +400,16 @@ server <- function(input, output,session) {
 
             if (length(proteinName) < length(filepath)){ #if number of protein names != number of files, then assign NA to that protein
                 proteinName <- append(proteinName,rep("Unknown",each = length(filepath)-length(proteinName)))
+            }else if (length(proteinName) > length(filepath)){
+                showModal(modalDialog(
+                    title = "Input File Error",
+                    paste("The protein names \'", paste(proteinName, collapse = ","),"\' provided are more than the number of files submitted. Number of files received: ",length(filepath),". Please check and try again."),
+                    easyClose = TRUE,
+                    footer = NULL
+                ))  
+                req(FALSE) # Halt further execution    
             }
-            # }else if (length(proteinName) > length(filepath)){
-            #   #do something
-            # }
+            
         }
 
         #---------------------#
@@ -395,14 +423,86 @@ server <- function(input, output,session) {
 
             if (length(proteinName_secondHost) < length(filepath_secondHost)){ #if number of protein names != number of files, then assign NA to that protein
                 proteinName_secondHost <- append(proteinName_secondHost,rep("Unknown",each = length(filepath_secondHost)-length(proteinName_secondHost)))
-            }# }else if (length(proteinName_secondHost) > length(filepath_secondHost)){
-            #   #do something
-            # }
+            } else if (length(proteinName_secondHost) > length(filepath_secondHost)){
+                showModal(modalDialog(
+                    title = "Input File Error (Second Host)",
+                    paste("The protein names \'", paste(proteinName_secondHost, collapse = ","),"\' provided for second host are more than the number of files submitted. Number of files received: ",length(filepath_secondHost),". Please check and try again."),
+                    easyClose = TRUE,
+                    footer = NULL
+                ))  
+                req(FALSE) # Halt further execution    
+            }
         }
 
+        # file extension check
+        if (input$filetype == 1){
+            
+            if (!any(str_detect(filepath, FILE_EXTENSION))){
+                showModal(modalDialog(
+                    title = "Input File Error",
+                    "Please upload FASTA files only (.fasta/.fas/.fa/.faa/.fnn/.fna).",
+                    easyClose = TRUE,
+                    footer = NULL
+                ))
+                req(FALSE) # Halt further execution
+            }
+            if (input$host == 2){
+                if (!any(str_detect(filepath_secondHost, FILE_EXTENSION))){
+                    showModal(modalDialog(
+                        title = "Input File Error (Second Host)",
+                        "Please upload FASTA files only (.fasta/.fas/.fa/.faa/.fnn/.fna).",
+                        easyClose = TRUE,
+                        footer = NULL
+                    ))
+                    req(FALSE) # Halt further execution
+                }
+            }
+        }else if (input$filetype == 2){
+            if (!all(str_detect(filepath, ".json"))){
+                showModal(modalDialog(
+                    title = "Input File Error",
+                    "Please upload JSON files only (.json).",
+                    easyClose = TRUE,
+                    footer = NULL
+                ))
+                req(FALSE) # Halt further execution
+            }
+            if (input$host == 2){
+                if (!all(str_detect(filepath_secondHost, ".json"))){
+                    showModal(modalDialog(
+                        title = "Input File Error (Second Host)",
+                        "Please upload JSON files only (.json).",
+                        easyClose = TRUE,
+                        footer = NULL
+                    ))
+                    req(FALSE) # Halt further execution
+                }
+            }
+        }else if (input$filetype == 3){
+            if (!all(str_detect(filepath, ".csv"))){
+                showModal(modalDialog(
+                    title = "Input File Error",
+                    "Please upload CSV files only (.csv).",
+                    easyClose = TRUE,
+                    footer = NULL
+                ))
+                req(FALSE) # Halt further execution
+            }
+            if (input$host == 2){
+                if (!all(str_detect(filepath_secondHost, ".csv"))){
+                    showModal(modalDialog(
+                        title = "Input File Error (Second Host)",
+                        "Please upload CSV files only (.csv).",
+                        easyClose = TRUE,
+                        footer = NULL
+                    ))
+                    req(FALSE) # Halt further execution
+                }
+            }
+        }
 
         #--------------------------------------------------------------#
-        #                Check the Input Type of Files                 #
+        #                      Input Type of Files                     #
         #    1. MSA Files - Run DiMA                                   #
         #    2. DiMA JSON Output Files - convert to CSV files          #
         #    3. DiMA CSV-converted Output Files                        #
@@ -420,7 +520,13 @@ server <- function(input, output,session) {
             }
 
             if (!file.exists('venv/Scripts/dima-cli.exe')){
-                stop("dima-cli.exe is not found at the specified path 'venv/Scripts/'. Please check the path and try again.")
+                showModal(modalDialog(
+                    title = "DiMA Error",
+                    "dima-cli.exe is not found at the specified subfolder path 'venv/Scripts/'. Please check the path and try again.",
+                    easyClose = TRUE,
+                    footer = NULL
+                ))
+                req(FALSE) # Halt further execution
             }
 
             #run DiMA
@@ -433,7 +539,7 @@ server <- function(input, output,session) {
                 csv_file <- json_file %>% str_replace(".json",".csv")
                 
                 json_data <- fromJSON(json_file)
-                dima_df <- vDiveR::json2csv(json_data, hostname_secondHost, proteinName_secondHost[[i]][1])
+                dima_df <- vDiveR::json2csv(json_data, hostname, proteinName[[i]][1])
                 write.table(dima_df, sep=",", row.names = FALSE , file = csv_file)
 
                 #store the DiMA csv output names into a list (for further concatenation into one file)
@@ -504,9 +610,7 @@ server <- function(input, output,session) {
             csvfilelist<-c()
             #convert DiMA output from JSON to CSV
             for (i in 1:length(filepath)){
-                #----------------------NOTE (2/5/2022)-------------------#
-                #"OUTFILE" SHOULD directly be the name of the input files user provided
-                #"proteinName" are needed?
+                #run json2csv with the protein name and output filename user-defined
                 csvfile<-file.path(temp_directory, paste0(strsplit(input$MSAfile$name[i], ".json")[[1]][1],".csv",sep=""))
                 json_data<-fromJSON(filepath[i])
                 dima_df<-vDiveR::json2csv(json_data, hostname, proteinName[[i]][1])
@@ -673,7 +777,7 @@ server <- function(input, output,session) {
         plot1 <- reactive({
             vDiveR::plot_entropy(
                 df,
-                line_dot_size = input$line_dot_size,
+                line_size = input$line_dot_size,
                 base_size = input$wordsize,
                 host = input$host,
                 # scales_x,
@@ -690,7 +794,7 @@ server <- function(input, output,session) {
         plotEntropy<-reactive({
             vDiveR::plot_entropy(
                 df,
-                line_dot_size = input$line_dot_size,
+                line_size = input$line_dot_size,
                 base_size = input$wordsize,
                 host = input$host,
                 # scales_x,
@@ -757,7 +861,7 @@ server <- function(input, output,session) {
         )
 
         plot7<-reactive({
-            vDiveR::plot_conservationLevel(
+            vDiveR::plot_conservation_level(
                 data,
                 line_dot_size = input$line_dot_size,
                 base_size = input$wordsize,
@@ -907,7 +1011,7 @@ server <- function(input, output,session) {
         plot1<-reactive({
             vDiveR::plot_entropy(
                 df,
-                line_dot_size = input$line_dot_size,
+                line_size = input$line_dot_size,
                 base_size = input$wordsize,
                 host = input$host,
                 # scales_x,
@@ -924,7 +1028,7 @@ server <- function(input, output,session) {
         plotEntropy<-reactive({
             vDiveR::plot_entropy(
                 df,
-                line_dot_size = input$line_dot_size,
+                line_size = input$line_dot_size,
                 base_size = input$wordsize,
                 host = input$host,
                 # scales_x,
@@ -976,7 +1080,7 @@ server <- function(input, output,session) {
 
         #Tab 7: Conservation levels of viral <i>k</i>-mer positions for each individual protein
         plot7<-reactive({
-            vDiveR::plot_conservationLevel(
+            vDiveR::plot_conservation_level(
                 data,
                 line_dot_size = input$line_dot_size,
                 base_size = input$wordsize,

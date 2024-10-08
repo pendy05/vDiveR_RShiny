@@ -281,7 +281,7 @@ body<-## Body content
               )),
               fluidRow(box(width=9, title = "Data input in fasta format", status = "primary" ,solidHeader = T,
                            fileInput(inputId = "Metafasta",label = HTML("input your fasta file for metadata extracting:"), accept = c(".fa",".faa",".fasta",".fas",".json",".JSON"), placeholder = "alignedNS1.fa, alignedCore.fa", multiple = T),
-                           radioButtons("MetafastaSource", "fasta from :", c("NCBI"='NCBI', "GISAID EpiCoV"="GISAID"), selected="NCBI"),
+                           radioButtons("MetafastaSource", "fasta from :", c("NCBI"='NCBI', "GISAID (EpiFlu/EpiCoV/EpiPox/EpiArbo)"="GISAID"), selected="NCBI"),
                            textOutput("inmetafasta"),
                            actionButton("submitMeta2","Get metadata",icon("paper-plane", id="submitMeta2"), style="display:inline-block"),
                             actionButton("resetMeta2","Clear", style="display:inline-block"),

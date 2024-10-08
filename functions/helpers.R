@@ -178,7 +178,7 @@ generate_plot7<-function(input, output, plot7){
     })
 
     output$plot7_download <- downloadHandler(
-        filename = function() { paste("plot_conservationLevels_protein", '.jpg', sep='') },
+        filename = function() { paste("plot_conservation_levels_protein", '.jpg', sep='') },
         content = function(file) {
             ggsave(file, plot = plot7(),  width=input$width7, height=input$height7, unit="in", device = "jpg", dpi=input$dpi7)
         })
