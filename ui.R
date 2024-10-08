@@ -222,13 +222,19 @@ body<-## Body content
                 )
               )
             ),
+            tags$hr(style = "border-width: 1px; border-color: #265071; margin-bottom: 0.2em"),
             tags$br(),
-            tags$hr(style = "border-width: 1px; border-color: #265071; margin: 0.1em;"),
             uiOutput("alert"),
+            div(style = "display: flex; justify-content: space-between; align-items: center; width: 100%;",
             div(style = "display:inline-block;", 
-              actionButton("submitDiMA", "Submit", icon("paper-plane", id="submitDiMA_icon"))),
-            div(style = "display:inline-block;", downloadButton("downloadDiMA", "Download")),
-            div(style = "display:inline-block;", actionButton("reset", "Clear")),
+              actionButton("submitDiMA", "Submit", icon("paper-plane", id="submitDiMA_icon")),
+              downloadButton("downloadDiMA", "Download DiMA Output")
+            ),
+            div(style = "display:inline-block;", 
+              actionButton("installDiMA", "Install DiMA"),
+              actionButton("reset", "Clear")
+            )),
+     
             tags$br()
           )
         ),

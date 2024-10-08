@@ -28,10 +28,16 @@ library(lubridate)
 library(scales)
 library(rentrez)
 library(vDiveR)
+library(reticulate)
 
 source("functions/helpers.R")
 
 FILE_EXTENSION <- c(".fasta",".fas",".fa", ".faa", ".fnn",".fna")
+
+VENV_DIR <- "venv"
+venv_dir_path <- file.path(getwd(), VENV_DIR)
+reticulate::use_virtualenv(venv_dir_path, required = TRUE)
+
 #server main function
 server <- function(input, output,session) {
     # initial state of downloadDiMA button is disabled
@@ -78,6 +84,10 @@ server <- function(input, output,session) {
 
     observeEvent(input$resetMeta2,{
         resetMetaDataInput(output)
+    })
+
+    observeEvent(input$installDiMA, {
+        create_and_activate_python_env()
     })
 
     #redirect user to input tab when they click on start button
@@ -256,7 +266,7 @@ server <- function(input, output,session) {
             filepath <- input$Metafasta$datapath
 
             # check file extension
-            if (!any(str_detect(filepath, FILE_EXTENSION))){
+            if (!any(str_detect(filepath, paste(FILE_EXTENSION, collapse = "|")))){
                 showModal(modalDialog(
                     title = "Metadata Input File Error",
                     "Please upload FASTA files only (.fasta/.fas/.fa/.faa/.fnn/.fna).",
@@ -437,7 +447,7 @@ server <- function(input, output,session) {
         # file extension check
         if (input$filetype == 1){
             
-            if (!any(str_detect(filepath, FILE_EXTENSION))){
+            if (!any(str_detect(filepath, paste(FILE_EXTENSION, collapse = "|")))){
                 showModal(modalDialog(
                     title = "Input File Error",
                     "Please upload FASTA files only (.fasta/.fas/.fa/.faa/.fnn/.fna).",
@@ -447,7 +457,7 @@ server <- function(input, output,session) {
                 req(FALSE) # Halt further execution
             }
             if (input$host == 2){
-                if (!any(str_detect(filepath_secondHost, FILE_EXTENSION))){
+                if (!any(str_detect(filepath_secondHost, paste(FILE_EXTENSION, collapse = "|")))){
                     showModal(modalDialog(
                         title = "Input File Error (Second Host)",
                         "Please upload FASTA files only (.fasta/.fas/.fa/.faa/.fnn/.fna).",
@@ -519,22 +529,32 @@ server <- function(input, output,session) {
                 inputtype <- "nucleotide"
             }
 
-            if (!file.exists('venv/Scripts/dima-cli.exe')){
-                showModal(modalDialog(
-                    title = "DiMA Error",
-                    "dima-cli.exe is not found at the specified subfolder path 'venv/Scripts/'. Please check the path and try again.",
-                    easyClose = TRUE,
-                    footer = NULL
-                ))
-                req(FALSE) # Halt further execution
-            }
+            os_type <- Sys.info()["sysname"]
 
             #run DiMA
             for (i in 1:length(filepath)){
                 outfile<- paste0(proteinName[[i]][1],"_",hostname,"_",i,".json",sep="")
+                
+                # Construct the command based on the OS
+                if (os_type == "Windows") {
+                    dima_cmd <- paste("venv\\Scripts\\dima-cli.exe",  # Use backslash for Windows
+                                    "-i", filepath[i],
+                                    "-o", file.path(temp_directory, outfile),
+                                    "-s", input$supportLimit,
+                                    "-q", proteinName[[i]][1],
+                                    "-l", input$kmerlength,
+                                    "-a", inputtype)
+                } else {
+                    dima_cmd <- paste("venv/bin/dima-cli",  # Use forward slash for macOS and Linux
+                                    "-i", filepath[i],
+                                    "-o", file.path(temp_directory, outfile),
+                                    "-s", input$supportLimit,
+                                    "-q", proteinName[[i]][1],
+                                    "-l", input$kmerlength,
+                                    "-a", inputtype)
+                }
 
-                system(paste("venv/Scripts/dima-cli.exe -i", filepath[i], "-o", file.path(temp_directory,outfile),"-s",input$supportLimit, "-q",proteinName[[i]][1], "-l",input$kmerlength, "-a",inputtype))
- 
+                system(dima_cmd)
                 json_file <- file.path(temp_directory, outfile)
                 csv_file <- json_file %>% str_replace(".json",".csv")
                 
@@ -572,8 +592,24 @@ server <- function(input, output,session) {
                 #run DiMA
                 for (i in 1:length(filepath_secondHost)){
                     outfile<- paste0(proteinName_secondHost[[i]][1],"_",hostname_secondHost,"_",i,".json",sep="")
-                    system(paste("venv/Scripts/dima-cli.exe -i", filepath_secondHost[i], "-o", file.path(temp_directory,outfile),"-s",input$supportLimit, "-q",proteinName_secondHost[[i]][1], "-l",input$kmerlength, "-a",inputtype))
-                    
+                    if(os_type == "Windows"){
+                        dima_cmd <- paste("venv\\Scripts\\dima-cli.exe",  # Use backslash for Windows
+                                        "-i", filepath_secondHost[i],
+                                        "-o", file.path(temp_directory, outfile),
+                                        "-s", input$supportLimit,
+                                        "-q", proteinName_secondHost[[i]][1],
+                                        "-l", input$kmerlength,
+                                        "-a", inputtype)
+                    }else{
+                        dima_cmd <- paste("venv/bin/dima-cli",  # Use forward slash for macOS and Linux
+                                        "-i", filepath_secondHost[i],
+                                        "-o", file.path(temp_directory, outfile),
+                                        "-s", input$supportLimit,
+                                        "-q", proteinName_secondHost[[i]][1],
+                                        "-l", input$kmerlength,
+                                        "-a", inputtype)
+                    }
+                    system(dima_cmd)
                     #https://stackoverflow.com/questions/5990654/incomplete-final-line-warning-when-trying-to-read-a-csv-file-into-r
                     write("\r\n", file = outfile, append = TRUE, sep = "\n")
 

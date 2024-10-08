@@ -249,3 +249,70 @@ get_plot_time_tick_interval <- function(date_column) {
     tick_interval <- ceiling(months_diff / 10)
     return(tick_interval)
 }
+
+compare_python_versions <- function(installed_version, min_version) {
+  # Split the versions by "." and convert to numeric
+  installed_version_parts <- as.numeric(unlist(strsplit(installed_version, "\\.")))
+  min_version_parts <- as.numeric(unlist(strsplit(min_version, "\\.")))
+  
+  # Compare major and minor versions
+  if (installed_version_parts[1] > min_version_parts[1]) {
+    return(FALSE)
+  } else if (installed_version_parts[1] == min_version_parts[1] && installed_version_parts[2] > min_version_parts[2]) {
+    return(FALSE)
+  }
+  
+  return(TRUE)
+}
+
+create_and_activate_python_env <- function(env_name = "venv", package_name = "dima-cli==5.0.9") {
+  VENV_DIR="venv"
+
+  showModal(modalDialog(
+    title = "Creating Virtual Environment",
+    "Please wait while the virtual environment is being created...",
+    easyClose = FALSE,
+    footer = NULL
+  ))
+
+  if (compare_python_versions(py_config()$version, "3.8")) {
+    showModal(modalDialog(
+      title = "Python Version Error",
+      paste("Error: Python version must be greater than 3.8 to ensure successful installation of DiMA v5.0.9. Current version: ", py_version),
+      easyClose = TRUE,
+      footer = NULL
+    ))
+    req(FALSE)
+  }
+
+  if (!dir.exists(VENV_DIR)) {
+    tryCatch({
+        system("python -m venv venv", wait = TRUE)
+    }, error = function(e) {
+        cat("Error creating virtual environment: ", e$message, "\n")
+        showModal(modalDialog(
+        title = "Virtual Environment Creation Error",
+        "An error occurred while creating the virtual environment. Please ensure Python is installed and available in the system PATH.",
+        easyClose = TRUE,
+        footer = NULL
+        ))
+    })
+  }
+
+  venv_dir_path <- file.path(getwd(), VENV_DIR)
+  reticulate::use_virtualenv(venv_dir_path, required = TRUE)
+
+  if (!is.null(package_name)) {
+    cat("Installing package:", package_name, "\n")
+    reticulate::py_install(package_name)
+    cat("Successfully installed package:", package_name, "\n")
+  }
+
+  showModal(modalDialog(
+    title = "Virtual Environment Created",
+    "The virtual environment has been successfully created and activated, with DiMA v5.0.9 installed. Please proceed with the analysis.",
+    easyClose = TRUE,
+    footer = NULL
+  ))
+}
+
